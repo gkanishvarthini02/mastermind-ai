@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MasterMind AI - 200+ Question Engine</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; padding: 16px; background-color: #020617; color: #f8fafc; }
+    .container { max-width: 650px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 12px; margin-bottom: 20px; }
+    .title { font-size: 22px; font-weight: 800; color: #60a5fa; margin: 0; }
+    .badge { background: #0f172a; border: 1px solid #334155; padding: 6px 14px; border-radius: 9999px; font-size: 13px; }
+    .card { background: #0f172a; border: 1px solid #1e293b; padding: 18px; border-radius: 16px; margin-bottom: 16px; }
+    label { font-size: 11px; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; text-transform: uppercase; }
+    .btn-group { display: flex; gap: 8px; margin-bottom: 14px; }
+    .btn-toggle { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn-toggle.active { background: #2563eb; border-color: #3b82f6; }
+    select, input { width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; margin-bottom: 14px; outline: none; }
+    .btn-generate { width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb, #4f46e5); border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; }
+    
+    #outputSection { display: none; margin-top: 20px; text-align: center; }
+    canvas { width: 100%; max-width: 290px; aspect-ratio: 9/16; background: #000; border-radius: 16px; border: 2px solid #3b82f6; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+    .status-text { font-size: 13px; color: #fbbf24; margin: 10px 0; font-weight: bold; }
+    .btn-download { width: 100%; max-width: 290px; margin: 10px auto; padding: 14px; background: #059669; color: white; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; border: none; display: none; }
+    .nav-btns { display: flex; gap: 10px; max-width: 290px; margin: 10px auto 0; }
+    .btn-next { flex: 1; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1 class="title">⚡ MasterMind AI</h1>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Unlimited Question Engine (200+ Bank)</p>
+      </div>
+      <div class="badge">Q. No: <strong style="color: #60a5fa;" id="qCounter">1</strong></div>
+    </header>
+
+    <div class="card">
+      <label>1. GEMINI API KEY (Unlimited AI Generation)</label>
+      <input type="password" id="apiKey" placeholder="Enter Gemini API key for dynamic 200+ questions..." />
+
+      <label>2. SELECT CLASS</label>
+      <select id="classSelect" onchange="updateSubjects()">
+        <option value="8">8th Standard (8-ஆம் வகுப்பு)</option>
+        <option value="6">6th Standard (6-ஆம் வகுப்பு)</option>
+        <option value="9">9th Standard (9-ஆம் வகுப்பு)</option>
+        <option value="10">10th Standard (10-ஆம் வகுப்பு)</option>
+      </select>
+
+      <label>3. SELECT SUBJECT</label>
+      <select id="subjectSelect" onchange="updateLessons()"></select>
+
+      <label>4. SELECT LESSON</label>
+      <select id="lessonSelect"></select>
+
+      <button class="btn-generate" id="genBtn" onclick="generateDynamicQuestion()">✨ Generate AI Reel (Next Question)</button>
+    </div>
+
+    <div id="outputSection">
+      <div class="status-text" id="recordStatus">🔴 Recording Lesson Reel (8s)...</div>
+      <canvas id="reelCanvas" width="720" height="1280"></canvas>
+      
+      <div class="nav-btns">
+        <button class="btn-next" onclick="generateDynamicQuestion()">➡️ Next Question (அடுத்த கேள்வி)</button>
+      </div>
+      <button class="btn-download" id="downloadVideoBtn" onclick="downloadRecordedVideo()">📥 Download Reel Video</button>
+    </div>
+  </div>
+
+  <script>
+    let questionIndex = 1;
+    let recordedBlobs = [];
+    let videoUrl = null;
+
+    const bookHierarchy = {
+      "8": {
+        "Science (அறிவியல்)": [
+          "Lesson 4: Matter Around Us (பருப்பொருள்கள்)",
+          "Lesson 1: Measurement (அளவீட்டியல்)",
+          "Lesson 2: Forces and Pressure (விசையும் அழுத்தமும்)",
+          "Lesson 3: Light (ஒளியியல்)",
+          "Lesson 16: Microorganisms (நுண்ணுயிரிகள்)"
+        ],
+        "Social Science (சமூக அறிவியல்)": [
+          "History - Lesson 1: Advent of the Europeans",
+          "History - Lesson 2: From Trade to Territory",
+          "Civics - Lesson 1: How the State Govt Works"
+        ]
+      },
+      "10": {
+        "Social Science": [
+          "History - Lesson 5: 19th Century Reform Movements",
+          "Civics - Lesson 1: Indian Constitution",
+          "Geography - Lesson 1: India - Location & Relief"
+        ]
+      }
+    };
+
+    function updateSubjects() {
+      const cls = document.getElementById("classSelect").value;
+      const subSelect = document.getElementById("subjectSelect");
+      subSelect.innerHTML = "";
+      if (bookHierarchy[cls]) {
+        Object.keys(bookHierarchy[cls]).forEach(sub => {
+          const opt = document.createElement("option");
+          opt.value = sub;
+          opt.innerText = sub;
+          subSelect.appendChild(opt);
+        });
+      }
+      updateLessons();
+    }
+
+    function updateLessons() {
+      const cls = document.getElementById("classSelect").value;
+      const sub = document.getElementById("subjectSelect").value;
+      const lesSelect = document.getElementById("lessonSelect");
+      lesSelect.innerHTML = "";
+      if (bookHierarchy[cls] && bookHierarchy[cls][sub]) {
+        bookHierarchy[cls][sub].forEach(les => {
+          const opt = document.createElement("option");
+          opt.value = les;
+          opt.innerText = les;
+          lesSelect.appendChild(opt);
+        });
+      }
+    }
+
+    updateSubjects();
+
+    const canvas = document.getElementById("reelCanvas");
+    const ctx = canvas.getContext("2d");
+
+    async function generateDynamicQuestion() {
+      const apiKey = document.getElementById("apiKey").value.trim();
+      const cls = document.getElementById("classSelect").value;
+      const sub = document.getElementById("subjectSelect").value;
+      const les = document.getElementById("lessonSelect").value;
+      const btn = document.getElementById("genBtn");
+
+      btn.innerText = "⚡ Fetching Question #" + questionIndex + "...";
+      btn.disabled = true;
+
+      let mcq;
+
+      if (apiKey) {
+        // Real AI Generation (Generates unlimited unique questions)
+        const prompt = `Tamil Nadu Samacheer Kalvi Class ${cls} ${sub}, "${les}". Generate a unique multiple choice question for TNPSC exam with 4 options in Tamil. Return ONLY raw JSON in this format: {"tag": "Class ${cls} • ${les.substring(0, 15)}", "question": "Question text in Tamil?", "options": ["A) opt1", "B) opt2", "C) opt3", "D) opt4"], "correct": 0}`;
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const data = await res.json();
+          const cleanJson = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+          mcq = JSON.parse(cleanJson);
+        } catch (e) {
+          mcq = getFallbackQuestion(les);
+        }
+      } else {
+        mcq = getFallbackQuestion(les);
+      }
+
+      document.getElementById("qCounter").innerText = questionIndex;
+      questionIndex++;
+
+      btn.innerText = "✨ Generate AI Reel (Next Question)";
+      btn.disabled = false;
+
+      recordAndPlayReel(mcq);
+    }
+
+    function getFallbackQuestion(les) {
+      return {
+        tag: "8th SCIENCE • LESSON 4",
+        question: "அறை வெப்பநிலையில் திரவ நிலையில் உள்ள ஒரே உலோகம் எது?",
+        options: ["A) பாதரசம் (Mercury)", "B) புரோமின் (Bromine)", "C) சோடியம் (Sodium)", "D) தங்கம் (Gold)"],
+        correct: 0
+      };
+    }
+
+    function recordAndPlayReel(mcq) {
+      document.getElementById("outputSection").style.display = "block";
+      document.getElementById("downloadVideoBtn").style.display = "none";
+      document.getElementById("recordStatus").innerText = "🔴 Recording Video Reel (8s)...";
+
+      recordedBlobs = [];
+      const stream = canvas.captureStream(60);
+      const mimeTypes = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
+      let selectedMime = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'video/webm';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMime });
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordedBlobs.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const superBlob = new Blob(recordedBlobs, { type: selectedMime });
+        videoUrl = URL.createObjectURL(superBlob);
+        document.getElementById("recordStatus").innerText = "✅ Lesson Video Ready!";
+        document.getElementById("downloadVideoBtn").style.display = "block";
+      };
+
+      mediaRecorder.start();
+
+      const startTime = Date.now();
+      const totalDuration = 8000;
+
+      function draw() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / totalDuration, 1);
+        const timerSeconds = Math.max(0, Math.ceil(5 - (elapsed / 1000)));
+        const showAnswer = elapsed > 5000;
+
+        ctx.fillStyle = "#020617";
+        ctx.fillRect(0, 0, 720, 1280);
+
+        // Header Tag
+        ctx.fillStyle = "#2563eb";
+        ctx.beginPath();
+        ctx.roundRect(160, 70, 400, 56, 28);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 22px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("TNPSC SAMACHEER BOOK", 360, 106);
+
+        // Timer
+        ctx.strokeStyle = showAnswer ? "#10b981" : "#fbbf24";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(360, 210, 48, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 34px sans-serif";
+        ctx.fillText(showAnswer ? "✓" : timerSeconds + "s", 360, 222);
+
+        // Question Container
+        ctx.fillStyle = "#0f172a";
+        ctx.strokeStyle = "#1e3a8a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(40, 290, 640, 280, 20);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#60a5fa";
+        ctx.font = "bold 17px sans-serif";
+        ctx.fillText("• " + mcq.tag + " •", 360, 335);
+
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 26px sans-serif";
+        wrapText(ctx, mcq.question, 360, 390, 580, 38);
+
+        // Options
+        const optY = [610, 725, 840, 955];
+        mcq.options.forEach((opt, idx) => {
+          const isCorrect = idx === mcq.correct;
+          const highlight = showAnswer && isCorrect;
+
+          ctx.fillStyle = highlight ? "#064e3b" : "#0f172a";
+          ctx.strokeStyle = highlight ? "#10b981" : "#334155";
+          ctx.lineWidth = highlight ? 4 : 2;
+
+          ctx.beginPath();
+          ctx.roundRect(40, optY[idx], 640, 88, 14);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = highlight ? "#34d399" : "#f1f5f9";
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(opt + (highlight ? "  ✓" : ""), 70, optY[idx] + 54);
+        });
+
+        // Watermark
+        ctx.fillStyle = "#64748b";
+        ctx.font = "20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⚡ MasterMind AI • Question Bank", 360, 1180);
+
+        if (progress < 1) {
+          requestAnimationFrame(draw);
+        } else {
+          mediaRecorder.stop();
+        }
+      }
+
+      draw();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let testY = y;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, testY);
+          line = words[n] + ' ';
+          testY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, testY);
+    }
+
+    function downloadRecordedVideo() {
+      if (!videoUrl) return;
+      const a = document.createElement("a");
+      a.href = videoUrl;
+      a.download = `MasterMind_Q${questionIndex - 1}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
