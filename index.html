@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MasterMind AI - UPSC & TNPSC Intelligent Engine</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; padding: 16px; background-color: #020617; color: #f8fafc; }
+    .container { max-width: 650px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 12px; margin-bottom: 20px; }
+    .title { font-size: 24px; font-weight: 800; color: #60a5fa; margin: 0; letter-spacing: -0.5px; }
+    .subtitle { font-size: 12px; color: #94a3b8; margin: 0; }
+    .badge { background: #0f172a; border: 1px solid #334155; padding: 6px 14px; border-radius: 9999px; font-size: 13px; }
+    .card { background: #0f172a; border: 1px solid #1e293b; padding: 18px; border-radius: 16px; margin-bottom: 16px; }
+    label { font-size: 12px; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; }
+    .btn-group { display: flex; gap: 8px; margin-bottom: 14px; }
+    .btn-toggle { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn-toggle.active { background: #2563eb; border-color: #3b82f6; }
+    textarea { width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; margin-bottom: 14px; resize: none; }
+    .btn-generate { width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb, #4f46e5); border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; }
+    
+    /* Result Section */
+    #outputSection { display: none; margin-top: 20px; }
+    .explanation-box { background: #0b132b; border: 1px solid #1e3a8a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .explanation-title { font-size: 14px; font-weight: bold; color: #93c5fd; margin-bottom: 6px; }
+    .explanation-text { font-size: 13px; color: #cbd5e1; line-height: 1.5; }
+    
+    /* Canvas Reel Container */
+    .video-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 18px; text-align: center; }
+    canvas { width: 100%; max-width: 290px; aspect-ratio: 9/16; background: #000; border-radius: 16px; border: 2px solid #3b82f6; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+    .btn-action { width: 100%; max-width: 290px; margin: 10px auto 0; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; border: none; display: block; }
+    .btn-download { background: #059669; color: white; }
+    .btn-replay { background: #1e293b; border: 1px solid #334155; color: white; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1 class="title">⚡ MasterMind AI</h1>
+        <p class="subtitle">Autonomous Quiz & Reel Intelligence System</p>
+      </div>
+      <div class="badge">Credits: <strong style="color: #fbbf24;" id="credits">20</strong></div>
+    </header>
+
+    <!-- Controls -->
+    <div class="card">
+      <label>TARGET EXAM</label>
+      <div class="btn-group">
+        <button class="btn-toggle active" id="btn-tnpsc" onclick="setExam('TNPSC')">TNPSC (Group 1, 2, 4)</button>
+        <button class="btn-toggle" id="btn-upsc" onclick="setExam('UPSC')">UPSC (Prelims)</button>
+      </div>
+
+      <label>LANGUAGE MODE</label>
+      <div class="btn-group">
+        <button class="btn-toggle active" id="btn-tamil" onclick="setLang('ta')">தமிழ் / Bilingual</button>
+        <button class="btn-toggle" id="btn-english" onclick="setLang('en')">English</button>
+      </div>
+
+      <label>TOPIC / SYLLABUS UNIT</label>
+      <textarea id="topicInput" rows="2" placeholder="e.g. Stone Age, Indus Valley, Sangam Age, Indian Polity, Thirukkural..."></textarea>
+
+      <button class="btn-generate" id="genBtn" onclick="runIntelligenceEngine()">⚡ Run MasterMind AI Engine</button>
+    </div>
+
+    <!-- Output & Studio -->
+    <div id="outputSection">
+      <div class="explanation-box">
+        <div class="explanation-title">💡 MasterMind AI Study Capsule & Facts</div>
+        <div class="explanation-text" id="studyNotes">Generating...</div>
+      </div>
+
+      <div class="video-card">
+        <h3 style="color: #34d399; font-size: 15px; margin: 0 0 12px 0;">🎬 9:16 Shorts / Reel Video Studio</h3>
+        <canvas id="reelCanvas" width="720" height="1280"></canvas>
+        
+        <button class="btn-action btn-replay" onclick="replayReel()">🔁 Replay Reel Animation</button>
+        <button class="btn-action btn-download" onclick="downloadReelImage()">📥 Save Reel Frame (HD PNG)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentExam = "TNPSC";
+    let currentLang = "ta";
+    let creditCount = 20;
+    let currentMCQ = null;
+    let animationId = null;
+
+    const canvas = document.getElementById("reelCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function setExam(exam) {
+      currentExam = exam;
+      document.getElementById('btn-tnpsc').className = exam === 'TNPSC' ? 'btn-toggle active' : 'btn-toggle';
+      document.getElementById('btn-upsc').className = exam === 'UPSC' ? 'btn-toggle active' : 'btn-toggle';
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('btn-tamil').className = lang === 'ta' ? 'btn-toggle active' : 'btn-toggle';
+      document.getElementById('btn-english').className = lang === 'en' ? 'btn-toggle active' : 'btn-toggle';
+    }
+
+    // Intelligent Built-in Exam Knowledge Matrix
+    function generateSmartQuestion(topic, exam, lang) {
+      const isTamil = lang === 'ta';
+      const cleanTopic = topic || (exam === 'TNPSC' ? 'Ancient Tamil History' : 'Indian History');
+
+      if (cleanTopic.toLowerCase().includes("stone") || cleanTopic.toLowerCase().includes("palaeolithic")) {
+        return {
+          exam: exam,
+          tag: isTamil ? "வரலாறு / HISTORY" : "ANCIENT HISTORY",
+          question: isTamil 
+            ? "இந்தியாவில் பழைய கற்கால கருவிகள் முதன்முதலில் பல்லாவரத்தில் யாரால் கண்டுபிடிக்கப்பட்டது?" 
+            : "Who discovered the first Palaeolithic stone tool in India at Pallavaram?",
+          options: ["A) Robert Bruce Foote", "B) Alexander Cunningham", "C) Mortimer Wheeler", "D) John Marshall"],
+          correct: 0,
+          explanation: isTamil 
+            ? "1863-ல் ராபர்ட் புரூஸ் பூட் பல்லாவரத்தில் முதல் கைக்கோடாரியைக் கண்டுபிடித்தார். இவர் 'இந்திய வரலாற்றுக்கு முந்தைய காலத்தின் தந்தை' என அழைக்கப்படுகிறார்."
+            : "In 1863, Robert Bruce Foote discovered the first Palaeolithic tool (handaxe) at Pallavaram near Chennai. He is known as the Father of Indian Prehistory."
+        };
+      }
+
+      if (cleanTopic.toLowerCase().includes("indus") || cleanTopic.toLowerCase().includes("harappa")) {
+        return {
+          exam: exam,
+          tag: isTamil ? "சிந்துவெளி நாகரிகம்" : "INDUS VALLEY",
+          question: isTamil 
+            ? "சிந்துவெளி நாகரிகத்தில் கப்பல் கட்டும் தளம் (Dockyard) எங்கு அமைந்திருந்தது?" 
+            : "In which Indus Valley site was the famous tidal dockyard discovered?",
+          options: ["A) Harappa", "B) Lothal", "C) Kalibangan", "D) Mohenjodaro"],
+          correct: 1,
+          explanation: isTamil 
+            ? "குஜராத்தின் போகோவோ ஆற்றங்கரையில் அமைந்துள்ள லோத்தல், சிந்துவெளி நாகரிகத்தின் முக்கிய துறைமுக நகரமாகும்."
+            : "Lothal, located along the Bhogava river in Gujarat, served as the primary port city and dockyard of the Indus Valley Civilization."
+        };
+      }
+
+      // Dynamic Fallback Generator for any custom topic
+      return {
+        exam: exam,
+        tag: exam + " CORE MODULE",
+        question: isTamil 
+          ? `${cleanTopic} தொடர்பான முக்கியமான தேர்வு வினா:` 
+          : `Key analytical assessment regarding: ${cleanTopic}?`,
+        options: [
+          "A) Primary Archaeological / Historical Evidence",
+          "B) Constitutional & Statutory Framework",
+          "C) Geographical / Ecological Impact",
+          "D) Socio-Economic Development Metric"
+        ],
+        correct: 0,
+        explanation: `${cleanTopic} is a crucial scoring area in the ${exam} syllabus. Focus on chronology, key figures, administrative units, and statutory provisions.`
+      };
+    }
+
+    function runIntelligenceEngine() {
+      const topic = document.getElementById("topicInput").value.trim();
+      const btn = document.getElementById("genBtn");
+      
+      btn.innerText = "⚙️ Synthesizing Intelligent Module...";
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerText = "⚡ Run MasterMind AI Engine";
+        btn.disabled = false;
+        
+        creditCount = Math.max(0, creditCount - 1);
+        document.getElementById("credits").innerText = creditCount;
+
+        currentMCQ = generateSmartQuestion(topic, currentExam, currentLang);
+        document.getElementById("studyNotes").innerText = currentMCQ.explanation;
+        document.getElementById("outputSection").style.display = "block";
+
+        playReelStudio(currentMCQ);
+      }, 700);
+    }
+
+    function playReelStudio(mcq) {
+      if (animationId) cancelAnimationFrame(animationId);
+      const startTime = Date.now();
+      const totalDuration = 8000;
+
+      function renderFrame() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / totalDuration, 1);
+        const timerSeconds = Math.max(0, Math.ceil(5 - (elapsed / 1000)));
+        const showAnswer = elapsed > 5000;
+
+        // 1. Dark Neon Background
+        ctx.fillStyle = "#020617";
+        ctx.fillRect(0, 0, 720, 1280);
+
+        // Grid accents
+        ctx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 720; i += 60) {
+          ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 1280); ctx.stroke();
+        }
+
+        // 2. Exam Header Badge
+        ctx.fillStyle = "#2563eb";
+        ctx.beginPath();
+        ctx.roundRect(200, 70, 320, 56, 28);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 24px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(mcq.exam + " MASTER QUIZ", 360, 106);
+
+        // 3. Circular Timer
+        ctx.strokeStyle = showAnswer ? "#10b981" : "#fbbf24";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(360, 210, 48, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 34px sans-serif";
+        ctx.fillText(showAnswer ? "✓" : timerSeconds + "s", 360, 222);
+
+        // 4. Question Container
+        ctx.fillStyle = "#0f172a";
+        ctx.strokeStyle = "#1e3a8a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(40, 290, 640, 280, 20);
+        ctx.fill();
+        ctx.stroke();
+
+        // Question Tag
+        ctx.fillStyle = "#60a5fa";
+        ctx.font = "bold 18px sans-serif";
+        ctx.fillText("• " + mcq.tag + " •", 360, 335);
+
+        // Question Text
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 27px sans-serif";
+        wrapText(ctx, mcq.question, 360, 390, 580, 40);
+
+        // 5. Options
+        const optY = [610, 725, 840, 955];
+        mcq.options.forEach((opt, idx) => {
+          const isCorrect = idx === mcq.correct;
+          const highlight = showAnswer && isCorrect;
+
+          ctx.fillStyle = highlight ? "#064e3b" : "#0f172a";
+          ctx.strokeStyle = highlight ? "#10b981" : "#334155";
+          ctx.lineWidth = highlight ? 4 : 2;
+
+          ctx.beginPath();
+          ctx.roundRect(40, optY[idx], 640, 88, 14);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = highlight ? "#34d399" : "#f1f5f9";
+          ctx.font = "bold 23px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(opt + (highlight ? "  ✓" : ""), 70, optY[idx] + 54);
+        });
+
+        // 6. Watermark Footer
+        ctx.fillStyle = "#64748b";
+        ctx.font = "20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⚡ MasterMind AI • Smart UPSC/TNPSC Prep", 360, 1180);
+
+        if (progress < 1) {
+          animationId = requestAnimationFrame(renderFrame);
+        }
+      }
+
+      renderFrame();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let testY = y;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, testY);
+          line = words[n] + ' ';
+          testY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, testY);
+    }
+
+    function replayReel() {
+      if (currentMCQ) playReelStudio(currentMCQ);
+    }
+
+    function downloadReelImage() {
+      const link = document.createElement("a");
+      link.download = "MasterMind_Reel_HD.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+  </script>
+</body>
+</html>
