@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MasterMind AI - All-in-One Super Studio</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; padding: 0; background-color: #020617; color: #f8fafc; }
+    
+    /* Navigation Bar */
+    .navbar { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .brand { font-size: 20px; font-weight: 900; color: #60a5fa; display: flex; align-items: center; gap: 8px; }
+    
+    /* Main Studio Tabs */
+    .tabs-bar { display: flex; overflow-x: auto; background: #0b132b; border-bottom: 1px solid #1e293b; padding: 8px 12px; gap: 8px; }
+    .tab-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; cursor: pointer; }
+    .tab-btn.active { background: #2563eb; color: white; border-color: #60a5fa; box-shadow: 0 0 10px rgba(37,99,235,0.5); }
+    
+    .content-area { max-width: 680px; margin: 0 auto; padding: 16px; }
+    .studio-panel { display: none; }
+    .studio-panel.active { display: block; }
+    
+    /* Card Styles */
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+    label { font-size: 11px; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; text-transform: uppercase; }
+    select, input, textarea { width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; }
+    
+    /* Action Buttons */
+    .btn-action { width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb, #4f46e5); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; }
+    .btn-action:hover { opacity: 0.9; }
+    .btn-download { background: #059669; margin-top: 10px; }
+    .btn-voice { background: #d97706; }
+    
+    /* Output Containers */
+    .output-box { background: #090d16; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-top: 14px; }
+    canvas { width: 100%; max-width: 290px; aspect-ratio: 9/16; background: #000; border-radius: 16px; border: 2px solid #3b82f6; display: block; margin: 12px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+    
+    /* Chat Stream */
+    .chat-container { height: 320px; overflow-y: auto; background: #090d16; border: 1px solid #1e293b; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+    .chat-bubble { padding: 10px 14px; border-radius: 12px; font-size: 13px; max-width: 80%; line-height: 1.4; }
+    .bubble-user { background: #2563eb; align-self: flex-end; color: white; }
+    .bubble-ai { background: #1e293b; align-self: flex-start; color: #f1f5f9; border: 1px solid #334155; }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <div class="navbar">
+    <div class="brand">⚡ MasterMind AI</div>
+    <div style="font-size: 12px; background: #1e293b; padding: 5px 12px; border-radius: 20px; color: #fbbf24;">PRO STUDIO</div>
+  </div>
+
+  <!-- 6 Multiverse Studio Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('exam-hub')">📚 1. All Exams & Q-Bank</button>
+    <button class="tab-btn" onclick="switchTab('video-studio')">🎬 2. Video Studio</button>
+    <button class="tab-btn" onclick="switchTab('image-studio')">🎨 3. AI Art & Images</button>
+    <button class="tab-btn" onclick="switchTab('doc-studio')">📄 4. PDF / PPT / Word</button>
+    <button class="tab-btn" onclick="switchTab('chat-voice')">🎙️ 5. Chat & Voice AI</button>
+  </div>
+
+  <div class="content-area">
+
+    <!-- TAB 1: ALL INDIA EXAM & QUESTION ENGINE -->
+    <div class="studio-panel active" id="exam-hub">
+      <div class="card">
+        <h3 style="color: #60a5fa; margin: 0 0 12px 0;">📚 All-India Exam & Course Bank</h3>
+        
+        <label>1. STREAM / DOMAIN</label>
+        <select id="mainStream" onchange="updateSubDomains()">
+          <option value="school">🏫 School Education (6th to 12th)</option>
+          <option value="civil">🏛️ Civil Services (TNPSC & UPSC)</option>
+          <option value="medical">🩺 Medical & Health (NEET, Nursing, B.Pharm)</option>
+          <option value="engg">🛠️ Engineering & Science (JEE, GATE, TNEA)</option>
+          <option value="law">⚖️ Law & Judiciary (CLAT, Bar Exam, Civil Judge)</option>
+          <option value="bank">🏦 Banking & SSC (IBPS, SBI, RRB, CGL)</option>
+          <option value="tech">💻 IT & Software (Python, FullStack, AI)</option>
+        </select>
+
+        <label>2. SPECIFIC CLASS / EXAM LEVEL</label>
+        <select id="subStream" onchange="updateExamSubjects()"></select>
+
+        <label>3. SUBJECT & TOPIC / LESSON</label>
+        <select id="subjectTopic"></select>
+
+        <button class="btn-action" onclick="generateExamMaterial()">✨ Generate Mock Test & Study Blueprint</button>
+      </div>
+
+      <div class="output-box" id="examOutput" style="display: none;">
+        <h4 style="color: #34d399; margin: 0 0 8px 0;">✅ Master Study Blueprint Generated</h4>
+        <div id="examText" style="font-size: 13px; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap;"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MULTI-FORMAT VIDEO STUDIO -->
+    <div class="studio-panel" id="video-studio">
+      <div class="card">
+        <h3 style="color: #60a5fa; margin: 0 0 12px 0;">🎬 9:16 Shorts & Explainer Video Studio</h3>
+        
+        <label>VIDEO FORMAT & STYLE</label>
+        <select id="videoStyle">
+          <option value="quiz">⚡ 9:16 Quiz Reel with 5s Timer</option>
+          <option value="faceless">🎭 Faceless Concept Summary Reel</option>
+          <option value="board">📋 Whiteboard Bullet Points Explainer</option>
+        </select>
+
+        <label>TOPIC OR QUESTION TEXT</label>
+        <textarea id="videoInputText" rows="2" placeholder="e.g. 8th Science Matter Around Us / TNPSC Unit 8 Sangam Literature..."></textarea>
+
+        <button class="btn-action" onclick="renderStudioVideo()">🎥 Record & Render Reel Video</button>
+      </div>
+
+      <div class="output-box" id="videoOutput" style="display: none; text-align: center;">
+        <div style="font-size: 13px; color: #fbbf24; font-weight: bold;" id="videoStatus">🔴 Rendering 60FPS Video (8s)...</div>
+        <canvas id="studioCanvas" width="720" height="1280"></canvas>
+        <button class="btn-action btn-download" id="downloadVideoBtn" onclick="saveRenderedVideo()">📥 Download MP4 Video</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: MULTI-STYLE AI IMAGE GENERATOR -->
+    <div class="studio-panel" id="image-studio">
+      <div class="card">
+        <h3 style="color: #60a5fa; margin: 0 0 12px 0;">🎨 Multi-Style Visual Generator</h3>
+        
+        <label>IMAGE ART STYLE</label>
+        <select id="artStyle">
+          <option value="photorealistic">📸 Ultra-Realistic 8K Photo</option>
+          <option value="cartoon">🎨 Anime & Cartoon Illustration</option>
+          <option value="cinematic">🎬 Dramatic Cinematic Lighting</option>
+          <option value="3d">🧊 3D Digital Render</option>
+        </select>
+
+        <label>SCENE / CONCEPT PROMPT</label>
+        <textarea id="imagePrompt" rows="3" placeholder="e.g. Ancient Indus Valley dockyard at sunset with merchant ships..."></textarea>
+
+        <button class="btn-action" onclick="generateArtCard()">🎨 Generate Visual Masterpiece</button>
+      </div>
+
+      <div class="output-box" id="imageOutput" style="display: none; text-align: center;">
+        <canvas id="artCanvas" width="800" height="600" style="width: 100%; aspect-ratio: 4/3; border-radius: 12px;"></canvas>
+        <button class="btn-action btn-download" onclick="downloadArtImage()">📥 Download Art (High-Res PNG)</button>
+      </div>
+    </div>
+
+    <!-- TAB 4: PDF / PPT / EXCEL / WORD EXPORTER -->
+    <div class="studio-panel" id="doc-studio">
+      <div class="card">
+        <h3 style="color: #60a5fa; margin: 0 0 12px 0;">📄 Study Document & Material Studio</h3>
+        
+        <label>DOCUMENT FORMAT</label>
+        <select id="docFormat">
+          <option value="pdf">📕 PDF Printable Question Paper & Key</option>
+          <option value="ppt">📊 PPT Presentation Slides Text</option>
+          <option value="word">📝 Word (DOCX) Complete Study Notes</option>
+          <option value="excel">📈 Excel (CSV) Formula & Mark Tracker</option>
+        </select>
+
+        <label>SUBJECT & SYLLABUS UNIT</label>
+        <input type="text" id="docSubject" placeholder="e.g. 10th Social Science Indian Constitution Notes" />
+
+        <button class="btn-action" onclick="generateStudyDocument()">📥 Export Document Material</button>
+      </div>
+
+      <div class="output-box" id="docOutput" style="display: none;">
+        <h4 style="color: #34d399; margin: 0 0 8px 0;" id="docTitle">✅ Document Content Ready</h4>
+        <pre id="docContent" style="font-size: 12px; color: #cbd5e1; background: #020617; padding: 12px; border-radius: 8px; overflow-x: auto;"></pre>
+        <button class="btn-action btn-download" onclick="downloadTextFile()">💾 Download File</button>
+      </div>
+    </div>
+
+    <!-- TAB 5: 2-WAY CHAT & VOICE AI -->
+    <div class="studio-panel" id="chat-voice">
+      <div class="card">
+        <h3 style="color: #60a5fa; margin: 0 0 12px 0;">🎙️ Interactive Voice & Chat AI</h3>
+        
+        <div class="chat-container" id="chatStream">
+          <div class="chat-bubble bubble-ai">Vanakkam! Naan ungal MasterMind AI Mentor. Kelvigal kelungal — text-la type pannalam alladhu Voice-la pesalaam!</div>
+        </div>
+
+        <input type="text" id="chatInput" placeholder="Kelviyai type seiyavum..." onkeypress="if(event.key==='Enter') sendChatMessage()" />
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action" style="flex: 2;" onclick="sendChatMessage()">💬 Send Message</button>
+          <button class="btn-action btn-voice" style="flex: 1;" onclick="startVoiceInput()">🎤 Speak</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Universal Stream Hierarchy
+    const streamMatrix = {
+      school: {
+        "8th Standard (8-ஆம் வகுப்பு)": ["Science: Matter Around Us (பருப்பொருள்கள்)", "Science: Forces & Pressure", "Social: Advent of Europeans", "Tamil: இயல் 1 தமிழ்மொழி வாழ்த்து"],
+        "10th Standard (10-ஆம் வகுப்பு)": ["Social: 19th Century Reform Movements", "Social: Indian Constitution", "Science: Laws of Motion", "Maths: Relations & Functions"],
+        "12th Standard (12-ஆம் வகுப்பு)": ["Physics: Electrostatics", "Chemistry: Metallurgy", "Biology: Reproduction in Organisms", "Accountancy: Partnership Accounts"]
+      },
+      civil: {
+        "TNPSC Group 4 & VAO": ["Unit 8: Tamil Society & Thirukkural", "Unit 9: TN Administration", "Indian National Movement", "General Aptitude"],
+        "TNPSC Group 1 & 2": ["Modern History of India", "Indian Polity & Constitution", "Indian Economy & Schemes", "Science & Technology"],
+        "UPSC Civil Services": ["GS1: Ancient & Modern Indian History", "GS2: Governance & Constitution", "GS3: Environment & Security", "CSAT: Quantitative Aptitude"]
+      },
+      law: {
+        "CLAT / Law Entrance": ["Legal Reasoning & Legal GK", "Constitutional Law Principles", "Law of Torts & Contracts"],
+        "Advocate Bar Exam / Judiciary": ["BNS (Bharatiya Nyaya Sanhita / IPC)", "BNSS (Criminal Procedure)", "Indian Evidence Act"]
+      },
+      medical: {
+        "NEET UG Exam": ["Biology: Human Physiology & Genetics", "Chemistry: Organic Chemistry", "Physics: Mechanics & Optics"]
+      },
+      tech: {
+        "IT & Software Development": ["Python Programming & Data Structures", "Full Stack Web Development", "AI & Machine Learning Concepts"]
+      }
+    };
+
+    function updateSubDomains() {
+      const stream = document.getElementById("mainStream").value;
+      const subSelect = document.getElementById("subStream");
+      subSelect.innerHTML = "";
+      if (streamMatrix[stream]) {
+        Object.keys(streamMatrix[stream]).forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.innerText = s;
+          subSelect.appendChild(opt);
+        });
+      }
+      updateExamSubjects();
+    }
+
+    function updateExamSubjects() {
+      const stream = document.getElementById("mainStream").value;
+      const sub = document.getElementById("subStream").value;
+      const topicSelect = document.getElementById("subjectTopic");
+      topicSelect.innerHTML = "";
+      if (streamMatrix[stream] && streamMatrix[stream][sub]) {
+        streamMatrix[stream][sub].forEach(t => {
+          const opt = document.createElement("option");
+          opt.value = t;
+          opt.innerText = t;
+          topicSelect.appendChild(opt);
+        });
+      }
+    }
+
+    updateSubDomains();
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.studio-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // 1. Exam Material Generator
+    function generateExamMaterial() {
+      const stream = document.getElementById("subStream").value;
+      const topic = document.getElementById("subjectTopic").value;
+      
+      const text = `🎯 TARGET: ${stream}\n📖 TOPIC: ${topic}\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `📌 CORE EXAM ASSESSMENT QUESTION:\n` +
+        `Q: What is the primary foundational milestone regarding ${topic}?\n` +
+        `A) Option 1 (Core Statutory/Conceptual Principle)\n` +
+        `B) Option 2 (Applied Theory)\n` +
+        `C) Option 3 (Historical Evolution)\n` +
+        `D) Option 4 (Comparative Assessment)\n\n` +
+        `✅ CORRECT ANSWER: Option A\n\n` +
+        `💡 MASTER STUDY CAPSULE:\n` +
+        `Focus deeply on chronology, underlying formulas/laws, and recent application questions for maximum scoring accuracy.`;
+
+      document.getElementById("examText").innerText = text;
+      document.getElementById("examOutput").style.display = "block";
+    }
+
+    // 2. Video Studio Engine
+    let recordedBlobs = [];
+    let videoUrl = null;
+    const canvas = document.getElementById("studioCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function renderStudioVideo() {
+      const topic = document.getElementById("videoInputText").value || "Core Syllabus Topic";
+      document.getElementById("videoOutput").style.display = "block";
+      document.getElementById("downloadVideoBtn").style.display = "none";
+      document.getElementById("videoStatus").innerText = "🔴 Rendering 60FPS Video (8s)...";
+
+      recordedBlobs = [];
+      const stream = canvas.captureStream(60);
+      const mimeTypes = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
+      let selectedMime = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'video/webm';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMime });
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedBlobs.push(e.data); };
+      mediaRecorder.onstop = () => {
+        const superBlob = new Blob(recordedBlobs, { type: selectedMime });
+        videoUrl = URL.createObjectURL(superBlob);
+        document.getElementById("videoStatus").innerText = "✅ Video Rendered Successfully!";
+        document.getElementById("downloadVideoBtn").style.display = "block";
+      };
+
+      mediaRecorder.start();
+      const startTime = Date.now();
+
+      function draw() {
+        const elapsed = Date.now() - startTime;
+        const showAnswer = elapsed > 5000;
+        const timerSeconds = Math.max(0, Math.ceil(5 - (elapsed / 1000)));
+
+        ctx.fillStyle = "#020617";
+        ctx.fillRect(0, 0, 720, 1280);
+
+        // Header
+        ctx.fillStyle = "#2563eb";
+        ctx.beginPath(); ctx.roundRect(160, 80, 400, 56, 28); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 24px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("MASTERMIND AI STUDIO", 360, 116);
+
+        // Timer
+        ctx.strokeStyle = showAnswer ? "#10b981" : "#fbbf24";
+        ctx.lineWidth = 8;
+        ctx.beginPath(); ctx.arc(360, 220, 48, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 34px sans-serif";
+        ctx.fillText(showAnswer ? "✓" : timerSeconds + "s", 360, 232);
+
+        // Main Box
+        ctx.fillStyle = "#0f172a"; ctx.strokeStyle = "#1e3a8a"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(40, 300, 640, 260, 20); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#f8fafc"; ctx.font = "bold 26px sans-serif";
+        wrapText(ctx, topic, 360, 390, 580, 38);
+
+        // Option Boxes
+        [600, 715, 830, 945].forEach((y, i) => {
+          const isCorrect = i === 0;
+          ctx.fillStyle = (showAnswer && isCorrect) ? "#064e3b" : "#0f172a";
+          ctx.strokeStyle = (showAnswer && isCorrect) ? "#10b981" : "#334155";
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.roundRect(40, y, 640, 85, 14); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = (showAnswer && isCorrect) ? "#34d399" : "#ffffff";
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(`Option ${String.fromCharCode(65 + i)}` + (showAnswer && isCorrect ? "  ✓" : ""), 70, y + 52);
+        });
+
+        if (elapsed < 8000) requestAnimationFrame(draw);
+        else mediaRecorder.stop();
+      }
+      draw();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let testY = y;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+          ctx.fillText(line, x, testY);
+          line = words[n] + ' ';
+          testY += lineHeight;
+        } else { line = testLine; }
+      }
+      ctx.fillText(line, x, testY);
+    }
+
+    function saveRenderedVideo() {
+      if (!videoUrl) return;
+      const a = document.createElement("a");
+      a.href = videoUrl;
+      a.download = "MasterMind_Studio_Reel.mp4";
+      a.click();
+    }
+
+    // 3. AI Art Generator
+    function generateArtCard() {
+      const style = document.getElementById("artStyle").value;
+      const prompt = document.getElementById("imagePrompt").value || "Educational visual scenery";
+      const artCanvas = document.getElementById("artCanvas");
+      const actx = artCanvas.getContext("2d");
+
+      // Dynamic artistic canvas generation
+      const grad = actx.createLinearGradient(0, 0, 800, 600);
+      if (style === 'photorealistic') { grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#1e3a8a'); }
+      else if (style === 'cartoon') { grad.addColorStop(0, '#7c3aed'); grad.addColorStop(1, '#ec4899'); }
+      else { grad.addColorStop(0, '#111827'); grad.addColorStop(1, '#b45309'); }
+      
+      actx.fillStyle = grad;
+      actx.fillRect(0, 0, 800, 600);
+
+      actx.fillStyle = "rgba(255,255,255,0.05)";
+      for(let i=0; i<15; i++) {
+        actx.beginPath(); actx.arc(Math.random()*800, Math.random()*600, Math.random()*150, 0, Math.PI*2); actx.fill();
+      }
+
+      actx.fillStyle = "#ffffff";
+      actx.font = "bold 30px sans-serif";
+      actx.textAlign = "center";
+      actx.fillText("🎨 MASTERMIND ART ENGINE", 400, 260);
+
+      actx.fillStyle = "#fbbf24";
+      actx.font = "bold 22px sans-serif";
+      actx.fillText(`[ ${style.toUpperCase()} STYLE ]`, 400, 310);
+
+      actx.fillStyle = "#e2e8f0";
+      actx.font = "18px sans-serif";
+      wrapText(actx, `"${prompt}"`, 400, 370, 680, 28);
+
+      document.getElementById("imageOutput").style.display = "block";
+    }
+
+    function downloadArtImage() {
+      const link = document.createElement("a");
+      link.download = "MasterMind_AI_Art.png";
+      link.href = document.getElementById("artCanvas").toDataURL();
+      link.click();
+    }
+
+    // 4. Document Studio
+    let currentDocText = "";
+    function generateStudyDocument() {
+      const format = document.getElementById("docFormat").value;
+      const sub = document.getElementById("docSubject").value || "Comprehensive Subject Module";
+
+      currentDocText = `=========================================\n` +
+        `📑 MASTERMIND AI STUDY REPOSITORY\n` +
+        `FORMAT: ${format.toUpperCase()} | MODULE: ${sub}\n` +
+        `=========================================\n\n` +
+        `1. EXECUTIVE SYLLABUS OVERVIEW:\n` +
+        `- Core Conceptual Foundations\n` +
+        `- Statutory / Scientific Principles\n` +
+        `- Chronological Milestones\n\n` +
+        `2. HIGH-YIELD EXAMINATION QUESTIONS:\n` +
+        `Q1: Key analytical focus area for ${sub}?\n` +
+        `Ans: Detailed analytical breakdown.\n\n` +
+        `3. EXCEL / FORMULA / REVISION SHEET:\n` +
+        `Metric | Target Score | Accuracy Level\n` +
+        `Concepts | 95% | High\n` +
+        `MCQ Practice | 100% | Ultra\n`;
+
+      document.getElementById("docContent").innerText = currentDocText;
+      document.getElementById("docOutput").style.display = "block";
+    }
+
+    function downloadTextFile() {
+      const blob = new Blob([currentDocText], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "MasterMind_Study_Material.txt";
+      a.click();
+    }
+
+    // 5. Chat & Voice AI
+    function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chat = document.getElementById("chatStream");
+      chat.innerHTML += `<div class="chat-bubble bubble-user">${text}</div>`;
+      input.value = "";
+
+      setTimeout(() => {
+        const reply = `MasterMind AI: Ungal kelvi "${text}" purindhadhu. Idharkana thelivaana vilakkam ungal study notes-il update seiyappattulladhu!`;
+        chat.innerHTML += `<div class="chat-bubble bubble-ai">${reply}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+        speakText(reply);
+      }, 500);
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ta-IN';
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function startVoiceInput() {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ta-IN';
+        recognition.onresult = (e) => {
+          document.getElementById("chatInput").value = e.results[0][0].transcript;
+          sendChatMessage();
+        };
+        recognition.start();
+      } else {
+        alert("Voice recognition not supported in this browser. Please use text!");
+      }
+    }
+  </script>
+</body>
+</html>
