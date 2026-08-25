@@ -286,3 +286,263 @@
     <div class="hub-overlay" id="hubOverlay" onclick="toggleHub()"></div>
     <div class="hub-modal" id="hubModal">
       <div class="hub-head">
+        <div>✦ MasterMind Multiverse Hub</div>
+        <button class="icon-btn" onclick="toggleHub()">✕</button>
+      </div>
+      <div class="hub-scroll">
+        <div class="hub-card" onclick="selectHubDomain('HD Picture & Visual Photo Studio')">
+          <div class="hub-icon">🎨</div>
+          <div class="hub-name">HD Picture Studio</div>
+          <div class="hub-desc">4K Image generator, filters & visual graphics</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('School Education (Classes 6th - 12th)')">
+          <div class="hub-icon">🏫</div>
+          <div class="hub-name">School Education</div>
+          <div class="hub-desc">6th-12th Tamil, Maths, Science & Social</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('TNPSC & Civil Services (Group 1, 2, 4)')">
+          <div class="hub-icon">🏛️</div>
+          <div class="hub-name">TNPSC Civil Services</div>
+          <div class="hub-desc">Group 4, 2, 1, Unit 8/9 & VAO Hub</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('UPSC Civil Services Examination (IAS / IPS)')">
+          <div class="hub-icon">🇮🇳</div>
+          <div class="hub-name">UPSC Civil Services</div>
+          <div class="hub-desc">Prelims GS, CSAT & Answer Writing</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Daily Current Affairs & General Knowledge (GK)')">
+          <div class="hub-icon">🌍</div>
+          <div class="hub-name">Current Affairs & GK</div>
+          <div class="hub-desc">National, State, Sports & Politics</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Law & Judiciary (BNS, IPC & Constitution)')">
+          <div class="hub-icon">⚖️</div>
+          <div class="hub-name">Law & Judiciary</div>
+          <div class="hub-desc">BNS, CrPC, AIBE Bar Exam & Judiciary</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('IT, Python, FullStack & Software Career')">
+          <div class="hub-icon">💻</div>
+          <div class="hub-name">IT & Software Career</div>
+          <div class="hub-desc">Python, Web Dev, DSA & Placement Prep</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Medical, NEET UG & Health Sciences')">
+          <div class="hub-icon">🩺</div>
+          <div class="hub-name">Medical & Health</div>
+          <div class="hub-desc">NEET UG, Biology, Anatomy & Pharma</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Banking, SSC & Railways (IBPS, SBI, RRB)')">
+          <div class="hub-icon">🏦</div>
+          <div class="hub-name">Banking & SSC</div>
+          <div class="hub-desc">Quant, Reasoning & Government Jobs</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('9:16 Shorts Video & Cartoon Studio')">
+          <div class="hub-icon">🎬</div>
+          <div class="hub-name">Shorts Video Studio</div>
+          <div class="hub-desc">9:16 Quiz Reels, Kids Cartoons & Stories</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Voice Cloning & Speech Studio')">
+          <div class="hub-icon">🎙️</div>
+          <div class="hub-name">Voice & Audio Studio</div>
+          <div class="hub-desc">Natural Teacher Voice & AI Audio</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('PDF Notes & Study Material Generator')">
+          <div class="hub-icon">📄</div>
+          <div class="hub-name">Document & Notes Studio</div>
+          <div class="hub-desc">Instant Study Material & PDF Exporter</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <div class="drawer" id="drawer">
+      <div class="drawer-head">
+        <div>✦ MasterMind AI</div>
+        <button class="icon-btn" onclick="toggleDrawer()">✕</button>
+      </div>
+
+      <button class="btn-new-chat" onclick="startNewChat()">＋ New Conversation</button>
+
+      <div class="drawer-content">
+        <div class="drawer-section-title">Language / மொழி</div>
+        <select class="drawer-select" id="appLang" onchange="onLanguageChange()">
+          <option value="en-IN">English (India)</option>
+          <option value="ta-IN">தமிழ் (Tamil)</option>
+          <option value="hi-IN">हिन्दी (Hindi)</option>
+          <option value="te-IN">తెలుగు (Telugu)</option>
+        </select>
+
+        <div class="drawer-section-title">Recent Conversations</div>
+        <ul class="history-list" id="historyList"></ul>
+      </div>
+    </div>
+
+    <!-- Main Chat Stream -->
+    <div class="chat-scroll" id="chatStream">
+      <div class="welcome-hero" id="welcomeHero">
+        <div class="welcome-greet">Hello!</div>
+        <div class="welcome-sub">How can I help you today? Ask any topic, 5s quiz, HD picture, or notes!</div>
+      </div>
+    </div>
+
+    <!-- Always Visible Bottom Input Bar -->
+    <div class="input-wrapper">
+      <div class="input-capsule">
+        <input type="text" class="text-input" id="chatInput" placeholder="Ask MasterMind AI anything..." onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button class="btn-circle btn-mic" id="micBtn" onclick="startVoice()" title="Speak with Mic">🎤</button>
+        <button class="btn-circle btn-send" onclick="sendMessage()" title="Send">➤</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Live Supabase & Gemini API Configuration
+    const SUPABASE_URL = "https://oqqvdlimbsatzfxmnkdv.supabase.co";
+    const SUPABASE_KEY = "Sb_publishable_2snEwFNErpFRQhrc6IZ3Ig_nSuF95aL";
+    const GEMINI_API_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+
+    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    let currentConversationId = null;
+    let currentLang = 'en-IN';
+    let conversationHistory = [];
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTickSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function playSuccessSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {}
+    }
+
+    function playWrongSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(160, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    function toggleDrawer() {
+      document.getElementById('drawer').classList.toggle('active');
+      document.getElementById('drawerOverlay').classList.toggle('active');
+    }
+
+    function toggleHub() {
+      document.getElementById('hubModal').classList.toggle('active');
+      document.getElementById('hubOverlay').classList.toggle('active');
+    }
+
+    function selectHubDomain(domainName) {
+      if (document.getElementById('hubModal').classList.contains('active')) toggleHub();
+      addMessage('user', domainName);
+      processAssistantResponse(domainName);
+    }
+
+    function startNewChat() {
+      currentConversationId = null;
+      conversationHistory = [];
+      const isTamil = currentLang === 'ta-IN';
+      document.getElementById('chatStream').innerHTML = `
+        <div class="welcome-hero" id="welcomeHero">
+          <div class="welcome-greet">${isTamil ? 'வணக்கம்!' : 'Hello!'}</div>
+          <div class="welcome-sub">${isTamil ? 'இன்று என்ன படிக்கலாம் அல்லது என்ன செய்ய வேண்டும்?' : 'How can I help you today? Ask any topic, 5s quiz, HD picture, or notes!'}</div>
+        </div>
+      `;
+      document.getElementById('chatInput').value = '';
+      if (document.getElementById('drawer').classList.contains('active')) toggleDrawer();
+      if (document.getElementById('hubModal').classList.contains('active')) toggleHub();
+      loadPastConversations();
+    }
+
+    function onLanguageChange() {
+      currentLang = document.getElementById('appLang').value;
+      const isTamil = currentLang === 'ta-IN';
+      document.getElementById('chatInput').placeholder = isTamil ? 'என்னிடம் கேளுங்கள்...' : 'Ask MasterMind AI anything...';
+      const heroGreet = document.querySelector('.welcome-greet');
+      if (heroGreet) heroGreet.innerText = isTamil ? 'வணக்கம்!' : 'Hello!';
+      if (document.getElementById('drawer').classList.contains('active')) toggleDrawer();
+    }
+
+    function scrollToBottom() {
+      const stream = document.getElementById('chatStream');
+      setTimeout(() => {
+        stream.scrollTop = stream.scrollHeight;
+      }, 50);
+    }
+
+    function addMessage(sender, text) {
+      const welcomeHero = document.getElementById('welcomeHero');
+      if (welcomeHero) welcomeHero.style.display = 'none';
+
+      const chatStream = document.getElementById('chatStream');
+
+      if (sender === 'user') {
+        const row = document.createElement('div');
+        row.className = 'msg-group user';
+        row.innerHTML = `<div class="bubble user">${text.replace(/\\n/g, '<br/>')}</div>`;
+        chatStream.appendChild(row);
+      } else {
+        const row = document.createElement('div');
+        row.className = 'ai-row';
+        row.innerHTML = `<div class="bubble ai">${formatMarkdown(text)}</div>`;
+        chatStream.appendChild(row);
+      }
+      scrollToBottom();
+      saveMessageToSupabase(sender, text);
+    }
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
+        .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
+        .replace(/\\n/g, '<br/>');
+    }
+
+    // Save Message to Supabase Backend
+    async function saveMessageToSupabase(sender, content) {
+      if (!supabase) return;
+      try {
+        if (!currentConversationId && sender === 'user') {
+          const { data: convData } = await supabase.from('conversations').insert([{ title: content.substring(0, 30) }]).select();
+          if (convData && convData.length > 0) {
+            currentConversationId = convData[0].id;
+            loadPastConversations();
+          }
