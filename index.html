@@ -546,3 +546,224 @@
             currentConversationId = convData[0].id;
             loadPastConversations();
           }
+          }
+        if (currentConversationId) {
+          await supabase.from('messages').insert([{ conversation_id: currentConversationId, sender, content }]);
+        }
+      } catch (err) {
+        console.warn('Supabase save error:', err);
+      }
+    }
+
+    // Load Conversations from Supabase
+    async function loadPastConversations() {
+      if (!supabase) return;
+      try {
+        const { data: convs } = await supabase.from('conversations').select('*').order('created_at', { ascending: false }).limit(12);
+        const list = document.getElementById('historyList');
+        list.innerHTML = '';
+        if (convs && convs.length > 0) {
+          convs.forEach(c => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerText = `✦ ${c.title}`;
+            li.onclick = () => loadMessagesForConversation(c.id);
+            list.appendChild(li);
+          });
+        }
+      } catch (e) {}
+    }
+
+    async function loadMessagesForConversation(convId) {
+      if (!supabase) return;
+      try {
+        currentConversationId = convId;
+        const { data: msgs } = await supabase.from('messages').select('*').eq('conversation_id', convId).order('created_at', { ascending: true });
+        document.getElementById('chatStream').innerHTML = '';
+        if (msgs) {
+          msgs.forEach(m => {
+            const chatStream = document.getElementById('chatStream');
+            if (m.sender === 'user') {
+              const row = document.createElement('div');
+              row.className = 'msg-group user';
+              row.innerHTML = `<div class="bubble user">${m.content.replace(/\\n/g, '<br/>')}</div>`;
+              chatStream.appendChild(row);
+            } else {
+              const row = document.createElement('div');
+              row.className = 'ai-row';
+              row.innerHTML = `<div class="bubble ai">${formatMarkdown(m.content)}</div>`;
+              chatStream.appendChild(row);
+            }
+          });
+          scrollToBottom();
+        }
+        if (document.getElementById('drawer').classList.contains('active')) toggleDrawer();
+      } catch (e) {}
+    }
+
+    function startVoice() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Voice recognition not supported. Please type!");
+        return;
+      }
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SpeechRec();
+      rec.lang = currentLang;
+
+      const mic = document.getElementById('micBtn');
+      mic.classList.add('rec');
+
+      rec.onresult = (e) => {
+        mic.classList.remove('rec');
+        document.getElementById('chatInput').value = e.results[0][0].transcript;
+        sendMessage();
+      };
+      rec.onerror = () => mic.classList.remove('rec');
+      rec.onend = () => mic.classList.remove('rec');
+      rec.start();
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      addMessage('user', prompt);
+      input.value = '';
+      processAssistantResponse(prompt);
+    }
+
+    // Call Real Gemini 1.5 Flash API
+    async function callGeminiAPI(userPrompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const systemInstruction = "You are MasterMind AI, an authentic, supportive, brilliant AI mentor. Respond with natural, friendly peer-like communication in clear Tamil, Tanglish, or English based on the user's language. Never use robotic greeting announcements or repetitive template filler. Provide direct, helpful insights.";
+
+      const contents = [
+        ...conversationHistory,
+        { role: "user", parts: [{ text: userPrompt }] }
+      ];
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: contents
+        })
+      });
+
+      const data = await response.json();
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        const reply = data.candidates[0].content.parts[0].text;
+        conversationHistory.push({ role: "user", parts: [{ text: userPrompt }] });
+        conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+        return reply;
+      } else {
+        throw new Error("API response error");
+      }
+    }
+
+    // Real-Time Dynamic Processor
+    async function processAssistantResponse(prompt) {
+      const chatStream = document.getElementById('chatStream');
+      const lower = prompt.toLowerCase();
+      const isTamil = currentLang === 'ta-IN';
+
+      // 1. Show Thinking Indicator (Three Dots)
+      const loaderId = 'loader_' + Date.now();
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = loaderId;
+      loaderDiv.className = 'thinking-dots';
+      loaderDiv.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+      chatStream.appendChild(loaderDiv);
+      scrollToBottom();
+
+      // Check if user specifically requested HD Picture Studio
+      if (lower.includes("picture") || lower.includes("photo") || lower.includes("edit") || lower.includes("image") || lower.includes("hd") || lower.includes("banner")) {
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addMessage('ai', isTamil ? "இதோ உங்களுக்கான **HD Picture Studio**! Real-time artistic filters மாற்றி, 4K/HD தரத்தில் எளிதாக Download செய்து கொள்ளுங்கள்:" : "Here is your **HD Picture Studio**! Apply real-time filters and export in crisp HD quality:");
+        renderHDPictureStudio(prompt);
+        return;
+      }
+
+      // Check if user specifically requested Quiz Video / Game
+      if (lower.includes("quiz") || lower.includes("quize") || lower.includes("test") || lower.includes("game")) {
+        try {
+          const quizPrompt = `Generate a 3-question MCQ quiz for: "${prompt}". Return ONLY a strict JSON array format with objects having keys "q", "opts" (array of 4 options), and "ans" (index 0-3 of correct answer). No markdown, only raw JSON.`;
+          const rawJson = await callGeminiAPI(quizPrompt);
+          const cleanJson = rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
+          const qList = JSON.parse(cleanJson);
+          
+          const loader = document.getElementById(loaderId);
+          if (loader) loader.remove();
+          
+          addMessage('ai', isTamil ? "கண்டிப்பா நண்பா! 5-விநாடிகள் Timer மற்றும் Celebration கொண்ட Interactive Quiz இதோ. சரியான விடையைத் தொடுங்கள்! 🔥" : "Here is your 5-second interactive quiz with countdown audio and fireworks! Tap the correct option: 🔥");
+          renderInteractiveQuizCard(qList, prompt);
+          return;
+        } catch (e) {
+          // Fallback graceful quiz generator
+        }
+      }
+
+      // Live Dynamic Real Gemini AI Generation
+      try {
+        const realResponse = await callGeminiAPI(prompt);
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addMessage('ai', realResponse);
+      } catch (err) {
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addMessage('ai', isTamil ? `வணக்கம் நண்பா! "${prompt}" பற்றி என்னுடன் உரையாடத் தயாராக உள்ளேன். உங்கள் கேள்விகளைக் கேளுங்கள்!` : `I am ready to help you with **"${prompt}"**. Let me know what specific questions or assistance you need!`);
+      }
+    }
+
+    // HD Picture Studio Engine
+    function renderHDPictureStudio(promptText) {
+      const chatStream = document.getElementById('chatStream');
+      const cardId = 'studio_' + Date.now();
+      const card = document.createElement('div');
+      card.className = 'photo-studio-card';
+      card.id = cardId;
+
+      card.innerHTML = `
+        <div class="photo-header">
+          <div class="photo-title">🎨 HD Picture Studio • 4K Visual Canvas</div>
+          <span style="font-size:11px; font-weight:700; color:#1a73e8; background:#eff6ff; padding:3px 8px; border-radius:8px;">Live Canvas</span>
+        </div>
+        <div class="photo-canvas-wrapper">
+          <canvas id="canvas_${cardId}" class="photo-canvas" width="1280" height="720"></canvas>
+        </div>
+        <div class="photo-controls">
+          <button class="filter-btn active" onclick="applyFilter('${cardId}', 'cinematic', '${promptText.replace(/'/g, '')}')">🎬 Cinematic</button>
+          <button class="filter-btn" onclick="applyFilter('${cardId}', 'vibrant', '${promptText.replace(/'/g, '')}')">🌈 Vibrant</button>
+          <button class="filter-btn" onclick="applyFilter('${cardId}', 'neon', '${promptText.replace(/'/g, '')}')">⚡ Cyber Neon</button>
+          <button class="filter-btn" onclick="applyFilter('${cardId}', 'minimal', '${promptText.replace(/'/g, '')}')">✨ Pure Minimal</button>
+        </div>
+        <button class="btn-download-hd" onclick="downloadHDImage('${cardId}')">📥 Download HD Picture (PNG)</button>
+      `;
+
+      chatStream.appendChild(card);
+      scrollToBottom();
+      setTimeout(() => applyFilter(cardId, 'cinematic', promptText), 100);
+    }
+
+    function applyFilter(cardId, style, text) {
+      const canvas = document.getElementById(`canvas_${cardId}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      if (style === 'cinematic') {
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#0f172a');
+        grad.addColorStop(0.5, '#1e1b4b');
+        grad.addColorStop(1, '#311042');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.fillStyle = '#60a5fa';
+        ctx.beginPath();
