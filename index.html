@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MasterMind AI - Universal Intelligence</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; width: 100%; background-color: #ffffff; color: #1f1f1f; overflow: hidden; }
+
+    .app-root { display: flex; flex-direction: column; height: 100vh; height: 100dvh; width: 100%; background: #ffffff; position: relative; }
+
+    /* Top Gemini Bar */
+    .top-bar { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #f0f4f9; flex-shrink: 0; background: #ffffff; z-index: 30; }
+    .header-left, .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn { background: none; border: none; font-size: 20px; color: #444746; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .icon-btn:active { background: #f0f4f9; }
+    .brand-title { font-size: 19px; font-weight: 700; display: flex; align-items: center; gap: 6px; background: linear-gradient(90deg, #1a73e8, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+
+    /* Explore Hub Modal Grid */
+    .hub-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; display: none; }
+    .hub-overlay.active { display: block; }
+    .hub-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 92%; max-width: 560px; max-height: 85vh; background: #ffffff; border-radius: 28px; z-index: 60; box-shadow: 0 20px 60px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; transition: transform 0.2s ease; }
+    .hub-modal.active { display: flex; transform: translate(-50%, -50%) scale(1); }
+    .hub-head { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f4f9; font-weight: 700; color: #1a73e8; font-size: 17px; }
+    
+    .hub-scroll { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .hub-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 18px; padding: 14px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s; }
+    .hub-card:active { background: #eff6ff; border-color: #93c5fd; transform: scale(0.98); }
+    .hub-icon { font-size: 24px; }
+    .hub-name { font-size: 13.5px; font-weight: 700; color: #1e293b; }
+    .hub-desc { font-size: 11.5px; color: #64748b; line-height: 1.4; }
+
+    /* Left Drawer */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 40; display: none; }
+    .drawer-overlay.active { display: block; }
+    .drawer { position: fixed; top: 0; left: -310px; width: 300px; height: 100%; background: #f8fafc; border-right: 1px solid #e2e8f0; z-index: 45; transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1); display: flex; flex-direction: column; }
+    .drawer.active { transform: translateX(310px); }
+    .drawer-head { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #1a73e8; font-size: 16px; border-bottom: 1px solid #e2e8f0; }
+    .btn-new-chat { margin: 12px 16px 8px; padding: 12px; background: #1a73e8; color: #fff; border: none; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 6px rgba(26,115,232,0.3); }
+    
+    .drawer-content { flex: 1; overflow-y: auto; padding: 0 10px 16px; }
+    .drawer-section-title { font-size: 11px; font-weight: 700; color: #64748b; padding: 14px 12px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .drawer-item { padding: 10px 12px; border-radius: 12px; font-size: 13.5px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+    .drawer-item:hover, .drawer-item:active { background: #e2e8f0; color: #1a73e8; font-weight: 600; }
+    .drawer-select { width: calc(100% - 16px); margin: 4px 8px 10px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; background: #ffffff; color: #1f1f1f; outline: none; }
+    .history-list { list-style: none; padding: 0; }
+    .history-item { padding: 10px 12px; font-size: 13px; color: #444746; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 12px; margin-bottom: 2px; }
+    .history-item:active { background: #e2e8f0; }
+
+    /* Main Chat Stream */
+    .chat-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 16px; max-width: 760px; margin: 0 auto; width: 100%; -webkit-overflow-scrolling: touch; }
+    
+    .welcome-card { padding: 24px 8px 12px; text-align: left; }
+    .welcome-greet { font-size: 28px; font-weight: 700; background: linear-gradient(90deg, #1a73e8, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+    .welcome-sub { font-size: 22px; font-weight: 500; color: #94a3b8; }
+    
+    .quick-chips { display: flex; gap: 8px; overflow-x: auto; padding: 16px 0 6px; scrollbar-width: none; }
+    .quick-chips::-webkit-scrollbar { display: none; }
+    .chip { flex-shrink: 0; background: #f0f4f9; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 20px; font-size: 12.5px; color: #1f1f1f; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .chip:active { background: #dde3ea; transform: scale(0.97); }
+    
+    /* Message Bubbles */
+    .msg-group { display: flex; gap: 10px; width: 100%; }
+    .msg-group.user { justify-content: flex-end; }
+    .bubble { max-width: 86%; padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
+    .bubble.user { background: #e9eef6; color: #1f1f1f; border-bottom-right-radius: 4px; }
+    .bubble.ai { background: transparent; color: #1f1f1f; padding: 4px 0; width: 100%; max-width: 100%; }
+
+    .ai-row { display: flex; gap: 12px; width: 100%; align-items: flex-start; }
+    .ai-sparkle { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #1a73e8, #9333ea); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+
+    /* Video Output Card */
+    .video-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 16px; margin-top: 12px; text-align: center; width: 100%; max-width: 360px; }
+    .video-status { font-size: 13px; color: #d97706; font-weight: bold; margin-bottom: 8px; }
+    canvas { width: 100%; max-width: 270px; aspect-ratio: 9/16; background: #000; border-radius: 16px; border: 2px solid #1a73e8; display: block; margin: 10px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .btn-download-video { width: 100%; max-width: 270px; margin: 10px auto 0; padding: 14px; background: #059669; color: white; border: none; border-radius: 24px; font-weight: bold; font-size: 14px; cursor: pointer; display: none; }
+
+    /* Doc Preview Box */
+    .doc-preview-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 16px; margin-top: 12px; text-align: left; width: 100%; }
+    .doc-preview-text { font-size: 13px; line-height: 1.6; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 250px; overflow-y: auto; }
+    .btn-download-doc { padding: 10px 16px; background: #1a73e8; color: white; border: none; border-radius: 18px; font-size: 12.5px; font-weight: bold; cursor: pointer; margin-top: 10px; display: inline-block; }
+
+    /* Floating Input Capsule */
+    .input-wrapper { padding: 8px 16px 16px; background: #ffffff; flex-shrink: 0; max-width: 760px; margin: 0 auto; width: 100%; }
+    .input-capsule { display: flex; align-items: center; background: #f0f4f9; border-radius: 28px; padding: 6px 8px 6px 16px; gap: 8px; border: 1px solid transparent; }
+    .input-capsule:focus-within { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    .text-input { flex: 1; border: none; background: transparent; font-size: 15px; outline: none; color: #1f1f1f; padding: 8px 0; }
+    .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .btn-mic { background: transparent; color: #444746; }
+    .btn-mic.rec { background: #fce8e6; color: #d93025; animation: pulse 1s infinite; }
+    .btn-send { background: #1a73e8; color: #ffffff; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <div class="app-root">
+
+    <!-- Top Navigation Bar -->
+    <div class="top-bar">
+      <div class="header-left">
+        <button class="icon-btn" onclick="toggleDrawer()" title="Menu">☰</button>
+        <div class="brand-title" onclick="startNewChat()">✦ MasterMind AI</div>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" onclick="toggleHub()" title="Explore Hub" style="font-size: 22px;">🗂️</button>
+        <button class="icon-btn" id="newChatBtn" onclick="startNewChat()" title="Start New Chat" style="font-weight: 700; font-size: 22px;">＋</button>
+      </div>
+    </div>
+
+    <!-- Explore All-World Hub Modal -->
+    <div class="hub-overlay" id="hubOverlay" onclick="toggleHub()"></div>
+    <div class="hub-modal" id="hubModal">
+      <div class="hub-head">
+        <div>✦ MasterMind Multiverse</div>
+        <button class="icon-btn" onclick="toggleHub()">✕</button>
+      </div>
+      <div class="hub-scroll">
+        <div class="hub-card" onclick="selectHubDomain('⚡ Rapid Quiz & Test Engine')">
+          <div class="hub-icon">🎯</div>
+          <div class="hub-name">Rapid Quiz Arena</div>
+          <div class="hub-desc">Instant MCQs with countdown timer</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('🎬 9:16 Shorts Video & Cartoon Studio')">
+          <div class="hub-icon">🎬</div>
+          <div class="hub-name">Reel Video Studio</div>
+          <div class="hub-desc">9:16 Quiz Reels & Stories</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('📄 Instant PDF Notes & Exam Material')">
+          <div class="hub-icon">📄</div>
+          <div class="hub-name">PDF & Notes Studio</div>
+          <div class="hub-desc">High-yield study notes & Q&A</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('🌍 Daily GK & Current Affairs Radar')">
+          <div class="hub-icon">🌍</div>
+          <div class="hub-name">Current Affairs & GK</div>
+          <div class="hub-desc">National, State & World Affairs</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('🎙️ Voice Cloning & Speech Synthesis')">
+          <div class="hub-icon">🎙️</div>
+          <div class="hub-name">Voice Audio Studio</div>
+          <div class="hub-desc">Natural Teacher Voice Synthesis</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('💻 IT, FullStack, Python & AI Placement')">
+          <div class="hub-icon">💻</div>
+          <div class="hub-name">Code & Tech Lab</div>
+          <div class="hub-desc">Python, Web Dev & Placement</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <div class="drawer" id="drawer">
+      <div class="drawer-head">
+        <div>✦ MasterMind AI</div>
+        <button class="icon-btn" onclick="toggleDrawer()">✕</button>
+      </div>
+
+      <button class="btn-new-chat" onclick="startNewChat()">＋ New Conversation</button>
+
+      <div class="drawer-content">
+        <div class="drawer-section-title">✦ Specialist Gems</div>
+        <div class="drawer-item" onclick="selectGem('Exam Researcher & Question Architect')">💎 Deep Exam Researcher</div>
+        <div class="drawer-item" onclick="selectGem('Code & Python FullStack Mentor')">💻 Code & Tech Mentor</div>
+        <div class="drawer-item" onclick="selectGem('Video Animator & Cartoon Reel Creator')">🎬 Video Storyteller</div>
+
+        <div class="drawer-section-title">⚙️ Language / மொழி</div>
+        <select class="drawer-select" id="appLang" onchange="onLanguageChange()">
+          <option value="ta-IN">தமிழ் (Tamil)</option>
+          <option value="en-IN">English (India)</option>
+          <option value="hi-IN">हिन्दी (Hindi)</option>
+          <option value="te-IN">తెలుగు (Telugu)</option>
+        </select>
+
+        <div class="drawer-section-title">🕒 Recent Chats</div>
+        <ul class="history-list" id="historyList"></ul>
+      </div>
+    </div>
+
+    <!-- Direct Chat Stream View -->
+    <div class="chat-scroll" id="chatStream">
+      <div class="welcome-card" id="welcomeCard">
+        <div class="welcome-greet">Hello, Learner</div>
+        <div class="welcome-sub">How can I help you today?</div>
+        
+        <div class="quick-chips">
+          <div class="chip" onclick="quickPrompt('Daily current affairs latest GK 5 questions video ready pannu')">🌍 GK & Affairs Reel</div>
+          <div class="chip" onclick="quickPrompt('Universal language and grammar 5 questions quiz video ready pannu')">🔤 Language Quiz Reel</div>
+          <div class="chip" onclick="quickPrompt('Science concepts and laws 5 questions video ready pannu')">🧪 Science Matrix Reel</div>
+          <div class="chip" onclick="quickPrompt('History timeline and constitution complete study notes PDF ready pannu')">📄 Chrono Notes PDF</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Input Capsule -->
+    <div class="input-wrapper">
+      <div class="input-capsule">
+        <input type="text" class="text-input" id="chatInput" placeholder="Ask MasterMind AI anything..." onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button class="btn-circle btn-mic" id="micBtn" onclick="startVoice()">🎤</button>
+        <button class="btn-circle btn-send" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentLang = 'ta-IN';
+    let chatHistory = JSON.parse(localStorage.getItem('mm_history') || '[]');
+    let currentSessionMessages = [];
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTickSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } catch (e) {}
+    }
+
+    function playSuccessSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {}
+    }
+
+    function toggleDrawer() {
+      document.getElementById('drawer').classList.toggle('active');
+      document.getElementById('drawerOverlay').classList.toggle('active');
+    }
+
+    function toggleHub() {
+      document.getElementById('hubModal').classList.toggle('active');
+      document.getElementById('hubOverlay').classList.toggle('active');
+    }
+
+    function selectHubDomain(domainName) {
+      if (document.getElementById('hubModal').classList.contains('active')) toggleHub();
+      addMessage('user', `Open Module: ${domainName}`);
+      setTimeout(() => {
+        addMessage('ai', `வணக்கம்! **${domainName}** தொகுதி வெற்றிகரமாகத் திறக்கப்பட்டது.\n\nஇந்தத் துறையில் உங்களுக்கு என்ன வினாடி-வினா (Quiz Reel Video), பாடக் குறிப்புகள் (PDF Notes) அல்லது விளக்கம் வேண்டும் என்று கேளுங்கள்!`);
+      }, 300);
+    }
+
+    function selectGem(gemName) {
+      toggleDrawer();
+      addMessage('user', `Activate: ${gemName}`);
+      setTimeout(() => {
+        addMessage('ai', `✦ **${gemName}** Persona இயக்கப்பட்டது. உங்கள் கோரிக்கைகளை கேளுங்கள்!`);
+      }, 300);
+    }
+
+    function startNewChat() {
+      currentSessionMessages = [];
+      const stream = document.getElementById('chatStream');
+      stream.innerHTML = `
+        <div class="welcome-card" id="welcomeCard">
+          <div class="welcome-greet">Hello, Learner</div>
+          <div class="welcome-sub">How can I help you today?</div>
+          <div class="quick-chips">
+            <div class="chip" onclick="quickPrompt('Daily current affairs latest GK 5 questions video ready pannu')">🌍 GK & Affairs Reel</div>
+            <div class="chip" onclick="quickPrompt('Universal language and grammar 5 questions quiz video ready pannu')">🔤 Language Quiz Reel</div>
+            <div class="chip" onclick="quickPrompt('Science concepts and laws 5 questions video ready pannu')">🧪 Science Matrix Reel</div>
+            <div class="chip" onclick="quickPrompt('History timeline and constitution complete study notes PDF ready pannu')">📄 Chrono Notes PDF</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('chatInput').value = '';
+      if (document.getElementById('drawer').classList.contains('active')) toggleDrawer();
+      if (document.getElementById('hubModal').classList.contains('active')) toggleHub();
+    }
+
+    function quickPrompt(text) {
+      document.getElementById('chatInput').value = text;
+      sendMessage();
+    }
+
+    function addMessage(sender, text) {
+      const welcomeCard = document.getElementById('welcomeCard');
+      if (welcomeCard) welcomeCard.style.display = 'none';
+
+      const chatStream = document.getElementById('chatStream');
+
+      if (sender === 'user') {
+        const row = document.createElement('div');
+        row.className = 'msg-group user';
+        row.innerHTML = `<div class="bubble user">${text.replace(/\n/g, '<br/>')}</div>`;
+        chatStream.appendChild(row);
+      } else {
+        const row = document.createElement('div');
+        row.className = 'ai-row';
+        row.innerHTML = `
+          <div class="ai-sparkle">✦</div>
+          <div class="bubble ai">${text.replace(/\n/g, '<br/>')}</div>
+        `;
+        chatStream.appendChild(row);
+      }
+      chatStream.scrollTop = chatStream.scrollHeight;
+
+      currentSessionMessages.push({ sender, text });
+      saveSessionToHistory();
+    }
+
+    function saveSessionToHistory() {
+      if (currentSessionMessages.length > 1) {
+        const firstUser = currentSessionMessages.find(m => m.sender === 'user');
+        if (firstUser) {
+          const title = firstUser.text.substring(0, 26);
+          if (!chatHistory.find(h => h.title === title)) {
+            chatHistory.unshift({ title, messages: currentSessionMessages });
+            if (chatHistory.length > 15) chatHistory.pop();
+            localStorage.setItem('mm_history', JSON.stringify(chatHistory));
+            renderHistoryList();
+          }
+        }
+      }
+    }
