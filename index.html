@@ -339,3 +339,321 @@
         }
       }
     }
+
+    function renderHistoryList() {
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      chatHistory.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        li.innerText = `✦ ${item.title}`;
+        li.onclick = () => {
+          document.getElementById('chatStream').innerHTML = '';
+          item.messages.forEach(m => addMessage(m.sender, m.text));
+          if (document.getElementById('drawer').classList.contains('active')) toggleDrawer();
+        };
+        list.appendChild(li);
+      });
+    }
+
+    function startVoice() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Voice recognition not supported. Please type!");
+        return;
+      }
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SpeechRec();
+      rec.lang = currentLang;
+
+      const mic = document.getElementById('micBtn');
+      mic.classList.add('rec');
+
+      rec.onresult = (e) => {
+        mic.classList.remove('rec');
+        document.getElementById('chatInput').value = e.results[0][0].transcript;
+        sendMessage();
+      };
+      rec.onerror = () => mic.classList.remove('rec');
+      rec.onend = () => mic.classList.remove('rec');
+      rec.start();
+    }
+
+    function onLanguageChange() {
+      currentLang = document.getElementById('appLang').value;
+    }
+
+    // Knowledge Bank
+    const masterKnowledgeBank = {
+      currentAffairs: [
+        { tag: "CURRENT AFFAIRS & GK", q: "1. தேசிய விண்வெளி தினம் (National Space Day) இந்தியாவில் எந்த நாளில் கொண்டாடப்படுகிறது?", opts: ["A) ஆகஸ்ட் 15", "B) ஆகஸ்ட் 23", "C) செப்டம்பர் 5", "D) அக்டோபர் 2"], ans: 1 },
+        { tag: "CURRENT AFFAIRS & GK", q: "2. தமிழ்நாட்டில் மகளிருக்கு அரசுப் பேருந்துகளில் கட்டணமில்லா பயண திட்டத்தின் பெயர் என்ன?", opts: ["A) விடியல் பயணம்", "B) புதுமைப் பெண்", "C) தமிழ்ப் புதல்வன்", "D) கலைஞர் மகளிர் உரிமைத் திட்டம்"], ans: 0 },
+        { tag: "CURRENT AFFAIRS & GK", q: "3. இந்தியாவின் முதல் விண்வெளி ஆய்வு நிலையம் (BAS) எந்த ஆண்டுக்குள் அமைக்க திட்டமிடப்பட்டுள்ளது?", opts: ["A) 2028", "B) 2030", "C) 2035", "D) 2040"], ans: 2 },
+        { tag: "CURRENT AFFAIRS & GK", q: "4. நிதி ஆயோக்கின் (NITI Aayog) தற்போதைய தலைவர் யார்?", opts: ["A) குடியரசுத் தலைவர்", "B) பிரதமர்", "C) நிதி அமைச்சர்", "D) தலைமை நீதிபதி"], ans: 1 },
+        { tag: "CURRENT AFFAIRS & GK", q: "5. உலகளாவிய காற்று ஆற்றல் உற்பத்தியில் (Wind Energy) இந்தியா எத்தனையாவது இடத்தில் உள்ளது?", opts: ["A) 2-ஆம் இடம்", "B) 4-ஆம் இடம்", "C) 5-ஆம் இடம்", "D) 7-ஆம் இடம்"], ans: 1 }
+      ],
+      language: [
+        { tag: "LINGUA & LITERATURE", q: "1. 'தமிழுக்கும் அமுதென்று பேர்' என்ற பாடலை இயற்றியவர் யார்?", opts: ["A) பாரதியார்", "B) பாரதிதாசன்", "C) நாமக்கல் கவிஞர்", "D) பெருஞ்சித்திரனார்"], ans: 1 },
+        { tag: "LINGUA & LITERATURE", q: "2. சொல்லின் செல்வர் என்று தமிழ் இலக்கியத்தில் அழைக்கப்படுபவர் யார்?", opts: ["A) ரா.பி. சேதுப்பிள்ளை", "B) திரு.வி.க", "C) உ.வே.சா", "D) மறைமலையடிகள்"], ans: 0 },
+        { tag: "LINGUA & LITERATURE", q: "3. 'ஆழிப்பெருக்கு' என்ற சொல்லின் சரியான பொருள் என்ன?", opts: ["A) நிலப்பகுதி", "B) கால வெள்ளம்", "C) கடல் கோள் / சுனாமி", "D) உலக மக்கள்"], ans: 2 },
+        { tag: "LINGUA & LITERATURE", q: "4. எழுத்துக்களின் பிறப்பு எத்தனை வகைகளாகப் பிரிக்கப்படுகிறது?", opts: ["A) இரண்டு வகை", "B) மூன்று வகை", "C) நான்கு வகை", "D) ஐந்து வகை"], ans: 0 },
+        { tag: "LINGUA & LITERATURE", q: "5. திருக்குறளில் உள்ள மொத்த அதிகாரங்கள் எத்தனை?", opts: ["A) 130", "B) 133", "C) 150", "D) 120"], ans: 1 }
+      ],
+      science: [
+        { tag: "QUANTUM & SCIENCE MATRIX", q: "1. அறை வெப்பநிலையில் திரவ நிலையில் காணப்படும் ஒரே உலோகம் எது?", opts: ["A) பாதரசம் (Mercury)", "B) புரோமின் (Bromine)", "C) சோடியம் (Sodium)", "D) தங்கம் (Gold)"], ans: 0 },
+        { tag: "QUANTUM & SCIENCE MATRIX", q: "2. அறை வெப்பநிலையில் திரவ நிலையில் உள்ள ஒரே அலோகம் எது?", opts: ["A) அயோடின்", "B) புரோமின்", "C) கார்பன்", "D) குளோரின்"], ans: 1 },
+        { tag: "QUANTUM & SCIENCE MATRIX", q: "3. மின்சாரத்தை மிகச் சிறப்பாகக் கடத்தும் ஒரே அலோகம் எது?", opts: ["A) வைரம்", "B) சல்பர்", "C) கிராஃபைட்", "D) பாஸ்பரஸ்"], ans: 2 },
+        { tag: "QUANTUM & SCIENCE MATRIX", q: "4. இயற்கையில் கிடைக்கும் மிகக் கடினமான பொருள் எது?", opts: ["A) இரும்பு", "B) பிளாட்டினம்", "C) வைரம் (Diamond)", "D) டங்ஸ்டன்"], ans: 2 },
+        { tag: "QUANTUM & SCIENCE MATRIX", q: "5. ஒளியின் திசைவேகம் வெற்றிடத்தில் நொடிக்கு எவ்வளவு?", opts: ["A) 3 x 10^8 m/s", "B) 3 x 10^6 m/s", "C) 3 x 10^5 km/s", "D) A மற்றும் C இரண்டும் சரி"], ans: 3 }
+      ]
+    };
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      addMessage('user', prompt);
+      input.value = '';
+
+      const lower = prompt.toLowerCase();
+
+      // Chit-Chat & Greetings
+      const pureGreetings = ["hi", "hii", "hiii", "hello", "hey", "vanakkam", "வணக்கம்", "sorry", "epdi irukka", "how are you", "who are you"];
+      if (pureGreetings.some(g => lower === g || lower === g + "!" || lower === g + ".")) {
+        let reply = "வணக்கம்! நான் உங்கள் MasterMind AI. பொது அறிவு (GK), அறிவியல் மற்றும் மொழிப் பாடங்கள், வீடியோ ரீல்கள் (9:16 Shorts) அல்லது PDF நோட்ஸ் உருவாக்க என்ன வேண்டும் என்று கேளுங்கள்!";
+        if (lower.includes("sorry")) reply = "பரவாயில்லை நண்பா! நான் உங்களுக்கு உதவ எப்போதும் தயாராக உள்ளேன்.";
+        setTimeout(() => addMessage('ai', reply), 300);
+        return;
+      }
+
+      // Direct Video Reel Generation
+      const isVideoRequest = lower.includes("video") || lower.includes("vedio") || lower.includes("reel") || lower.includes("shorts") || lower.includes("cartoon");
+      if (isVideoRequest) {
+        let bank = masterKnowledgeBank.currentAffairs;
+        let title = "CURRENT AFFAIRS & GK";
+
+        if (lower.includes("science") || lower.includes("matter") || lower.includes("அறிவியல்") || lower.includes("quantum")) {
+          bank = masterKnowledgeBank.science;
+          title = "SCIENCE MATRIX REEL";
+        } else if (lower.includes("language") || lower.includes("tamil") || lower.includes("தமிழ்") || lower.includes("grammar") || lower.includes("lingua")) {
+          bank = masterKnowledgeBank.language;
+          title = "LINGUA & LITERATURE";
+        }
+
+        const reply = `🎬 நிச்சயமாக! நீங்கள் கேட்ட **${title}**-க்கான **5 கேள்விகள் கொண்ட Full HD YouTube Shorts வீடியோ (5s Countdown Timer & Sound உடன்)** நேரடியாக இதோ உருவாக்கப்படுகிறது:`;
+        setTimeout(() => {
+          addMessage('ai', reply);
+          renderDirectVideoReel(bank, title);
+        }, 400);
+        return;
+      }
+
+      // Document / Notes PDF Request
+      if (lower.includes("pdf") || lower.includes("notes") || lower.includes("doc") || lower.includes("material")) {
+        const reply = `📄 நீங்கள் கேட்ட **${prompt}** பாடக் குறிப்புகள் மற்றும் முழுமையான தேர்வு மாதிரி நோட்ஸ் இதோ தயாராக உள்ளது:`;
+        setTimeout(() => {
+          addMessage('ai', reply);
+          renderDocPreview(prompt);
+        }, 400);
+        return;
+      }
+
+      // Default Explainer
+      setTimeout(() => {
+        const reply = `ஆசிரியர் விளக்கம்:\n"${prompt}" என்பது மிகவும் முக்கியமான தலைப்பு.\n\n• **முக்கிய வழிகாட்டுதல்:** இத்தலைப்பிற்கான அடிப்படைக் கோட்பாடுகள் மற்றும் தேர்வுக் குறிப்புகள் முழுமையாக பகுப்பாய்வு செய்யப்பட்டுள்ளன.\n• இந்த தலைப்பில் உங்களுக்கு **9:16 Shorts Video** அல்லது **PDF Notes** வேண்டுமானால் சொல்லுங்கள், உடனடியாக உருவாக்கித் தருகிறேன்!`;
+        addMessage('ai', reply);
+      }, 400);
+    }
+
+    // Direct Video Reel Engine
+    function renderDirectVideoReel(questions, titleText) {
+      const chatStream = document.getElementById('chatStream');
+
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      const videoId = 'canvas_' + Date.now();
+      const dlBtnId = 'dl_' + Date.now();
+      const statusId = 'status_' + Date.now();
+
+      card.innerHTML = `
+        <div class="video-status" id="${statusId}">🔴 Rendering 5-Question Video Reel (40s)...</div>
+        <canvas id="${videoId}" width="720" height="1280"></canvas>
+        <button class="btn-download-video" id="${dlBtnId}">📥 Download YouTube Shorts Video (MP4)</button>
+      `;
+
+      chatStream.appendChild(card);
+      chatStream.scrollTop = chatStream.scrollHeight;
+
+      const canvas = document.getElementById(videoId);
+      const ctx = canvas.getContext('2d');
+      const dlBtn = document.getElementById(dlBtnId);
+      const statusText = document.getElementById(statusId);
+
+      let recordedBlobs = [];
+      const stream = canvas.captureStream(60);
+      let selectedMime = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(type => MediaRecorder.isTypeSupported(type)) || 'video/webm';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMime });
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedBlobs.push(e.data); };
+      
+      let finalVideoUrl = null;
+      mediaRecorder.onstop = () => {
+        const superBlob = new Blob(recordedBlobs, { type: selectedMime });
+        finalVideoUrl = URL.createObjectURL(superBlob);
+        statusText.innerText = "✅ Video Ready! Download for YouTube Shorts:";
+        statusText.style.color = "#059669";
+        dlBtn.style.display = "block";
+        dlBtn.onclick = () => {
+          const a = document.createElement("a");
+          a.href = finalVideoUrl;
+          a.download = `${titleText.replace(/[^a-zA-Z0-9]/g, '_')}_Reel.mp4`;
+          a.click();
+        };
+      };
+
+      mediaRecorder.start();
+
+      const qDuration = 8000;
+      const totalDuration = qDuration * questions.length;
+      const startTime = Date.now();
+      let lastBeepSec = -1;
+
+      function draw() {
+        const elapsed = Date.now() - startTime;
+        const currentQIndex = Math.min(Math.floor(elapsed / qDuration), questions.length - 1);
+        const qElapsed = elapsed % qDuration;
+        const currentQ = questions[currentQIndex];
+
+        const timerSeconds = Math.max(0, Math.ceil(5 - (qElapsed / 1000)));
+        const showAnswer = qElapsed > 5000;
+
+        if (timerSeconds > 0 && timerSeconds !== lastBeepSec && qElapsed < 5000) {
+          playTickSound();
+          lastBeepSec = timerSeconds;
+        }
+        if (showAnswer && lastBeepSec !== 0) {
+          playSuccessSound();
+          lastBeepSec = 0;
+        }
+
+        ctx.fillStyle = "#020617";
+        ctx.fillRect(0, 0, 720, 1280);
+
+        ctx.fillStyle = "#2563eb";
+        ctx.beginPath();
+        ctx.roundRect(100, 70, 520, 56, 28);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 21px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`${titleText} • Q ${currentQIndex + 1}/${questions.length}`, 360, 106);
+
+        ctx.strokeStyle = showAnswer ? "#10b981" : "#fbbf24";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(360, 200, 48, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 32px sans-serif";
+        ctx.fillText(showAnswer ? "✓" : timerSeconds + "s", 360, 212);
+
+        ctx.fillStyle = "#0f172a";
+        ctx.strokeStyle = "#1e3a8a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(40, 280, 640, 280, 20);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#60a5fa";
+        ctx.font = "bold 18px sans-serif";
+        ctx.fillText("• " + currentQ.tag + " •", 360, 325);
+
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 26px sans-serif";
+        wrapText(ctx, currentQ.q, 360, 380, 580, 38);
+
+        const optY = [590, 705, 820, 935];
+        currentQ.opts.forEach((opt, idx) => {
+          const isCorrect = idx === currentQ.ans;
+          const highlight = showAnswer && isCorrect;
+
+          ctx.fillStyle = highlight ? "#064e3b" : "#0f172a";
+          ctx.strokeStyle = highlight ? "#10b981" : "#334155";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.roundRect(40, optY[idx], 640, 88, 14);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = highlight ? "#34d399" : "#f1f5f9";
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(opt + (highlight ? "  ✓" : ""), 70, optY[idx] + 54);
+        });
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = "20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⚡ MasterMind AI • YouTube Shorts Studio", 360, 1180);
+
+        if (elapsed < totalDuration) {
+          requestAnimationFrame(draw);
+        } else {
+          mediaRecorder.stop();
+        }
+      }
+
+      draw();
+    }
+
+    function renderDocPreview(subject) {
+      const chatStream = document.getElementById('chatStream');
+      const docCard = document.createElement('div');
+      docCard.className = 'doc-preview-card';
+
+      const docText = `=========================================\n📑 MASTERMIND AI STUDY REPOSITORY\nTOPIC: ${subject.toUpperCase()}\n=========================================\n\n1. EXECUTIVE SUMMARY & CONCEPTS:\n- முக்கியமான அடிப்படைக் கோட்பாடுகள் மற்றும் சூத்திரங்கள்.\n- போட்டித் தேர்வுகளில் கேட்கப்படும் உயர்-மதிப்பெண் வினாக்கள்.\n\n2. MODEL QUESTIONS:\nQ1: முதன்மைத் தேர்வு மாதிரி வினா மற்றும் விடைக்குறிப்பு.\nAns: விரிவான மற்றும் எளிமையான விளக்கம்.\n\n3. REVISION CHECK: 100% COMPLETE`;
+
+      docCard.innerHTML = `
+        <div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px;">📄 Study Document Preview</div>
+        <div class="doc-preview-text">${docText}</div>
+        <button class="btn-download-doc" onclick="downloadDocText(\`${docText.replace(/`/g, '')}\`)">📥 Download Notes (TXT/PDF)</button>
+      `;
+
+      chatStream.appendChild(docCard);
+      chatStream.scrollTop = chatStream.scrollHeight;
+    }
+
+    function downloadDocText(text) {
+      const blob = new Blob([text], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "MasterMind_Study_Notes.txt";
+      a.click();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let testY = y;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+          ctx.fillText(line, x, testY);
+          line = words[n] + ' ';
+          testY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, testY);
+    }
+
+    window.onload = () => {
+      currentLang = document.getElementById('appLang').value;
+      renderHistoryList();
+    };
+  </script>
+</body>
+</html>
