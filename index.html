@@ -255,3 +255,233 @@
       gap: 8px;
       border: 1px solid transparent;
       transition: all 0.2s;
+       }
+    .input-capsule:focus-within { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    .text-input { flex: 1; border: none; background: transparent; font-size: 15px; outline: none; color: #1f1f1f; padding: 8px 0; }
+    .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .btn-mic { background: transparent; color: #444746; }
+    .btn-mic.rec { background: #fce8e6; color: #d93025; animation: pulse 1s infinite; }
+    .btn-send { background: var(--primary); color: #ffffff; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <div class="app-root">
+
+    <!-- Top Navigation Bar -->
+    <div class="top-bar">
+      <div class="header-left">
+        <button class="icon-btn" onclick="toggleDrawer()" title="History">☰</button>
+        <div class="brand-title" onclick="startNewChat()">✦ MasterMind AI</div>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" onclick="toggleHub()" title="Explore Modules" style="font-size: 20px;">🗂️</button>
+        <button class="icon-btn" id="newChatBtn" onclick="startNewChat()" title="Start New Chat" style="font-weight: 800; font-size: 20px;">＋</button>
+      </div>
+    </div>
+
+    <!-- Explore All-World Hub Modal -->
+    <div class="hub-overlay" id="hubOverlay" onclick="toggleHub()"></div>
+    <div class="hub-modal" id="hubModal">
+      <div class="hub-head">
+        <div>✦ MasterMind Multiverse Hub</div>
+        <button class="icon-btn" onclick="toggleHub()">✕</button>
+      </div>
+      <div class="hub-scroll">
+        <div class="hub-card" onclick="selectHubDomain('HD Picture & Visual Photo Studio')">
+          <div class="hub-icon">🎨</div>
+          <div class="hub-name">HD Picture Studio</div>
+          <div class="hub-desc">4K Image generator, filters & visual graphics</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('School Education (Classes 6th - 12th)')">
+          <div class="hub-icon">🏫</div>
+          <div class="hub-name">School Education</div>
+          <div class="hub-desc">6th-12th Tamil, Maths, Science & Social</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('TNPSC & Civil Services (Group 1, 2, 4)')">
+          <div class="hub-icon">🏛️</div>
+          <div class="hub-name">TNPSC Civil Services</div>
+          <div class="hub-desc">Group 4, 2, 1, Unit 8/9 & VAO Hub</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('UPSC Civil Services Examination (IAS / IPS)')">
+          <div class="hub-icon">🇮🇳</div>
+          <div class="hub-name">UPSC Civil Services</div>
+          <div class="hub-desc">Prelims GS, CSAT & Answer Writing</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Daily Current Affairs & General Knowledge (GK)')">
+          <div class="hub-icon">🌍</div>
+          <div class="hub-name">Current Affairs & GK</div>
+          <div class="hub-desc">National, State, Sports & Politics</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Law & Judiciary (BNS, IPC & Constitution)')">
+          <div class="hub-icon">⚖️</div>
+          <div class="hub-name">Law & Judiciary</div>
+          <div class="hub-desc">BNS, CrPC, AIBE Bar Exam & Judiciary</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('IT, Python, FullStack & Software Career')">
+          <div class="hub-icon">💻</div>
+          <div class="hub-name">IT & Software Career</div>
+          <div class="hub-desc">Python, Web Dev, DSA & Placement Prep</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Medical, NEET UG & Health Sciences')">
+          <div class="hub-icon">🩺</div>
+          <div class="hub-name">Medical & Health</div>
+          <div class="hub-desc">NEET UG, Biology, Anatomy & Pharma</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Banking, SSC & Railways (IBPS, SBI, RRB)')">
+          <div class="hub-icon">🏦</div>
+          <div class="hub-name">Banking & SSC</div>
+          <div class="hub-desc">Quant, Reasoning & Government Jobs</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('9:16 Shorts Video & Cartoon Studio')">
+          <div class="hub-icon">🎬</div>
+          <div class="hub-name">Shorts Video Studio</div>
+          <div class="hub-desc">9:16 Quiz Reels, Kids Cartoons & Stories</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('Voice Cloning & Speech Studio')">
+          <div class="hub-icon">🎙️</div>
+          <div class="hub-name">Voice & Audio Studio</div>
+          <div class="hub-desc">Natural Teacher Voice & AI Audio</div>
+        </div>
+        <div class="hub-card" onclick="selectHubDomain('PDF Notes & Study Material Generator')">
+          <div class="hub-icon">📄</div>
+          <div class="hub-name">Document & Notes Studio</div>
+          <div class="hub-desc">Instant Study Material & PDF Exporter</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <div class="drawer" id="drawer">
+      <div class="drawer-head">
+        <div>✦ MasterMind AI</div>
+        <button class="icon-btn" onclick="toggleDrawer()">✕</button>
+      </div>
+
+      <button class="btn-new-chat" onclick="startNewChat()">＋ New Conversation</button>
+
+      <div class="drawer-content">
+        <div class="drawer-section-title">Language / மொழி</div>
+        <select class="drawer-select" id="appLang" onchange="onLanguageChange()">
+          <option value="en-IN">English (India)</option>
+          <option value="ta-IN">தமிழ் (Tamil)</option>
+          <option value="hi-IN">हिन्दी (Hindi)</option>
+          <option value="te-IN">తెలుగు (Telugu)</option>
+        </select>
+
+        <div class="drawer-section-title">Recent Conversations</div>
+        <ul class="history-list" id="historyList"></ul>
+      </div>
+    </div>
+
+    <!-- Main Chat Stream -->
+    <div class="chat-scroll" id="chatStream">
+      <div class="welcome-hero" id="welcomeHero">
+        <div class="welcome-greet">Hello!</div>
+        <div class="welcome-sub">How can I help you today? Ask any topic, 5s quiz, HD picture, or notes!</div>
+      </div>
+    </div>
+
+    <!-- Always Visible Bottom Input Bar -->
+    <div class="input-wrapper">
+      <div class="input-capsule">
+        <input type="text" class="text-input" id="chatInput" placeholder="Ask MasterMind AI anything..." onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button class="btn-circle btn-mic" id="micBtn" onclick="startVoice()" title="Speak with Mic">🎤</button>
+        <button class="btn-circle btn-send" onclick="sendMessage()" title="Send">➤</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentLang = 'en-IN';
+    let chatHistory = JSON.parse(localStorage.getItem('mm_history') || '[]');
+    let currentSessionMessages = [];
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTickSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function playSuccessSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {}
+    }
+
+    function playWrongSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(160, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    function toggleDrawer() {
+      document.getElementById('drawer').classList.toggle('active');
+      document.getElementById('drawerOverlay').classList.toggle('active');
+    }
+
+    function toggleHub() {
+      document.getElementById('hubModal').classList.toggle('active');
+      document.getElementById('hubOverlay').classList.toggle('active');
+    }
+
+    function selectHubDomain(domainName) {
+      if (document.getElementById('hubModal').classList.contains('active')) toggleHub();
+      addMessage('user', domainName);
+      processAssistantResponse(domainName);
+    }
+
+    function startNewChat() {
+      currentSessionMessages = [];
+      const isTamil = currentLang === 'ta-IN';
+      document.getElementById('chatStream').innerHTML = `
+        <div class="welcome-hero" id="welcomeHero">
+          <div class="welcome-greet">${isTamil ? 'வணக்கம்!' : 'Hello!'}</div>
+          <div class="welcome-sub">${isTamil ? 'இன்று என்ன படிக்கலாம் அல்லது என்ன செய்ய வேண்டும்?' : 'How can I help you today? Ask any topic, 5s quiz, HD picture, or notes!'}</div>
+        </div>
+      `;
+      document.getElementById('chatInput').value = '';
+      if (document.getElementById('drawer').classList.contains('active')) toggleDrawer();
+      if (document.getElementById('hubModal').classList.contains('active')) toggleHub();
+    }
+
+    function onLanguageChange() {
