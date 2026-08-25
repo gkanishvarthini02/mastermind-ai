@@ -590,4 +590,143 @@
       const confettiCanvas = document.getElementById(`canvas_${cardId}`);
 
       function loadQuestion(index) {
+        answered = false;
+        timer = 5;
+        timerEl.innerText = '5s';
+        timerEl.className = 'timer-circle';
+        nextBtn.style.display = 'none';
+
+        const q = questions[index];
+        qTextEl.innerText = q.q;
+        optsEl.innerHTML = '';
+        progEl.innerText = `Question ${index + 1}/${questions.length} • Score: ${score}`;
+
+        q.opts.forEach((opt, optIdx) => {
+          const btn = document.createElement('div');
+          btn.className = 'quiz-opt';
+          btn.innerText = opt;
+          btn.onclick = () => selectOption(optIdx);
+          optsEl.appendChild(btn);
+        });
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          timer--;
+          if (timer > 0) {
+            playTickSound();
+            timerEl.innerText = timer + 's';
+            if (timer <= 2) timerEl.className = 'timer-circle danger';
+          } else {
+            clearInterval(timerInterval);
+            timerEl.innerText = '0s';
+            autoRevealAnswer();
+          }
+        }, 1000);
+      }
+
+      function selectOption(selectedIdx) {
+        if (answered) return;
+        answered = true;
+        clearInterval(timerInterval);
+
+        const q = questions[currentIndex];
+        const allOpts = optsEl.querySelectorAll('.quiz-opt');
+
+        if (selectedIdx === q.ans) {
+          score++;
+          allOpts[selectedIdx].classList.add('correct');
+          allOpts[selectedIdx].innerHTML += ' <span>🎉 Correct!</span>';
+          playSuccessSound();
+          triggerFireworks(confettiCanvas);
+        } else {
+          allOpts[selectedIdx].classList.add('wrong');
+          allOpts[selectedIdx].innerHTML += ' <span>❌ Wrong</span>';
+          allOpts[q.ans].classList.add('correct');
+          allOpts[q.ans].innerHTML += ' <span>✓ Correct Answer</span>';
+          playWrongSound();
+        }
+
+        progEl.innerText = `Question ${currentIndex + 1}/${questions.length} • Score: ${score}`;
+        checkFinish();
+      }
+
+      function autoRevealAnswer() {
+        if (answered) return;
+        answered = true;
+        const q = questions[currentIndex];
+        const allOpts = optsEl.querySelectorAll('.quiz-opt');
+        allOpts[q.ans].classList.add('correct');
+        allOpts[q.ans].innerHTML += ' <span>✓ Correct Answer</span>';
+        playWrongSound();
+        checkFinish();
+      }
+
+      function checkFinish() {
+        if (currentIndex < questions.length - 1) {
+          nextBtn.style.display = 'block';
+          nextBtn.onclick = () => {
+            currentIndex++;
+            loadQuestion(currentIndex);
+          };
+        } else {
+          progEl.innerText = `🎉 Quiz Complete! Final Score: ${score}/${questions.length}`;
+          dlReelBtn.style.display = 'block';
+          dlReelBtn.onclick = () => {
+            alert("Generating your full HD 9:16 Shorts Video reel MP4 download!");
+          };
+        }
+      }
+
+      loadQuestion(0);
+    }
+
+    function triggerFireworks(canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.offsetWidth;
+      canvas.height = canvas.parentElement.offsetHeight;
+
+      let particles = [];
+      const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ec4899', '#a855f7'];
+
+      for (let i = 0; i < 45; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 9,
+          vy: (Math.random() - 0.5) * 9,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 4 + 2,
+          life: 1
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          if (p.life > 0) {
+            active = true;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.03;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+        if (active) requestAnimationFrame(render);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      render();
+    }
+
+    window.onload = () => {
+      currentLang = document.getElementById('appLang').value;
+      renderHistoryList();
+    };
+  </script>
+</body>
+</html>
         
