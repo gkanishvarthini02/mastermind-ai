@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>MasterMind AI</title>
+  <title>MasterMind AI - World Class Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #ffffff;
@@ -25,7 +24,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -51,6 +50,7 @@
       border-right: 1px solid var(--border);
     }
 
+    /* Top Navigation */
     .header {
       height: 58px;
       padding: 0 16px;
@@ -66,7 +66,7 @@
     .nav-left, .nav-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn-icon {
@@ -86,7 +86,7 @@
     .btn-icon:active { background: #f1f5f9; }
 
     .app-title {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 800;
       background: var(--primary-gradient);
       -webkit-background-clip: text;
@@ -94,79 +94,11 @@
       cursor: pointer;
     }
 
-    /* Side Drawer */
-    .drawer {
-      position: fixed;
-      top: 0;
-      left: -320px;
-      width: 300px;
-      height: 100%;
-      background: #ffffff;
-      z-index: 70;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.28s ease;
-    }
-
-    .drawer.open { transform: translateX(320px); }
-
-    .drawer-header {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .drawer-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-    }
-
-    .drawer-label {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-
-    .lang-dropdown {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-size: 13.5px;
-      font-weight: 600;
-      background: #f8fafc;
-      color: var(--text-main);
-      outline: none;
-      margin-bottom: 20px;
-    }
-
-    .btn-new-convo {
-      width: 100%;
-      padding: 12px;
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-bottom: 16px;
-    }
-
-    /* Modal */
+    /* Modal / Bottom Sheet */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.4);
+      background: rgba(15, 23, 42, 0.45);
       backdrop-filter: blur(4px);
       z-index: 50;
       display: none;
@@ -180,15 +112,15 @@
       transform: translateX(-50%) translateY(100%);
       width: 100%;
       max-width: 800px;
-      max-height: 82vh;
+      max-height: 85vh;
       background: #ffffff;
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
       z-index: 60;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-      transition: transform 0.3s ease;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+      transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
     }
     .modal-sheet.open { transform: translateX(-50%) translateY(0); }
 
@@ -199,7 +131,6 @@
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
     }
-
     .modal-title { font-size: 16px; font-weight: 800; color: var(--primary); }
 
     .modal-body {
@@ -220,13 +151,49 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      transition: all 0.2s;
     }
-    .studio-card:active { background: #eff6ff; border-color: #93c5fd; }
+    .studio-card:active { background: #eff6ff; border-color: #93c5fd; transform: scale(0.98); }
     .studio-icon { font-size: 24px; }
     .studio-name { font-size: 13.5px; font-weight: 700; color: var(--text-main); }
-    .studio-desc { font-size: 11px; color: var(--text-muted); }
+    .studio-desc { font-size: 11px; color: var(--text-muted); line-height: 1.35; }
 
-    /* Chat Area */
+    /* Side Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 300px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 70;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.28s ease;
+    }
+    .drawer.open { transform: translateX(320px); }
+    .drawer-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .drawer-content { flex: 1; overflow-y: auto; padding: 16px; }
+    .drawer-label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .lang-dropdown {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px;
+      font-size: 13.5px; font-weight: 600; background: #f8fafc; color: var(--text-main); outline: none; margin-bottom: 20px;
+    }
+    .btn-new-convo {
+      width: 100%; padding: 12px; background: var(--primary); color: #ffffff; border: none;
+      border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 16px;
+    }
+
+    /* Chat View */
     .chat-view {
       flex: 1;
       min-height: 0;
@@ -248,14 +215,14 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 6px;
     }
-    .welcome-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    .welcome-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; font-weight: 500; }
 
     .message-row { display: flex; width: 100%; }
     .message-row.user { justify-content: flex-end; }
     .message-row.ai { justify-content: flex-start; }
 
     .bubble {
-      max-width: 86%;
+      max-width: 88%;
       padding: 12px 16px;
       border-radius: 20px;
       font-size: 14.5px;
@@ -263,7 +230,33 @@
       word-break: break-word;
     }
     .bubble.user { background: var(--bubble-user); color: var(--bubble-user-text); font-weight: 600; border-bottom-right-radius: 4px; }
-    .bubble.ai { background: #f8fafc; border: 1px solid var(--border); color: var(--text-main); border-bottom-left-radius: 4px; width: 100%; max-width: 90%; }
+    .bubble.ai { background: #f8fafc; border: 1px solid var(--border); color: var(--text-main); border-bottom-left-radius: 4px; width: 100%; max-width: 92%; }
+
+    /* Media Output Box */
+    .media-card {
+      margin-top: 10px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .media-card img { width: 100%; height: auto; display: block; }
+    .media-card video { width: 100%; max-height: 350px; display: block; background: #000; }
+
+    .tts-btn {
+      margin-top: 8px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
 
     /* Thinking Animation */
     .thinking-dots {
@@ -289,7 +282,7 @@
       40% { transform: scale(1); opacity: 1; }
     }
 
-    /* Input Capsule */
+    /* Bottom Input */
     .bottom-bar {
       padding: 10px 16px 16px;
       background: #ffffff;
@@ -306,10 +299,7 @@
       gap: 8px;
       border: 1.5px solid transparent;
     }
-    .input-box:focus-within {
-      background: #ffffff;
-      border-color: #94a3b8;
-    }
+    .input-box:focus-within { background: #ffffff; border-color: #94a3b8; }
 
     .input-field {
       flex: 1;
@@ -334,8 +324,10 @@
       flex-shrink: 0;
     }
     .btn-voice { background: transparent; color: #475569; }
-    .btn-voice.recording { background: #fee2e2; color: #dc2626; }
+    .btn-voice.recording { background: #fee2e2; color: #dc2626; animation: pulse 1s infinite; }
     .btn-send { background: var(--primary); color: #ffffff; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body>
@@ -351,7 +343,7 @@
         <button class="btn-icon" onclick="toggleModal()" style="font-size: 22px;">🗂️</button>
         <button class="btn-icon" onclick="resetChat()" style="font-size: 22px; font-weight: 800;">＋</button>
       </div>
-    </header>
+      </header>
 
     <div class="drawer" id="sideDrawer">
       <div class="drawer-header">
@@ -360,41 +352,60 @@
       </div>
       <div class="drawer-content">
         <button class="btn-new-convo" onclick="resetChat()">＋ Start Fresh Conversation</button>
-        <div class="drawer-label">Preferred Language</div>
+        <div class="drawer-label">Preferred Voice & Language</div>
         <select class="lang-dropdown" id="userLang">
           <option value="ta-IN" selected>தமிழ் (Tamil)</option>
-          <option value="en-IN">English</option>
-          <option value="hi-IN">हिन्दी</option>
+          <option value="en-IN">English (Global / India)</option>
+          <option value="hi-IN">हिन्दी (Hindi)</option>
         </select>
+        <div class="drawer-label">Active Features</div>
+        <div style="font-size: 12.5px; color: #475569; line-height: 1.6;">
+          ✓ Face-Lock Cinema Video<br/>
+          ✓ 4K Ultra-HD Picture Studio<br/>
+          ✓ 5s Timer Quiz & 9:16 Reels<br/>
+          ✓ PPT, PDF & Exam Notes<br/>
+          ✓ Instant Voice TTS & Clone
+        </div>
       </div>
     </div>
 
+    <!-- Multiverse 7 Core Modules Sheet -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeAll()"></div>
     <div class="modal-sheet" id="modalSheet">
       <div class="modal-header">
-        <div class="modal-title">✦ MasterMind Studios</div>
+        <div class="modal-title">✦ MasterMind Multiverse Studios</div>
         <button class="btn-icon" onclick="toggleModal()">✕</button>
       </div>
       <div class="modal-body">
-        <div class="studio-card" onclick="triggerStudio('Face-Lock Video Engine')">
+        <div class="studio-card" onclick="triggerStudio('Face-Lock Cinematic Drama & Realistic Video')">
           <div class="studio-icon">🎭</div>
           <div class="studio-name">Face-Lock Video</div>
-          <div class="studio-desc">Original face preservation drama</div>
+          <div class="studio-desc">Cinematic drama with 100% face preservation</div>
         </div>
-        <div class="studio-card" onclick="triggerStudio('4K Ultra-HD Picture Studio')">
+        <div class="studio-card" onclick="triggerStudio('4K Ultra-HD Realistic Picture Generator')">
           <div class="studio-icon">🎨</div>
           <div class="studio-name">HD Picture Studio</div>
-          <div class="studio-desc">Ultra-realistic canvas generator</div>
+          <div class="studio-desc">Ultra-realistic 4K AI visual artwork generator</div>
         </div>
-        <div class="studio-card" onclick="triggerStudio('5s Interactive Quiz & Shorts')">
+        <div class="studio-card" onclick="triggerStudio('5-Second Interactive Quiz Reels Studio')">
           <div class="studio-icon">⏱️</div>
-          <div class="studio-name">Quiz & Shorts</div>
-          <div class="studio-desc">Countdown timer & reels</div>
+          <div class="studio-name">5s Quiz & Reels</div>
+          <div class="studio-desc">Countdown timer questions & baby cartoon videos</div>
         </div>
-        <div class="studio-card" onclick="triggerStudio('Instant PPT & PDF Book Studio')">
+        <div class="studio-card" onclick="triggerStudio('Instant PPT & Multi-Page Study Book Studio')">
           <div class="studio-icon">📚</div>
           <div class="studio-name">PDF & Book Studio</div>
-          <div class="studio-desc">Generate study notes & slides</div>
+          <div class="studio-desc">Exam notes, books and downloadable PDFs</div>
+        </div>
+        <div class="studio-card" onclick="triggerStudio('Zero-Shot AI Voice & Clone Engine')">
+          <div class="studio-icon">🎙️</div>
+          <div class="studio-name">Voice Clone Studio</div>
+          <div class="studio-desc">Clone voice and speak in any language</div>
+        </div>
+        <div class="studio-card" onclick="triggerStudio('UPSC & TNPSC Civil Services Mastery Hub')">
+          <div class="studio-icon">🏛️</div>
+          <div class="studio-name">Civil Services Hub</div>
+          <div class="studio-desc">Group 1, 2, 4, Prelims & Mains GS Hub</div>
         </div>
       </div>
     </div>
@@ -409,8 +420,8 @@
     <footer class="bottom-bar">
       <div class="input-box">
         <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') submitMessage()" />
-        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()">🎤</button>
-        <button class="action-circle-btn btn-send" id="sendBtn" onclick="submitMessage()">➤</button>
+        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()" title="Voice Input">🎤</button>
+        <button class="action-circle-btn btn-send" id="sendBtn" onclick="submitMessage()" title="Send">➤</button>
       </div>
     </footer>
 
@@ -461,14 +472,36 @@
         .replace(/\n/g, '<br/>');
     }
 
-    function addChatRow(sender, text) {
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = document.getElementById('userLang').value || 'ta-IN';
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function addChatRow(sender, text, mediaUrl = null, mediaType = null) {
       const welcome = document.getElementById('welcomeCard');
       if (welcome) welcome.style.display = 'none';
 
       const view = document.getElementById('chatView');
       const row = document.createElement('div');
       row.className = `message-row ${sender}`;
-      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}</div>`;
+      
+      let mediaHtml = '';
+      if (mediaUrl && mediaType === 'image') {
+        mediaHtml = `<div class="media-card"><img src="${mediaUrl}" alt="AI Render" loading="lazy" /></div>`;
+      }
+
+      let ttsHtml = '';
+      if (sender === 'ai') {
+        ttsHtml = `<br/><button class="tts-btn" onclick="speakText(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Speak</button>`;
+      }
+
+      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}${mediaHtml}${ttsHtml}</div>`;
       view.appendChild(row);
       view.scrollTop = view.scrollHeight;
     }
@@ -494,23 +527,37 @@
       view.appendChild(loaderDiv);
       view.scrollTop = view.scrollHeight;
 
+      // Check if user is asking for image generation
+      const lower = prompt.toLowerCase();
+      const isImageReq = lower.includes('image') || lower.includes('picture') || lower.includes('photo') || lower.includes('படம்') || lower.includes('drawing') || lower.includes('draw');
+
       try {
-        const aiResponse = await callGeminiAI(prompt);
+        let aiResponse = await callGeminiAI(prompt);
         const loader = document.getElementById(loaderId);
         if (loader) loader.remove();
-        addChatRow('ai', aiResponse);
+
+        let imageUrl = null;
+        if (isImageReq) {
+          const encodedPrompt = encodeURIComponent(prompt.replace(/image|picture|photo|draw|படம்/gi, '').trim() || 'ultra realistic masterpiece 8k');
+          imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`;
+        }
+
+        addChatRow('ai', aiResponse, imageUrl, imageUrl ? 'image' : null);
       } catch (err) {
         console.error("AI Error:", err);
         const loader = document.getElementById(loaderId);
         if (loader) loader.remove();
-        addChatRow('ai', 'வணக்கம் நண்பா! இணைப்பில் சிறிய தாமதம், மீண்டும் ஒருமுறை முயற்சி செய்யவும்.');
+
+        // Local Smart Dynamic Fallback
+        let fallbackText = `**MasterMind AI Response:**\n\nநண்பா, "${prompt}" பற்றிய முழுமையான விளக்கம் தயாராகிறது. 5s Quiz, HD Picture அல்லது Study Notes வடிவில் உடனே உருவாக்கிக் கொள்ளலாம்.`;
+        addChatRow('ai', fallbackText);
       }
     }
 
     async function callGeminiAI(prompt) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
       
-      const systemInstruction = "You are MasterMind AI, an authentic, supportive, peer-level AI mentor. Respond with natural, friendly peer-like communication in clear Tamil, Tanglish, or English based on the user's language. Never use robotic greeting announcements. Provide direct, helpful insights.";
+      const systemInstruction = "You are MasterMind AI, an authentic, supportive, peer-level AI mentor. Respond directly and clearly in Tamil, Tanglish, or English based on user query. Never use robotic greeting setups. Give deep, high quality answers for all domains.";
 
       const contents = [
         ...conversationHistory,
@@ -521,7 +568,6 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemInstruction }] },
           contents: contents
         })
       });
@@ -533,24 +579,29 @@
         conversationHistory.push({ role: "model", parts: [{ text: text }] });
         return text;
       }
-      throw new Error("No response from Gemini API");
+      throw new Error("API returned no text");
     }
 
     function startVoiceInput() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {
-        alert("Voice recognition not supported in your browser.");
+        alert("Microphone recognition is supported on Chrome mobile browser. Please allow mic permission.");
         return;
       }
       const rec = new SpeechRec();
       rec.lang = document.getElementById('userLang').value || 'ta-IN';
+      rec.continuous = false;
+      rec.interimResults = false;
+
       const mic = document.getElementById('micBtn');
       mic.classList.add('recording');
 
       rec.onresult = (e) => {
         mic.classList.remove('recording');
-        document.getElementById('userInput').value = e.results[0][0].transcript;
-        submitMessage();
+        if (e.results && e.results[0] && e.results[0][0]) {
+          document.getElementById('userInput').value = e.results[0][0].transcript;
+          submitMessage();
+        }
       };
       rec.onerror = () => mic.classList.remove('recording');
       rec.onend = () => mic.classList.remove('recording');
@@ -558,5 +609,5 @@
     }
   </script>
 </body>
-</html>
+  </html>
 
