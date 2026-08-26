@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MasterMind AI - Omniverse Super App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: #ffffff;
+      color: #0f172a;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 650px;
+      margin: 0 auto;
+      background: #ffffff;
+      position: relative;
+    }
+
+    /* Header */
+    .header {
+      height: 54px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e2e8f0;
+      background: #ffffff;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+    }
+    .nav-btn:active { background: #f1f5f9; }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+
+    /* Chat Messages View */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .welcome-box {
+      padding: 20px 10px;
+      text-align: center;
+    }
+    .welcome-box h2 {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .welcome-box p {
+      font-size: 13.5px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.ai { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bubble.user {
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-weight: 600;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble.ai {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      border-bottom-left-radius: 4px;
+      width: 100%;
+      max-width: 92%;
+    }
+
+    .bubble-img {
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .bubble-img img { width: 100%; height: auto; display: block; }
+
+    .tts-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+      margin-top: 8px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 5px;
+      padding: 10px 14px;
+      background: #f1f5f9;
+      border-radius: 14px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: #2563eb;
+      border-radius: 50%;
+      animation: pulse 1s infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse { 0% { opacity: 0.3; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+
+    /* Input Bar */
+    .input-bar {
+      padding: 10px 14px 14px;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 26px;
+      padding: 4px 6px 4px 14px;
+      gap: 6px;
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14.5px;
+      color: #0f172a;
+      outline: none;
+      padding: 8px 0;
+    }
+
+    .action-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .btn-mic { background: transparent; color: #475569; }
+    .btn-mic.recording { background: #fee2e2; color: #dc2626; }
+    .btn-send { background: #2563eb; color: #ffffff; font-weight: bold; }
+
+    /* Backdrops & Popups */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.75);
+      z-index: 99;
+      display: none;
+    }
+    .modal-backdrop.open { display: block; }
+
+    /* Left Drawer (☰) */
+    .left-drawer {
+      position: fixed;
+      top: 0;
+      left: -290px;
+      width: 280px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+      transition: transform 0.25s ease-out;
+    }
+    .left-drawer.open { transform: translateX(290px); }
+
+    /* 50 Domains Dark Navy Modal (🗂️) */
+    .modal-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      height: 85vh;
+      background: #0b1329;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease-out;
+      border-top: 1px solid #1e293b;
+    }
+    .modal-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .modal-top {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    .modal-top h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
+    .close-circle {
+      background: #1e293b;
+      border: none;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hub-box {
+      background: #131d38;
+      border: 1px solid #1e2d52;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hub-box:active { background: #1e2c56; transform: scale(0.97); }
+    .hub-box .icon { font-size: 24px; }
+    .hub-box .name { font-size: 13px; font-weight: 700; color: #ffffff; }
+    .hub-box .desc { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+
+    /* Dark Mode Settings & Subscription Modal (⋮) */
+    .settings-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #080d1a;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease-out;
+      box-shadow: 0 -15px 50px rgba(0,0,0,0.8);
+      border-top: 1px solid #1e293b;
+      padding-bottom: 30px;
+    }
+    .settings-popup.open { transform: translateX(-50%) translateY(0); }
+
+    /* Exact Neon Dark Pricing Card Styles */
+    .dark-card {
+      margin: 12px 16px 0;
+      padding: 16px;
+      border-radius: 20px;
+      background: #0e1626;
+      border: 1px solid #1b263b;
+      color: #ffffff;
+      position: relative;
+    }
+
+    .dark-card.popular {
+      border: 2px solid #00f0ff;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+    }
+
+    .badge-popular {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      color: #000000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .price-title { font-size: 16px; font-weight: 800; color: #ffffff; margin-top: 2px; }
+    .price-tag { font-size: 26px; font-weight: 800; color: #ffffff; margin: 6px 0 2px; }
+    .price-tag span { font-size: 13px; font-weight: 500; color: #94a3b8; }
+    .price-desc { font-size: 12px; color: #94a3b8; line-height: 1.4; margin-bottom: 12px; }
+
+    .perk-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .perk-list li {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .perk-list li span { color: #00f0ff; font-size: 14px; font-weight: bold; }
+
+    .btn-checkout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 12px;
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-checkout:active { opacity: 0.85; }
+
+    .btn-checkout.glow {
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      color: #000000;
+      border: none;
+      font-weight: 800;
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+    }
+
+    /* Master Controls List inside ⋮ */
+    .master-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid #131d33;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #f1f5f9;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .master-item:active { background: #131d33; }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- Top Bar -->
+    <header class="header">
+      <button class="nav-btn" onclick="openDrawer()" title="Menu">☰</button>
+      <div class="logo" onclick="clearChat()">✦ MasterMind AI</div>
+      <div style="display:flex; gap:4px;">
+        <button class="nav-btn" onclick="openHub()" title="50 Domains Hub">🗂️</button>
+        <button class="nav-btn" onclick="clearChat()" title="New Chat" style="font-weight:800;">＋</button>
+        <button class="nav-btn" onclick="openSettings()" title="Master Profile & Plans">⋮</button>
+      </div>
+    </header>
+
+    <!-- Main Chat Messages -->
+    <main class="chat-container" id="chatContainer">
+      <div class="welcome-box" id="welcomeBox">
+        <h2>வணக்கம் நண்பா!</h2>
+        <p>MasterMind AI 50-Domain Omniverse தயார். கல்வி, TNPSC/UPSC, கோடிங், மெடிக்கல், போட்டோ மற்றும் வீடியோ என எதை வேண்டுமானாலும் கேட்கலாம்!</p>
+      </div>
+    </main>
+
+    <!-- Bottom Input -->
+    <footer class="input-bar">
+      <div class="input-wrapper">
+        <input type="text" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') sendUserMessage()" />
+        <button class="action-btn btn-mic" id="micButton" onclick="toggleVoiceInput()">🎤</button>
+        <button class="action-btn btn-send" onclick="sendUserMessage()">➤</button>
+      </div>
+    </footer>
+
+    <!-- Backdrop -->
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeAll()"></div>
+
+    <!-- Left Menu Drawer (☰) -->
+    <div class="left-drawer" id="leftDrawer">
+      <div class="modal-top" style="border-bottom: 1px solid #e2e8f0;">
+        <h3 style="color:#0f172a;">✦ MasterMind Menu</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div style="padding: 16px;">
+        <button onclick="clearChat(); closeAll();" style="width:100%; padding:11px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer; margin-bottom:14px;">＋ New Conversation</button>
+        <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px;">Quick Shortcuts</div>
+        <div style="padding:10px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer;" onclick="closeAll(); openHub();">🗂️ Explore 50 Domains</div>
+        <div style="padding:10px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer;" onclick="closeAll(); openSettings();">💳 Master Plans & Pricing</div>
+        <div style="padding:10px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer;" onclick="alert('MasterMind AI Omniverse Super App - Powered by Gemini Engine');">ℹ️ About App</div>
+      </div>
+    </div>
+
+    <!-- 50 Domains Dark Navy Modal (🗂️) -->
+    <div class="modal-popup" id="modalPopup">
+      <div class="modal-top">
+        <h3>✦ 50 Omniverse Domains Hub</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="modal-grid" id="modalGrid"></div>
+    </div>
+
+    <!-- Master Settings & Pricing Modal (⋮) -->
+    <div class="settings-popup" id="settingsPopup">
+      <div class="modal-top" style="background:#0b1329;">
+        <h3>✦ Master Profile & Plans</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+
+      <!-- Master Control Tabs -->
+      <div style="padding: 10px 16px 0;">
+        <div class="master-item" onclick="alert('👤 User Account: MasterMind VIP Pro')">
+          <span>👤 Profile & Credentials</span>
+          <span style="font-size:12px; color:#00f0ff;">Verified ✓</span>
+        </div>
+        <div class="master-item" onclick="alert('🔒 Privacy & Face-Lock Encryption: ACTIVE')">
+          <span>🔒 Face-Lock Privacy & Security</span>
+          <span style="font-size:12px; color:#16a34a;">Secured</span>
+        </div>
+        <div class="master-item" onclick="alert('🌐 Language: Tamil / English Intelligent Auto-Switch')">
+          <span>🌐 Dual Engine Language</span>
+          <span style="font-size:12px; color:#94a3b8;">Tamil / English</span>
+        </div>
+      </div>
+
+      <div style="padding: 14px 16px 4px;">
+        <h4 style="color:#ffffff; font-size:15px; font-weight:800;">⚡ Choose Your Power Plan</h4>
+      </div>
+
+      <!-- 1. 24-Hour VIP Trial (₹1) -->
+      <div class="dark-card">
+        <div class="price-title">24-Hour VIP Trial</div>
+        <div class="price-tag">₹1 <span>for 24 hours</span></div>
+        <div class="price-desc">Instant 20 renders across all 50 domains with watermark-free export.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 50 AI Domains Unlocked</li>
+          <li><span>✓</span> Instant Secure Razorpay Checkout</li>
+          <li><span>✓</span> Priority Cloud Rendering</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹1 on Razorpay ↗</a>
+      </div>
+
+      <!-- 2. Monthly Limited (₹100) -->
+      <div class="dark-card">
+        <div class="price-title">Monthly Limited Plan</div>
+        <div class="price-tag">₹100 <span>/month</span></div>
+        <div class="price-desc">Standard access with limited renders for daily essential tasks.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 50 AI Domains Unlocked</li>
+          <li><span>✓</span> Limited 100 Renders per month</li>
+          <li><span>✓</span> 1080p Standard Export</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹100 on Razorpay ↗</a>
+      </div>
+
+      <!-- 3. Educator Pro Plan (₹300 - MOST POPULAR) -->
+      <div class="dark-card popular">
+        <div class="badge-popular">MOST POPULAR</div>
+        <div class="price-title">Educator Pro Plan</div>
+        <div class="price-tag">₹300 <span>/month</span></div>
+        <div class="price-desc">Unlimited mock tests, 4K export, and Tamil voices for creators & educators.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 50 AI Domains Unlocked</li>
+          <li><span>✓</span> Limited 300 Renders per month</li>
+          <li><span>✓</span> Instant Secure Razorpay Checkout</li>
+          <li><span>✓</span> Ultra Fast Priority Cloud Rendering</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout glow">Pay ₹300 on Razorpay ↗</a>
+      </div>
+
+      <!-- 4. Unlimited Monthly (₹500) -->
+      <div class="dark-card">
+        <div class="price-title">Unlimited Monthly Plan</div>
+        <div class="price-tag">₹500 <span>/month</span></div>
+        <div class="price-desc">Unlimited generation across all 50 domains without monthly render limits.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> Unlimited 50 AI Studio Renders</li>
+          <li><span>✓</span> 4K Ultra HD Export Quality</li>
+          <li><span>✓</span> Full Commercial Usage Rights</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹500 on Razorpay ↗</a>
+      </div>
+
+      <!-- 5. Yearly Access (₹5,499) -->
+      <div class="dark-card">
+        <div class="price-title">Yearly Unlimited Master</div>
+        <div class="price-tag">₹5,499 <span>/year</span></div>
+        <div class="price-desc">Full 1-Year unlimited access with dedicated VIP cloud server & instant updates.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 1 Full Year Unlimited Access</li>
+          <li><span>✓</span> Zero Render Caps / Watermark Free</li>
+          <li><span>✓</span> 24/7 Dedicated Priority VIP Support</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹5,499 on Razorpay ↗</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const GEMINI_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let chatHistory = [];
+
+    const domainList = [
+      {icon: "🏫", name: "School Education", desc: "6th-12th Tamil, Maths, Science & Social"},
+      {icon: "🏛️", name: "TNPSC Civil Services", desc: "Group 4, 2, 1, Unit 8/9 & VAO Hub"},
+      {icon: "🇮🇳", name: "UPSC Civil Services", desc: "Prelims GS, CSAT & Answer Writing"},
+      {icon: "🌍", name: "Current Affairs & GK", desc: "National, State, Sports & Politics"},
+      {icon: "⚖️", name: "Law & Judiciary", desc: "BNS, CrPC, AIBE Bar Exam & Judiciary"},
+      {icon: "💻", name: "IT & Software Career", desc: "Python, Web Dev, DSA & Placement"},
+      {icon: "🩺", name: "Medical & Health", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "🎬", name: "Shorts Video Studio", desc: "9:16 Quiz Reels, Kids Cartoons & Stories"},
+      {icon: "🎙️", name: "Voice & Audio Studio", desc: "Natural Teacher Voice & AI Audio"},
+      {icon: "📄", name: "Document & Notes", desc: "Instant Study Material & PDF Exporter"},
+      {icon: "🌐", name: "Global Multiverse", desc: "Any concept in Tamil, English, Hindi"},
+      {icon: "🚀", name: "Space & Astronomy", desc: "Black holes, Relativity & Quantum"},
+      {icon: "🎨", name: "UI/UX & Graphics", desc: "Wireframing, lo
