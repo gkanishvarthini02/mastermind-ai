@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>MasterMind AI - Next Gen Multiverse</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg: #ffffff;
@@ -265,293 +266,30 @@
       margin-bottom: 16px;
     }
 
+    .history-list {
+      list-style: none;
+    }
+
+    .history-item {
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #334155;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-radius: 10px;
+      margin-bottom: 4px;
+      transition: background 0.15s;
+    }
+
+    .history-item:hover, .history-item:active {
+      background: #f1f5f9;
+    }
+
     /* Chat Stream Area */
     .chat-view {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      overflow-x: hidden;
-      padding: 16px 16px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
-    }
 
-    .welcome-card {
-      padding: 24px 8px 8px;
-      text-align: left;
-    }
-
-    .welcome-heading {
-      font-size: 26px;
-      font-weight: 800;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
-    }
-
-    .welcome-text {
-      font-size: 14px;
-      color: var(--text-muted);
-      font-weight: 500;
-      line-height: 1.5;
-    }
-
-    /* Message Bubbles */
-    .message-row {
-      display: flex;
-      width: 100%;
-    }
-
-    .message-row.user {
-      justify-content: flex-end;
-    }
-
-    .message-row.ai {
-      justify-content: flex-start;
-    }
-
-    .bubble {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 14.5px;
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .bubble.user {
-      background: var(--bubble-user);
-      color: var(--bubble-user-text);
-      font-weight: 600;
-      border-bottom-right-radius: 4px;
-    }
-
-    .bubble.ai {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      border-bottom-left-radius: 4px;
-    }
-
-    /* Fixed Bottom Action Capsule */
-    .bottom-bar {
-      padding: 10px 16px 16px;
-      background: #ffffff;
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .input-box {
-      display: flex;
-      align-items: center;
-      background: #f1f5f9;
-      border-radius: 28px;
-      padding: 6px 8px 6px 16px;
-      gap: 8px;
-      border: 1.5px solid transparent;
-      transition: all 0.2s;
-    }
-
-    .input-box:focus-within {
-      background: #ffffff;
-      border-color: #94a3b8;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-
-    .input-field {
-      flex: 1;
-      border: none;
-      background: transparent;
-      font-size: 15px;
-      color: var(--text-main);
-      outline: none;
-      padding: 8px 0;
-    }
-
-    .action-circle-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-      transition: transform 0.15s;
-    }
-
-    .action-circle-btn:active {
-      transform: scale(0.92);
-    }
-
-    .btn-voice {
-      background: transparent;
-      color: #475569;
-    }
-
-    .btn-send {
-      background: var(--primary);
-      color: #ffffff;
-      font-weight: 800;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="app-container">
-
-    <!-- Header Navigation -->
-    <header class="header">
-      <div class="nav-left">
-        <button class="btn-icon" onclick="toggleDrawer()" title="Menu">☰</button>
-        <div class="app-title" onclick="resetChat()">✦ MasterMind AI</div>
-      </div>
-      <div class="nav-right">
-        <button class="btn-icon" onclick="toggleModal()" title="Explore Studios" style="font-size: 22px;">🗂️</button>
-        <button class="btn-icon" onclick="resetChat()" title="New Chat" style="font-size: 22px; font-weight: 800;">＋</button>
-      </div>
-    </header>
-
-    <!-- Side Settings Drawer -->
-    <div class="drawer" id="sideDrawer">
-      <div class="drawer-header">
-        <div>✦ MasterMind Controls</div>
-        <button class="btn-icon" onclick="toggleDrawer()">✕</button>
-      </div>
-      <div class="drawer-content">
-        <button class="btn-new-convo" onclick="resetChat()">＋ Start Fresh Conversation</button>
-
-        <div class="drawer-label">Preferred Language</div>
-        <select class="lang-dropdown" id="userLang">
-          <option value="en-IN">English (Global / India)</option>
-          <option value="ta-IN">தமிழ் (Tamil)</option>
-          <option value="hi-IN">हिन्दी (Hindi)</option>
-        </select>
-
-        <div class="drawer-label">Active Engine Status</div>
-        <div style="font-size: 13px; color: #16a34a; font-weight: 700; background: #dcfce7; padding: 10px; border-radius: 12px; margin-bottom: 12px;">
-          ● Frontend Architecture Active
-        </div>
-      </div>
-    </div>
-
-    <!-- Multiverse 12-Module Sheet -->
-    <div class="modal-overlay" id="modalOverlay" onclick="toggleModal()"></div>
-    <div class="modal-sheet" id="modalSheet">
-      <div class="modal-header">
-        <div class="modal-title">✦ MasterMind Multiverse Studios</div>
-        <button class="btn-icon" onclick="toggleModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="studio-card" onclick="triggerStudio('Face-Lock Cinematic & Drama Video Studio')">
-          <div class="studio-icon">🎭</div>
-          <div class="studio-name">Face-Lock Video</div>
-          <div class="studio-desc">Cinematic drama with original face preservation</div>
-        </div>
-        <div class="studio-card" onclick="triggerStudio('4K Ultra-HD Picture Studio')">
-          <div class="studio-icon">🎨</div>
-          <div class="studio-name">HD Picture Studio</div>
-          <div class="studio-desc">Ultra-realistic text-to-image canvas generator</div>
-        </div>
-        <div class="studio-card" onclick="triggerStudio('5s Interactive Quiz & Shorts Studio')">
-          <div class="studio-icon">⏱️</div>
-          <div class="studio-name">Quiz & Shorts</div>
-          <div class="studio-desc">5-second countdown timer reels & questions</div>
-        </div>
-        <div class="studio-card" onclick="triggerStudio('Instant PPT & Multi-Page PDF Book Studio')">
-          <div class="studio-icon">📚</div>
-          <div class="studio-name">PDF & Book Studio</div>
-          <div class="studio-desc">Generate complete structured study material</div>
-        </div>
-        <div class="studio-card" onclick="triggerStudio('Zero-Shot AI Voice & Voice Cloning Engine')">
-          <div class="studio-icon">🎙️</div>
-          <div class="studio-name">Voice Clone Studio</div>
-          <div class="studio-desc">Clone your voice into any language</div>
-        </div>
-        <div class="studio-card" onclick="triggerStudio('TNPSC & UPSC Civil Services Hub')">
-          <div class="studio-icon">🏛️</div>
-          <div class="studio-name">Civil Services Hub</div>
-          <div class="studio-desc">Group 1, 2, 4, Prelims & Mains GS</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Message Area -->
-    <main class="chat-view" id="chatView">
-      <div class="welcome-card" id="welcomeCard">
-        <div class="welcome-heading">வணக்கம்!</div>
-        <div class="welcome-text">MasterMind AI Multiverse-க்கு நல்வரவு. எந்த பாடம், 5s Quiz, HD Picture, அல்லது Cinematic Video செய்ய வேண்டும்?</div>
-      </div>
-    </main>
-
-    <!-- Bottom Input Capsule -->
-    <footer class="bottom-bar">
-      <div class="input-box">
-        <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeypress="if(event.key==='Enter') submitMessage()" />
-        <button class="action-circle-btn btn-voice" title="Speak" onclick="alert('Step 1 UI Loaded Successfully!')">🎤</button>
-        <button class="action-circle-btn btn-send" title="Send" onclick="submitMessage()">➤</button>
-      </div>
-    </footer>
-
-  </div>
-
-  <script>
-    function toggleDrawer() {
-      document.getElementById('sideDrawer').classList.toggle('open');
-    }
-
-    function toggleModal() {
-      document.getElementById('modalSheet').classList.toggle('open');
-      document.getElementById('modalOverlay').classList.toggle('open');
-    }
-
-    function triggerStudio(name) {
-      toggleModal();
-      addChatRow('user', name);
-      addChatRow('ai', `**${name}** module ready! Step 2 & 3-il real logic connect aagum.`);
-    }
-
-    function resetChat() {
-      document.getElementById('chatView').innerHTML = `
-        <div class="welcome-card" id="welcomeCard">
-          <div class="welcome-heading">வணக்கம்!</div>
-          <div class="welcome-text">MasterMind AI Multiverse-க்கு நல்வரவு. எந்த பாடம், 5s Quiz, HD Picture, அல்லது Cinematic Video செய்ய வேண்டும்?</div>
-        </div>
-      `;
-      document.getElementById('userInput').value = '';
-      if (document.getElementById('sideDrawer').classList.contains('open')) toggleDrawer();
-    }
-
-    function submitMessage() {
-      const input = document.getElementById('userInput');
-      const val = input.value.trim();
-      if (!val) return;
-
-      addChatRow('user', val);
-      input.value = '';
-
-      setTimeout(() => {
-        addChatRow('ai', `UI Step 1 perfectly active. Step 2 (Supabase) & Step 3 (Gemini Brain) connect panna ready!`);
-      }, 400);
-    }
-
-    function addChatRow(sender, text) {
-      const welcome = document.getElementById('welcomeCard');
-      if (welcome) welcome.style.display = 'none';
-
-      const view = document.getElementById('chatView');
-      const row = document.createElement('div');
-      row.className = `message-row ${sender}`;
-      row.innerHTML = `<div class="bubble ${sender}">${text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`;
-      view.appendChild(row);
-      view.scrollTop = view.scrollHeight;
-    }
-  </script>
-</body>
-</html>
