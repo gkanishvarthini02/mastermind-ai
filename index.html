@@ -598,4 +598,191 @@
     }
 
     function resetChat() {
+      currentConversationId = null;
+      conversationHistory = [];
+      const isTamil = currentLang === 'ta-IN';
+      document.getElementById('chatView').innerHTML = `
+        <div class="welcome-card" id="welcomeCard">
+          <div class="welcome-heading">${isTamil ? 'வணக்கம்!' : 'Hello!'}</div>
+          <div class="welcome-text">${isTamil ? 'MasterMind AI Multiverse-க்கு நல்வரவு. எந்த பாடம், 5s Quiz, HD Picture, அல்லது Cinematic Video செய்ய வேண்டும்?' : 'How can I help you today? Ask any topic, 5s quiz, HD picture, or notes!'}</div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+      if (document.getElementById('sideDrawer').classList.contains('open')) toggleDrawer();
+      loadPastConversations();
+    }
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function addChatRow(sender, text) {
+      const welcome = document.getElementById('welcomeCard');
+      if (welcome) welcome.style.display = 'none';
+
+      const view = document.getElementById('chatView');
+      const row = document.createElement('div');
+      row.className = `message-row ${sender}`;
+      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}</div>`;
+      view.appendChild(row);
+      view.scrollTop = view.scrollHeight;
+
+      saveMessageToSupabase(sender, text);
+    }
+
+    // Save Chat to Supabase Database
+    async function saveMessageToSupabase(sender, content) {
+      if (!supabase) return;
+      try {
+        if (!currentConversationId && sender === 'user') {
+          const { data: convData } = await supabase.from('conversations').insert([{ title: content.substring(0, 30) }]).select();
+          if (convData && convData.length > 0) {
+            currentConversationId = convData[0].id;
+            loadPastConversations();
+          }
+        }
+        if (currentConversationId) {
+          await supabase.from('messages').insert([{ conversation_id: currentConversationId, sender, content }]);
+        }
+      } catch (err) {
+        console.warn('Database save error:', err);
+      }
+    }
+
+    // Load Past Conversations from Supabase
+    async function loadPastConversations() {
+      if (!supabase) return;
+      try {
+        const { data: convs } = await supabase.from('conversations').select('*').order('created_at', { ascending: false }).limit(10);
+        const list = document.getElementById('historyList');
+        list.innerHTML = '';
+        if (convs && convs.length > 0) {
+          convs.forEach(c => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerText = `✦ ${c.title}`;
+            li.onclick = () => loadMessagesForConversation(c.id);
+            list.appendChild(li);
+          });
+        }
+      } catch (e) {}
+    }
+
+    async function loadMessagesForConversation(convId) {
+      if (!supabase) return;
+      try {
+        currentConversationId = convId;
+        const { data: msgs } = await supabase.from('messages').select('*').eq('conversation_id', convId).order('created_at', { ascending: true });
+        document.getElementById('chatView').innerHTML = '';
+        if (msgs) {
+          msgs.forEach(m => {
+            const view = document.getElementById('chatView');
+            const row = document.createElement('div');
+            row.className = `message-row ${m.sender}`;
+            row.innerHTML = `<div class="bubble ${m.sender}">${formatMarkdown(m.content)}</div>`;
+            view.appendChild(row);
+          });
+          const view = document.getElementById('chatView');
+          view.scrollTop = view.scrollHeight;
+        }
+        if (document.getElementById('sideDrawer').classList.contains('open')) toggleDrawer();
+      } catch (e) {}
+    }
+
+    // Speech-to-Text Mic Engine
+    function startVoiceInput() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Voice recognition not supported in this browser.");
+        return;
+      }
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SpeechRec();
+      rec.lang = currentLang;
+
+      const mic = document.getElementById('micBtn');
+      mic.classList.add('recording');
+
+      rec.onresult = (e) => {
+        mic.classList.remove('recording');
+        document.getElementById('userInput').value = e.results[0][0].transcript;
+        submitMessage();
+      };
+      rec.onerror = () => mic.classList.remove('recording');
+      rec.onend = () => mic.classList.remove('recording');
+      rec.start();
+    }
+
+    function submitMessage() {
+      const input = document.getElementById('userInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      input.value = '';
+      submitUserPrompt(val);
+    }
+
+    async function submitUserPrompt(prompt) {
+      addChatRow('user', prompt);
+
+      const view = document.getElementById('chatView');
+      const loaderId = 'loader_' + Date.now();
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = loaderId;
+      loaderDiv.className = 'message-row ai';
+      loaderDiv.innerHTML = `<div class="thinking-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+      view.appendChild(loaderDiv);
+      view.scrollTop = view.scrollHeight;
+
+      try {
+        const aiResponse = await callGeminiAPI(prompt);
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addChatRow('ai', aiResponse);
+      } catch (err) {
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addChatRow('ai', 'மன்னிக்கவும் நண்பா, இணைப்பில் சிறிய பிழை ஏற்பட்டுள்ளது. மீண்டும் ஒருமுறை கேட்கவும்.');
+      }
+    }
+
+    // Call Real Gemini 1.5 Flash AI Engine
+    async function callGeminiAPI(userPrompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const systemInstruction = "You are MasterMind AI, an authentic, supportive, peer-level AI mentor. Respond with natural, friendly peer-like communication in clear Tamil, Tanglish, or English based on the user's language. Never use robotic greeting announcements. Provide direct, helpful insights.";
+
+      const contents = [
+        ...conversationHistory,
+        { role: "user", parts: [{ text: userPrompt }] }
+      ];
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: contents
+        })
+      });
+
+      const data = await response.json();
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        const reply = data.candidates[0].content.parts[0].text;
+        conversationHistory.push({ role: "user", parts: [{ text: userPrompt }] });
+        conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+        return reply;
+      } else {
+        throw new Error("Gemini API Error");
+      }
+    }
+
+    window.onload = () => {
+      loadPastConversations();
+    };
+  </script>
+</body>
+</html>
 
