@@ -593,7 +593,7 @@
           <li><span>✓</span> Full Commercial Usage Rights</li>
         </ul>
         <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹500 on Razorpay ↗</a>
-      </div>
+       </div>
 
       <!-- 5. Yearly Access (₹5,499) -->
       <div class="dark-card">
@@ -606,4 +606,249 @@
           <li><span>✓</span> 24/7 Dedicated Priority VIP Support</li>
         </ul>
         <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹5,499 on Razorpay ↗</a>
-      </di
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const GEMINI_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let chatHistory = [];
+
+    const domainList = [
+      {icon: "🏫", name: "School Education", desc: "6th-12th Tamil, Maths, Science & Social"},
+      {icon: "🏛️", name: "TNPSC Civil Services", desc: "Group 4, 2, 1, Unit 8/9 & VAO Hub"},
+      {icon: "🇮🇳", name: "UPSC Civil Services", desc: "Prelims GS, CSAT & Answer Writing"},
+      {icon: "🌍", name: "Current Affairs & GK", desc: "National, State, Sports & Politics"},
+      {icon: "⚖️", name: "Law & Judiciary", desc: "BNS, CrPC, AIBE Bar Exam & Judiciary"},
+      {icon: "💻", name: "IT & Software Career", desc: "Python, Web Dev, DSA & Placement"},
+      {icon: "🩺", name: "Medical & Health", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "🎬", name: "Shorts Video Studio", desc: "9:16 Quiz Reels, Kids Cartoons & Stories"},
+      {icon: "🎙️", name: "Voice & Audio Studio", desc: "Natural Teacher Voice & AI Audio"},
+      {icon: "📄", name: "Document & Notes", desc: "Instant Study Material & PDF Exporter"},
+      {icon: "🌐", name: "Global Multiverse", desc: "Any concept in Tamil, English, Hindi"},
+      {icon: "🚀", name: "Space & Astronomy", desc: "Black holes, Relativity & Quantum"},
+      {icon: "🎨", name: "UI/UX & Graphics", desc: "Wireframing, logos & mobile layouts"},
+      {icon: "📈", name: "Stock & Crypto", desc: "Technical analysis, portfolio & trading"},
+      {icon: "🎸", name: "Music & Lyrics", desc: "Tamil songs, rap verses & chords"},
+      {icon: "🍳", name: "Master Chef Studio", desc: "Traditional recipes & macro-nutrients"},
+      {icon: "✍️", name: "Creative Writing", desc: "Cinematic scripts & dialogue creation"},
+      {icon: "🧠", name: "Psychology & Life", desc: "Mindset mastery & emotional IQ"},
+      {icon: "🤖", name: "Robotics & IoT", desc: "Arduino code & circuit automation"},
+      {icon: "🎮", name: "Game Development", desc: "Unity C#, Unreal Engine & 3D physics"},
+      {icon: "🛡️", name: "Cyber Security", desc: "Penetration testing & cryptography"},
+      {icon: "⚡", name: "EV & Mechanical", desc: "Battery management & thermodynamics"},
+      {icon: "🧬", name: "Biotech & Genetics", desc: "CRISPR gene editing & bioinformatics"},
+      {icon: "🏢", name: "Startup & Business", desc: "Pitch decks & business model canvas"},
+      {icon: "📦", name: "E-Commerce & Ads", desc: "Meta/Google Ads & Shopify funnels"},
+      {icon: "🌍", name: "Import-Export Trade", desc: "Logistics, customs & supply chain"},
+      {icon: "🏛️", name: "Real Estate & Design", desc: "Floor plans & interior engineering"},
+      {icon: "🎬", name: "Cinema Direction", desc: "Shot divisions & lighting schemes"},
+      {icon: "⚽", name: "Sports & Fitness", desc: "Workout splits & recovery routines"},
+      {icon: "📜", name: "World History", desc: "Ancient civilizations & epigraphy"},
+      {icon: "🌾", name: "Smart Agriculture", desc: "Soil health & automated irrigation"},
+      {icon: "🔮", name: "AI & AGI Research", desc: "Machine learning & neural networks"},
+      {icon: "📊", name: "Data Science", desc: "Pandas, NumPy & SQL analytics"},
+      {icon: "☁️", name: "Cloud & DevOps", desc: "AWS, Docker & Kubernetes"},
+      {icon: "⛓️", name: "Blockchain & Web3", desc: "Solidity & decentralized apps"},
+      {icon: "🚁", name: "Drone & Aerospace", desc: "Aerodynamics & autopilot coding"},
+      {icon: "🔋", name: "Renewable Energy", desc: "Solar grid & wind turbine engineering"},
+      {icon: "🧪", name: "Advanced Chemistry", desc: "Catalysis & material science"},
+      {icon: "🌊", name: "Oceanography", desc: "Deep sea ecosystems & currents"},
+      {icon: "🌋", name: "Geology & Seismology", desc: "Plate tectonics & earthquake models"},
+      {icon: "📊", name: "Statistics & Actuarial", desc: "Probability & risk modeling"},
+      {icon: "🌐", name: "Linguistics", desc: "Syntax evolution & philology"},
+      {icon: "🎭", name: "Classical Arts", desc: "Bharatanatyam & Carnatic music"},
+      {icon: "🧵", name: "Textile & Fashion", desc: "Fabric weaving & sustainable design"},
+      {icon: "📦", name: "Logistics Management", desc: "Warehouse automation & routing"},
+      {icon: "💼", name: "Corporate HR", desc: "Talent acquisition & leadership"},
+      {icon: "📊", name: "Behavioral Economics", desc: "Consumer psychology & game theory"},
+      {icon: "🪐", name: "Astrobiology", desc: "Extraterrestrial life & habitability"},
+      {icon: "🌌", name: "Quantum Computing", desc: "Superposition & entanglement logic"}
+    ];
+
+    function renderHub() {
+      const grid = document.getElementById('modalGrid');
+      grid.innerHTML = domainList.map(item => `
+        <div class="hub-box" onclick="pickDomain('${item.name}')">
+          <div class="icon">${item.icon}</div>
+          <div class="name">${item.name}</div>
+          <div class="desc">${item.desc}</div>
+        </div>
+      `).join('');
+    }
+    renderHub();
+
+    function openHub() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('modalPopup').classList.add('open');
+    }
+
+    function openWhiteSettings() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('whiteSettingsPopup').classList.add('open');
+    }
+
+    function openRightDrawer() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('rightDrawer').classList.add('open');
+    }
+
+    function openBilling() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('billingPopup').classList.add('open');
+    }
+
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('whiteSettingsPopup').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " பற்றி விரிவாக விளக்கு.";
+      sendUserMessage();
+    }
+
+    function clearChat() {
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="welcome-box" id="welcomeBox">
+          <h2>வணக்கம் நண்பா!</h2>
+          <p>MasterMind AI 50-Domain Omniverse தயார். கல்வி, TNPSC/UPSC, கோடிங், மெடிக்கல், போட்டோ மற்றும் வீடியோ என எதை வேண்டுமானாலும் கேட்கலாம்!</p>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function renderMessage(sender, text, imgUrl = null) {
+      const welcome = document.getElementById('welcomeBox');
+      if (welcome) welcome.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+
+      let imgHtml = imgUrl ? `<div class="bubble-img"><img src="${imgUrl}" alt="Render" loading="lazy" /></div>` : '';
+      let voiceHtml = sender === 'ai' ? `<br/><button class="tts-btn" onclick="playVoice(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>` : '';
+
+      row.innerHTML = `<div class="bubble ${sender}">${formatText(text)}${imgHtml}${voiceHtml}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      executeEngine(text);
+    }
+
+    async function executeEngine(prompt) {
+      renderMessage('user', prompt);
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const pLower = prompt.toLowerCase();
+      const isImage = pLower.includes('image') || pLower.includes('picture') || pLower.includes('photo') || pLower.includes('படம்');
+
+      try {
+        const aiAnswer = await requestGemini(prompt);
+        document.getElementById(loaderId)?.remove();
+
+        let imageUrl = isImage ? 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=1024&height=1024&nologo=true' : null;
+        renderMessage('ai', aiAnswer, imageUrl);
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        
+        const lower = prompt.toLowerCase();
+        let smartResponse = "";
+        if (lower.includes("hi") || lower.includes("hello") || lower.includes("வணக்கம்") || lower.includes("hlo")) {
+          smartResponse = "வணக்கம் நண்பா! MasterMind AI 50-Domain Omniverse தயாராக உள்ளது. கல்வி, TNPSC/UPSC, கோடிங், வீடியோ எடிட்டிங் அல்லது விநாடி வினா என எதை இயக்க வேண்டும்?";
+        } else {
+          smartResponse = `**MasterMind Omniverse Engine:**\n\n"${prompt}" பற்றிய முழுமையான விளக்கங்கள் மற்றும் வழிகாட்டல்கள் இதோ தயாராக உள்ளன. எந்த குறிப்பிட்ட துறையின் மூலம் இதை ஆழமாக தெரிந்து கொள்ள வேண்டும் நண்பா?`;
+        }
+        renderMessage('ai', smartResponse, null);
+      }
+    }
+
+    async function requestGemini(prompt) {
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: chatHistory.concat([{ role: "user", parts: [{ text: prompt }] }])
+        })
+      });
+
+      if (!res.ok) throw new Error("Network error");
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+
+      chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+      chatHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
+    }
+
+    function toggleVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Chrome browser-il microphone support seiyapadum.");
+        return;
+      }
+      const rec = new SpeechRec();
+      rec.lang = 'ta-IN';
+      const mic = document.getElementById('micButton');
+      mic.classList.add('recording');
+
+      rec.onresult = function(e) {
+        mic.classList.remove('recording');
+        if (e.results && e.results[0] && e.results[0][0]) {
+          document.getElementById('userInput').value = e.results[0][0].transcript;
+          sendUserMessage();
+        }
+      };
+      rec.onerror = function() { mic.classList.remove('recording'); };
+      rec.onend = function() { mic.classList.remove('recording'); };
+      rec.start();
+    }
+  </script>
+</body>
+</html>
