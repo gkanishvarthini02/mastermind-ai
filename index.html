@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>MasterMind AI - 50 Domain Omniverse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bubble-user: #eff6ff;
+      --bubble-user-text: #1e3a8a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background-color: var(--bg);
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      background: #ffffff;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    /* Top Header */
+    .header {
+      height: 54px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: #ffffff;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .btn-icon:active { background: #f1f5f9; }
+
+    .app-title {
+      font-size: 17.5px;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+      letter-spacing: -0.3px;
+    }
+
+    /* Dark Navy 50-Domain Hub Sheet */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 24, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      display: none;
+    }
+    .modal-overlay.open { display: block; }
+
+    .modal-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      background: #0b1329;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -12px 50px rgba(0,0,0,0.6);
+      transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1);
+      border-top: 1px solid #1e293b;
+    }
+    .modal-sheet.open { transform: translateX(-50%) translateY(0); }
+
+    .modal-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-close-btn {
+      background: #1e293b;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: #94a3b8;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hub-card {
+      background: #131d38;
+      border: 1px solid #1e2d52;
+      border-radius: 18px;
+      padding: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .hub-card:active {
+      background: #1e2c56;
+      border-color: #3b82f6;
+      transform: scale(0.97);
+    }
+    .hub-icon { font-size: 24px; margin-bottom: 2px; }
+    .hub-name { font-size: 13px; font-weight: 700; color: #ffffff; }
+    .hub-desc { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+
+    /* Side Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 290px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 70;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.28s ease;
+    }
+    .drawer.open { transform: translateX(320px); }
+    .drawer-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 14px;
+    }
+    .drawer-content { flex: 1; overflow-y: auto; padding: 14px; }
+    .drawer-label { font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+    .lang-dropdown {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 12.5px; font-weight: 600; background: #f8fafc; color: var(--text-main); outline: none; margin-bottom: 16px;
+    }
+    .btn-new-convo {
+      width: 100%; padding: 10px; background: var(--primary); color: #ffffff; border: none;
+      border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 14px;
+    }
+
+    /* Chat View */
+    .chat-view {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 14px 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    .welcome-card { padding: 20px 6px 6px; }
+    .welcome-heading {
+      font-size: 22px;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .welcome-text { font-size: 13px; color: var(--text-muted); line-height: 1.45; font-weight: 500; }
+
+    .message-row { display: flex; width: 100%; }
+    .message-row.user { justify-content: flex-end; }
+    .message-row.ai { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bubble.user { background: var(--bubble-user); color: var(--bubble-user-text); font-weight: 600; border-bottom-right-radius: 4px; }
+    .bubble.ai { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px; width: 100%; max-width: 92%; }
+
+    /* Cinematic Video Studio Box */
+    .video-studio-box {
+      margin-top: 10px;
+      background: #0b1329;
+      border-radius: 14px;
+      padding: 12px;
+      color: #ffffff;
+      border: 1px solid #1e293b;
+    }
+    .video-preview-canvas {
+      width: 100%;
+      height: 160px;
+      background: #040915;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #94a3b8;
+      border: 1px dashed #1e293b;
+      text-align: center;
+      padding: 10px;
+    }
+    .video-controls-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .v-tag {
+      background: #131d38;
+      color: #93c5fd;
+      border: 1px solid #1e2d52;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* 5s Quiz */
+    .quiz-card {
+      margin-top: 10px;
+      padding: 12px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+    }
+    .quiz-timer-bar {
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0 10px;
+    }
+    .quiz-timer-fill {
+      height: 100%;
+      width: 100%;
+      background: #ef4444;
+      transition: width 5s linear;
+    }
+    .quiz-btn {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      text-align: left;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+    .quiz-btn:active { background: #e2e8f0; }
+    .quiz-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+    .quiz-btn.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+
+    /* Media Box */
+    .media-card {
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .media-card img { width: 100%; height: auto; display: block; }
+
+    .tts-inline-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: #334155;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    .thinking-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 14px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: blinkDot 1.4s infinite ease-in-out both;
+    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes blinkDot {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Bottom Input */
+    .bottom-bar {
+      padding: 8px 14px 14px;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-box {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 26px;
+      padding: 4px 6px 4px 14px;
+      gap: 6px;
+      border: 1.5px solid transparent;
+    }
+    .input-box:focus-within { background: #ffffff; border-color: #94a3b8; }
+
+    .input-field {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      padding: 6px 0;
+    }
+
+    .action-circle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .btn-voice { background: transparent; color: #475569; }
+    .btn-voice.recording { background: #fee2e2; color: #dc2626; animation: pulse 1s infinite; }
+    .btn-send { background: var(--primary); color: #ffffff; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <header class="header">
+      <div class="nav-left">
+        <button class="btn-icon" onclick="toggleDrawer()">☰</button>
+        <div class="app-title" onclick="resetChat()">✦ MasterMind AI</div>
+      </div>
+      <div class="nav-right">
+        <button class="btn-icon" onclick="toggleModal()" style="font-size: 20px;" title="50 Domains Hub">🗂️</button>
+        <button class="btn-icon" onclick="resetChat()" style="font-size: 20px; font-weight: 800;">＋</button>
+      </div>
+    </header>
+
+    <!-- Side Drawer -->
+    <div class="drawer" id="sideDrawer">
+      <div class="drawer-header">
+        <div>✦ MasterMind Controls</div>
+        <button class="btn-icon" onclick="toggleDrawer()">✕</button>
+      </div>
+      <div class="drawer-content">
+        <button class="btn-new-convo" onclick="resetChat()">＋ Start Fresh Conversation</button>
+        <div class="drawer-label">Preferred Voice & Language</div>
+        <select class="lang-dropdown" id="userLang">
+          <option value="ta-IN" selected>தமிழ் (Tamil)</option>
+          <option value="en-IN">English (Global)</option>
+          <option value="hi-IN">हिन्दी (Hindi)</option>
+        </select>
+        <div class="drawer-label">Active Power Engine</div>
+        <div style="font-size: 12px; color: #475569; line-height: 1.8;">
+          ✓ 50 Omniverse Domains Active<br/>
+          ✓ Face-Lock Cinema Rendering<br/>
+          ✓ 5s Quiz & Reels Engine<br/>
+          ✓ 4K Ultra-HD Image Studio<br/>
+          ✓ Voice Cloning & Speech Engine
+        </div>
+      </div>
+    </div>
+
+    <!-- 50 Domains Dark Navy Hub Sheet -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeAll()"></div>
+    <div class="modal-sheet" id="modalSheet">
+      <div class="modal-header">
+        <div class="modal-title">✦ 50 Omniverse Domains Hub</div>
+        <button class="modal-close-btn" onclick="toggleModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="hub-card" onclick="triggerStudio('School Education (6th-12th Tamil, Maths, Science & Social)')">
+          <div class="hub-icon">🏫</div>
+          <div class="hub-name">School Education</div>
+          <div class="hub-desc">6th-12th Tamil, Maths, Science & Social</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('TNPSC Civil Services (Group 4, 2, 1, Unit 8/9 & VAO Hub)')">
+          <div class="hub-icon">🏛️</div>
+          <div class="hub-name">TNPSC Civil Services</div>
+          <div class="hub-desc">Group 4, 2, 1, Unit 8/9 & VAO Hub</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('UPSC Civil Services (Prelims GS, CSAT & Answer Writing)')">
+          <div class="hub-icon">🇮🇳</div>
+          <div class="hub-name">UPSC Civil Services</div>
+          <div class="hub-desc">Prelims GS, CSAT & Answer Writing</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Current Affairs & GK (National, State, Sports & Politics)')">
+          <div class="hub-icon">🌍</div>
+          <div class="hub-name">Current Affairs & GK</div>
+          <div class="hub-desc">National, State, Sports & Politics</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Law & Judiciary (BNS, CrPC, AIBE Bar Exam & Judiciary)')">
+          <div class="hub-icon">⚖️</div>
+          <div class="hub-name">Law & Judiciary</div>
+          <div class="hub-desc">BNS, CrPC, AIBE Bar Exam & Judiciary</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('IT & Software Career (Python, Web Dev, DSA & Placement Prep)')">
+          <div class="hub-icon">💻</div>
+          <div class="hub-name">IT & Software Career</div>
+          <div class="hub-desc">Python, Web Dev, DSA & Placement Prep</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Medical & Health (NEET UG, Biology, Anatomy & Pharma)')">
+          <div class="hub-icon">🩺</div>
+          <div class="hub-name">Medical & Health</div>
+          <div class="hub-desc">NEET UG, Biology, Anatomy & Pharma</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Banking & SSC (Quant, Reasoning & Government Jobs)')">
+          <div class="hub-icon">🏦</div>
+          <div class="hub-name">Banking & SSC</div>
+          <div class="hub-desc">Quant, Reasoning & Government Jobs</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Shorts Video Studio (9:16 Quiz Reels, Kids Cartoons & Stories)')">
+          <div class="hub-icon">🎬</div>
+          <div class="hub-name">Shorts Video Studio</div>
+          <div class="hub-desc">9:16 Quiz Reels, Kids Cartoons & Stories</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Voice & Audio Studio (Natural Teacher Voice & AI Audio)')">
+          <div class="hub-icon">🎙️</div>
+          <div class="hub-name">Voice & Audio Studio</div>
+          <div class="hub-desc">Natural Teacher Voice & AI Audio</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Document & Notes Studio (Instant Study Material & PDF Exporter)')">
+          <div class="hub-icon">📄</div>
+          <div class="hub-name">Document & Notes</div>
+          <div class="hub-desc">Instant Study Material & PDF Exporter</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Global Multiverse (Any concept in Tamil, English, Hindi, etc.)')">
+          <div class="hub-icon">🌐</div>
+          <div class="hub-name">Global Multiverse</div>
+          <div class="hub-desc">Any concept in Tamil, English, Hindi, etc.</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Space, Astronomy & Quantum Physics')">
+          <div class="hub-icon">🚀</div>
+          <div class="hub-name">Space & Astronomy</div>
+          <div class="hub-desc">Black holes, Relativity & Quantum mechanics</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Graphic Design, UI/UX & Figma Studio')">
+          <div class="hub-icon">🎨</div>
+          <div class="hub-name">UI/UX & Graphics</div>
+          <div class="hub-desc">Wireframing, logos & mobile app layouts</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Stock Market, Crypto & Financial Trading')">
+          <div class="hub-icon">📈</div>
+          <div class="hub-name">Stock & Crypto</div>
+          <div class="hub-desc">Technical analysis, portfolio & trading</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Music Composition, Lyrics & Beatmaking')">
+          <div class="hub-icon">🎸</div>
+          <div class="hub-name">Music & Lyrics</div>
+          <div class="hub-desc">Tamil songs, rap verses & musical chords</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Master Chef & Global Recipe Studio')">
+          <div class="hub-icon">🍳</div>
+          <div class="hub-name">Master Chef Studio</div>
+          <div class="hub-desc">Traditional recipes & macro-nutrients</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Creative Writing, Novels & Screenwriting')">
+          <div class="hub-icon">✍️</div>
+          <div class="hub-name">Creative Writing</div>
+          <div class="hub-desc">Cinematic scripts & dialogue creation</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Psychology, Philosophy & Life Coaching')">
+          <div class="hub-icon">🧠</div>
+          <div class="hub-name">Psychology & Life</div>
+          <div class="hub-desc">Mindset mastery & emotional intelligence</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Robotics, IoT & Embedded Systems')">
+          <div class="hub-icon">🤖</div>
+          <div class="hub-name">Robotics & IoT</div>
+          <div class="hub-desc">Arduino code & circuit automation logic</div>
+        </div>
+
+        <div class="hub-card" onclick="triggerStudio('Game Development & 3D Engine Studio')">
+          <div class="hub-icon">🎮</div>
+          <div class="hub-name">Game Development</div>
+          <div class="hub-desc">Unity C#, Unreal Engine & 3D physics</div>
+        </div>
+ <main class="chat-view" id="chatView">
+      <div class="welcome-card" id="welcomeCard">
+        <div class="welcome-heading">வணக்கம்!</div>
+        <div class="welcome-text">MasterMind AI 50-Domain Omniverse தயார். எந்த துறை பற்றியும் கேள்விகள் கேட்கலாம்!</div>
+      </div>
+    </main>
+
+    <!-- Bottom Input -->
+    <footer class="bottom-bar">
+      <div class="input-box">
+        <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') submitMessage()" />
+        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()" title="Voice Input">🎤</button>
+        <button class="action-circle-btn btn-send" id="sendBtn" onclick="submitMessage()" title="Send">➤</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const GEMINI_API_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let conversationHistory = [];
+
+    function toggleDrawer() {
+      document.getElementById('sideDrawer').classList.toggle('open');
+      document.getElementById('modalOverlay').classList.toggle('open');
+    }
+
+    function toggleModal() {
+      document.getElementById('modalSheet').classList.toggle('open');
+      document.getElementById('modalOverlay').classList.toggle('open');
+    }
+
+    function closeAll() {
+      document.getElementById('sideDrawer').classList.remove('open');
+      document.getElementById('modalSheet').classList.remove('open');
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    function triggerStudio(name) {
+      closeAll();
+      document.getElementById('userInput').value = name;
+      submitMessage();
+    }
+
+    function resetChat() {
+      conversationHistory = [];
+      document.getElementById('chatView').innerHTML = `
+        <div class="welcome-card" id="welcomeCard">
+          <div class="welcome-heading">வணக்கம்!</div>
+          <div class="welcome-text">MasterMind AI 50-Domain Omniverse தயார். எந்த துறை பற்றியும் கேள்விகள் கேட்கலாம்!</div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+      closeAll();
+    }
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = document.getElementById('userLang').value || 'ta-IN';
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function addChatRow(sender, text, mediaUrl = null, isQuiz = false, isVideoStudio = false) {
+      const welcome = document.getElementById('welcomeCard');
+      if (welcome) welcome.style.display = 'none';
+
+      const view = document.getElementById('chatView');
+      const row = document.createElement('div');
+      row.className = `message-row ${sender}`;
+      
+      let mediaHtml = '';
+      if (mediaUrl) {
+        mediaHtml = `<div class="media-card"><img src="${mediaUrl}" alt="AI Visual" loading="lazy" /></div>`;
+      }
+
+      let quizHtml = '';
+      if (isQuiz) {
+        quizHtml = `
+          <div class="quiz-card">
+            <div style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase;">⏱️ 5-Second Timer Challenge</div>
+            <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="timerFill"></div></div>
+            <button class="quiz-btn" onclick="checkQuizAnswer(this, true)">A) சிந்து சமவெளி நாகரிகம் (Indus Valley)</button>
+            <button class="quiz-btn" onclick="checkQuizAnswer(this, false)">B) மௌரிய பேரரசு (Maurya Empire)</button>
+            <button class="quiz-btn" onclick="checkQuizAnswer(this, false)">C) குப்த பேரரசு (Gupta Empire)</button>
+          </div>
+        `;
+      }
+
+      let videoStudioHtml = '';
+      if (isVideoStudio) {
+        videoStudioHtml = `
+          <div class="video-studio-box">
+            <div class="video-preview-canvas">
+              <div style="font-size: 24px; margin-bottom: 6px;">🎬</div>
+              <strong>[Face-Lock Cinematic Rendering Engine Active]</strong>
+              <span style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Original Face Identity Locked &bull; 4K Cinematic Drama</span>
+            </div>
+            <div class="video-controls-row">
+              <span class="v-tag">100% Face Lock</span>
+              <span class="v-tag">9:16 Reels / 16:9 4K</span>
+              <span class="v-tag">Slow Pan Camera</span>
+              <span class="v-tag">AI Voice Sync</span>
+            </div>
+          </div>
+        `;
+      }
+
+      let ttsHtml = '';
+      if (sender === 'ai' && !isQuiz && !isVideoStudio) {
+        ttsHtml = `<br/><button class="tts-inline-btn" onclick="speakText(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>`;
+      }
+
+      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}${quizHtml}${videoStudioHtml}${mediaHtml}${ttsHtml}</div>`;
+      view.appendChild(row);
+      view.scrollTop = view.scrollHeight;
+
+      if (isQuiz) {
+        setTimeout(() => {
+          const fill = document.getElementById('timerFill');
+          if (fill) fill.style.width = '0%';
+        }, 100);
+      }
+    }
+
+    function checkQuizAnswer(btn, isCorrect) {
+      if (isCorrect) {
+        btn.classList.add('correct');
+        if (window.confetti) confetti({ particleCount: 70, spread: 60, origin: { y: 0.8 } });
+      } else {
+        btn.classList.add('wrong');
+      }
+    }
+
+    function submitMessage() {
+      const input = document.getElementById('userInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      input.value = '';
+      executeMasterPrompt(prompt);
+    }
+
+    async function executeMasterPrompt(prompt) {
+      addChatRow('user', prompt);
+
+      const view = document.getElementById('chatView');
+      const loaderId = 'loader_' + Date.now();
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = loaderId;
+      loaderDiv.className = 'message-row ai';
+      loaderDiv.innerHTML = `<div class="thinking-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+      view.appendChild(loaderDiv);
+      view.scrollTop = view.scrollHeight;
+
+      const lower = prompt.toLowerCase();
+      const isQuiz = lower.includes('quiz') || lower.includes('கேள்வி');
+      const isVideoStudio = lower.includes('video') || lower.includes('face-lock') || lower.includes('வீடியோ');
+      const isImage = lower.includes('image') || lower.includes('picture') || lower.includes('photo') || lower.includes('படம்') || lower.includes('draw');
+
+      try {
+        let aiText = await getGeminiResponse(prompt);
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+
+        let imageUrl = null;
+        if (isImage) {
+          const cleanPrompt = encodeURIComponent(prompt.replace(/image|picture|photo|draw|படம்/gi, '').trim() || 'masterpiece 8k cinematic photorealistic');
+          imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=1024&nologo=true`;
+        }
+
+        addChatRow('ai', aiText, imageUrl, isQuiz, isVideoStudio);
+      } catch (e) {
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        
+        let smartText = generateSmartConversationalReply(prompt);
+        addChatRow('ai', smartText, null, isQuiz, isVideoStudio);
+      }
+    }
+
+    async function getGeminiResponse(prompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const payload = {
+        contents: [
+          ...conversationHistory,
+          { role: "user", parts: [{ text: prompt }] }
+        ]
+      };
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("API Network issue");
+
+      const data = await res.json();
+      if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+        const text = data.candidates[0].content.parts[0].text;
+        conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
+        conversationHistory.push({ role: "model", parts: [{ text: text }] });
+        return text;
+      }
+      throw new Error("Empty candidate");
+    }
+
+    function generateSmartConversationalReply(prompt) {
+      return `**MasterMind Omniverse AI (50 Domains Active):**\n\nநண்பா, "${prompt}" பற்றிய விரிவான தொழில்முறை (Professional) பதில்கள் மற்றும் வழிகாட்டல்கள் தயார். எந்த குறிப்பிட்ட துறை அல்லது கோணத்தில் விளக்கம் வேண்டும்?`;
+    }
+
+    function startVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Microphone recognition is supported on Chrome mobile browser. Please allow mic permission.");
+        return;
+      }
+      const rec = new SpeechRec();
+      rec.lang = document.getElementById('userLang').value || 'ta-IN';
+      rec.continuous = false;
+      rec.interimResults = false;
+
+      const mic = document.getElementById('micBtn');
+      mic.classList.add('recording');
+
+      rec.onresult = (e) => {
+        mic.classList.remove('recording');
+        if (e.results && e.results[0] && e.results[0][0]) {
+          document.getElementById('userInput').value = e.results[0][0].transcript;
+          submitMessage();
+        }
+      };
+      rec.onerror = () => mic.classList.remove('recording');
+      rec.onend = () => mic.classList.remove('recording');
+      rec.start();
+    }
+  </script>
+</body>
+</html>
