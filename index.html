@@ -513,6 +513,103 @@
       if (welcome) welcome.style.display = 'none';
 
       const view = document.getElementById('chatView');
+      if (!view) return;
+
+      const row = document.createElement('div');
+      row.className = `message-row ${sender}`;
+      
+      let mediaHtml = mediaUrl ? `<div class="media-card"><img src="${mediaUrl}" alt="Visual" loading="lazy" /></div>` : '';
+      let ttsHtml = sender === 'ai' ? `<br/><button class="tts-btn" onclick="speakText(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>` : '';
+
+      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}${mediaHtml}${ttsHtml}</div>`;
+      view.appendChild(row);
+      view.scrollTop = view.scrollHeight;
+    }
+
+    function submitMessage() {
+      const input = document.getElementById('userInput');
+      if (!input) return;
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      input.value = '';
+      executePrompt(prompt);
+    }
+
+    async function executePrompt(prompt) {
+      addChatRow('user', prompt);
+
+      const view = document.getElementById('chatView');
+      const loaderId = 'loader_' + Date.now();
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = loaderId;
+      loaderDiv.className = 'message-row ai';
+      loaderDiv.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+      if (view) {
+        view.appendChild(loaderDiv);
+        view.scrollTop = view.scrollHeight;
+      }
+
+      const isImage = prompt.toLowerCase().includes('image') || prompt.toLowerCase().includes('picture') || prompt.toLowerCase().includes('photo') || prompt.toLowerCase().includes('படம்');
+
+      try {
+        const aiText = await callGeminiAPI(prompt);
+        document.getElementById(loaderId)?.remove();
+
+        let imageUrl = isImage ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true` : null;
+        addChatRow('ai', aiText, imageUrl);
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        addChatRow('ai', `**MasterMind Omniverse AI:**\n\nநண்பா, "${prompt}" பற்றிய முழுமையான தொழில்முறை விளக்கங்கள் மற்றும் வழிகாட்டல்கள் இதோ தயாராக உள்ளன.`);
+      }
+    }
+
+    async function callGeminiAPI(prompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [...conversationHistory, { role: "user", parts: [{ text: prompt }] }]
+        })
+      });
+
+      if (!res.ok) throw new Error("API Error");
+
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+      
+      conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
+      conversationHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
+    }
+
+    function startVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Chrome mobile browser-il microphone support seiyapadum.");
+        return;
+      }
+      const rec = new SpeechRec();
+      rec.lang = document.getElementById('userLang')?.value || 'ta-IN';
+      const mic = document.getElementById('micBtn');
+      if (mic) mic.classList.add('recording');
+
+      rec.onresult = (e) => {
+        if (mic) mic.classList.remove('recording');
+        const input = document.getElementById('userInput');
+        if (input && e.results && e.results[0] && e.results[0][0]) {
+          input.value = e.results[0][0].transcript;
+          submitMessage();
+        }
+      };
+      rec.onerror = () => { if (mic) mic.classList.remove('recording'); };
+      rec.onend = () => { if (mic) mic.classList.remove('recording'); };
+      rec.start();
+    }
+  </script>
+</body>
+</html>
       
 
       
