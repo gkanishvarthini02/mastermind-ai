@@ -3,29 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>MasterMind AI - 50 Domain Omniverse</title>
+  <title>MasterMind AI - Omniverse Super App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
       --bg: #ffffff;
-      --card-bg: #f8fafc;
       --border: #e2e8f0;
       --primary: #2563eb;
       --primary-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --bubble-user: #eff6ff;
-      --bubble-user-text: #1e3a8a;
+      --bubble-user: #f1f5f9;
+      --bubble-user-text: #0f172a;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -47,13 +46,11 @@
       margin: 0 auto;
       position: relative;
       background: #ffffff;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
     }
 
-    /* Top Header */
+    /* Header */
     .header {
-      height: 54px;
+      height: 56px;
       padding: 0 16px;
       display: flex;
       align-items: center;
@@ -73,35 +70,33 @@
     .btn-icon {
       background: transparent;
       border: none;
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 19px;
+      font-size: 20px;
       color: #334155;
       cursor: pointer;
     }
-
     .btn-icon:active { background: #f1f5f9; }
 
     .app-title {
-      font-size: 17.5px;
+      font-size: 18px;
       font-weight: 800;
       background: var(--primary-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       cursor: pointer;
-      letter-spacing: -0.3px;
     }
 
     /* Dark Navy 50-Domain Hub Sheet */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(5, 10, 24, 0.75);
-      backdrop-filter: blur(6px);
+      background: rgba(3, 7, 18, 0.8);
+      backdrop-filter: blur(8px);
       z-index: 50;
       display: none;
     }
@@ -114,46 +109,39 @@
       transform: translateX(-50%) translateY(100%);
       width: 100%;
       max-width: 800px;
-      max-height: 90vh;
+      max-height: 88vh;
       background: #0b1329;
       border-top-left-radius: 28px;
       border-top-right-radius: 28px;
       z-index: 60;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -12px 50px rgba(0,0,0,0.6);
-      transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1);
+      box-shadow: 0 -15px 50px rgba(0,0,0,0.7);
+      transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
       border-top: 1px solid #1e293b;
     }
     .modal-sheet.open { transform: translateX(-50%) translateY(0); }
 
     .modal-header {
-      padding: 16px 20px;
+      padding: 18px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid #1e293b;
     }
-    .modal-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .modal-close-btn {
+    .modal-title { font-size: 16px; font-weight: 800; color: #ffffff; }
+    .modal-close {
       background: #1e293b;
       border: none;
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       color: #94a3b8;
       font-size: 16px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
     }
 
     .modal-body {
@@ -169,82 +157,41 @@
     .hub-card {
       background: #131d38;
       border: 1px solid #1e2d52;
-      border-radius: 18px;
+      border-radius: 16px;
       padding: 14px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      transition: all 0.15s;
+      gap: 4px;
+      transition: transform 0.1s, background 0.1s;
     }
-    .hub-card:active {
-      background: #1e2c56;
-      border-color: #3b82f6;
-      transform: scale(0.97);
-    }
-    .hub-icon { font-size: 24px; margin-bottom: 2px; }
+    .hub-card:active { background: #1e2c56; transform: scale(0.97); }
+    .hub-icon { font-size: 24px; }
     .hub-name { font-size: 13px; font-weight: 700; color: #ffffff; }
-    .hub-desc { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+    .hub-desc { font-size: 10.5px; color: #94a3b8; line-height: 1.3; }
 
-    /* Side Drawer */
-    .drawer {
-      position: fixed;
-      top: 0;
-      left: -320px;
-      width: 290px;
-      height: 100%;
-      background: #ffffff;
-      z-index: 70;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.28s ease;
-    }
-    .drawer.open { transform: translateX(320px); }
-    .drawer-header {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 800;
-      color: var(--primary);
-      font-size: 14px;
-    }
-    .drawer-content { flex: 1; overflow-y: auto; padding: 14px; }
-    .drawer-label { font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    .lang-dropdown {
-      width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px;
-      font-size: 12.5px; font-weight: 600; background: #f8fafc; color: var(--text-main); outline: none; margin-bottom: 16px;
-    }
-    .btn-new-convo {
-      width: 100%; padding: 10px; background: var(--primary); color: #ffffff; border: none;
-      border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 14px;
-    }
-
-    /* Chat View */
+    /* Chat Area */
     .chat-view {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      padding: 14px 14px 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 14px;
       -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
     }
 
-    .welcome-card { padding: 20px 6px 6px; }
+    .welcome-card { padding: 24px 8px; text-align: center; }
     .welcome-heading {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 800;
       background: var(--primary-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
-    .welcome-text { font-size: 13px; color: var(--text-muted); line-height: 1.45; font-weight: 500; }
+    .welcome-sub { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
 
     .message-row { display: flex; width: 100%; }
     .message-row.user { justify-content: flex-end; }
@@ -252,144 +199,56 @@
 
     .bubble {
       max-width: 88%;
-      padding: 10px 14px;
-      border-radius: 16px;
+      padding: 12px 16px;
+      border-radius: 18px;
       font-size: 13.5px;
-      line-height: 1.55;
+      line-height: 1.6;
       word-break: break-word;
     }
     .bubble.user { background: var(--bubble-user); color: var(--bubble-user-text); font-weight: 600; border-bottom-right-radius: 4px; }
-    .bubble.ai { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px; width: 100%; max-width: 92%; }
+    .bubble.ai { background: #f8fafc; border: 1px solid var(--border); color: var(--text-main); border-bottom-left-radius: 4px; width: 100%; max-width: 92%; }
 
-    /* Cinematic Video Studio Box */
-    .video-studio-box {
-      margin-top: 10px;
-      background: #0b1329;
-      border-radius: 14px;
-      padding: 12px;
-      color: #ffffff;
-      border: 1px solid #1e293b;
-    }
-    .video-preview-canvas {
-      width: 100%;
-      height: 160px;
-      background: #040915;
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: #94a3b8;
-      border: 1px dashed #1e293b;
-      text-align: center;
-      padding: 10px;
-    }
-    .video-controls-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-    .v-tag {
-      background: #131d38;
-      color: #93c5fd;
-      border: 1px solid #1e2d52;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    /* 5s Quiz */
-    .quiz-card {
-      margin-top: 10px;
-      padding: 12px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 14px;
-    }
-    .quiz-timer-bar {
-      height: 5px;
-      background: #e2e8f0;
-      border-radius: 4px;
-      overflow: hidden;
-      margin: 8px 0 10px;
-    }
-    .quiz-timer-fill {
-      height: 100%;
-      width: 100%;
-      background: #ef4444;
-      transition: width 5s linear;
-    }
-    .quiz-btn {
-      display: block;
-      width: 100%;
-      padding: 8px 12px;
-      margin-bottom: 6px;
-      text-align: left;
-      font-size: 12.5px;
-      font-weight: 600;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background: #f8fafc;
-      cursor: pointer;
-    }
-    .quiz-btn:active { background: #e2e8f0; }
-    .quiz-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
-    .quiz-btn.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
-
-    /* Media Box */
     .media-card {
       margin-top: 10px;
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border);
-      background: #000;
     }
     .media-card img { width: 100%; height: auto; display: block; }
 
-    .tts-inline-btn {
+    .tts-btn {
       display: inline-flex;
       align-items: center;
       gap: 4px;
       padding: 4px 10px;
-      border-radius: 14px;
+      border-radius: 12px;
       font-size: 11px;
       font-weight: 700;
-      background: #f1f5f9;
-      border: 1px solid var(--border);
+      background: #e2e8f0;
       color: #334155;
       margin-top: 8px;
       cursor: pointer;
+      border: none;
     }
 
-    .thinking-dots {
+    .thinking {
       display: inline-flex;
-      align-items: center;
       gap: 4px;
       padding: 8px 12px;
       background: #f1f5f9;
       border-radius: 14px;
     }
     .dot {
-      width: 6px;
-      height: 6px;
-      background: var(--primary);
-      border-radius: 50%;
-      animation: blinkDot 1.4s infinite ease-in-out both;
+      width: 6px; height: 6px; background: var(--primary); border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
     }
     .dot:nth-child(1) { animation-delay: -0.32s; }
     .dot:nth-child(2) { animation-delay: -0.16s; }
-
-    @keyframes blinkDot {
-      0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-      40% { transform: scale(1); opacity: 1; }
-    }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
     /* Bottom Input */
     .bottom-bar {
-      padding: 8px 14px 14px;
+      padding: 10px 16px 16px;
       background: #ffffff;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
@@ -399,9 +258,9 @@
       display: flex;
       align-items: center;
       background: #f1f5f9;
-      border-radius: 26px;
-      padding: 4px 6px 4px 14px;
-      gap: 6px;
+      border-radius: 28px;
+      padding: 4px 6px 4px 16px;
+      gap: 8px;
       border: 1.5px solid transparent;
     }
     .input-box:focus-within { background: #ffffff; border-color: #94a3b8; }
@@ -410,29 +269,19 @@
       flex: 1;
       border: none;
       background: transparent;
-      font-size: 14px;
+      font-size: 14.5px;
       color: var(--text-main);
       outline: none;
-      padding: 6px 0;
+      padding: 8px 0;
     }
 
     .action-circle-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
     }
     .btn-voice { background: transparent; color: #475569; }
-    .btn-voice.recording { background: #fee2e2; color: #dc2626; animation: pulse 1s infinite; }
-    .btn-send { background: var(--primary); color: #ffffff; }
-
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .btn-voice.recording { background: #fee2e2; color: #dc2626; }
+    .btn-send { background: var(--primary); color: #ffffff; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -445,174 +294,42 @@
         <div class="app-title" onclick="resetChat()">✦ MasterMind AI</div>
       </div>
       <div class="nav-right">
-        <button class="btn-icon" onclick="toggleModal()" style="font-size: 20px;" title="50 Domains Hub">🗂️</button>
-        <button class="btn-icon" onclick="resetChat()" style="font-size: 20px; font-weight: 800;">＋</button>
+        <button class="btn-icon" onclick="toggleModal()" title="50 Domains Hub">🗂️</button>
+        <button class="btn-icon" onclick="resetChat()" title="New Chat" style="font-weight: 800;">＋</button>
       </div>
     </header>
 
-    <!-- Side Drawer -->
-    <div class="drawer" id="sideDrawer">
-      <div class="drawer-header">
-        <div>✦ MasterMind Controls</div>
-        <button class="btn-icon" onclick="toggleDrawer()">✕</button>
+    <!-- Side Settings Drawer -->
+    <div class="drawer" id="sideDrawer" style="position:fixed;top:0;left:-320px;width:280px;height:100%;background:#fff;z-index:70;box-shadow:10px 0 30px rgba(0,0,0,0.15);transition:transform 0.3s ease;display:flex;flex-direction:column;">
+      <div style="padding:16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:800;color:#2563eb;">
+        <span>✦ Settings</span>
+        <button onclick="toggleDrawer()" style="background:none;border:none;font-size:16px;cursor:pointer;">✕</button>
       </div>
-      <div class="drawer-content">
-        <button class="btn-new-convo" onclick="resetChat()">＋ Start Fresh Conversation</button>
-        <div class="drawer-label">Preferred Voice & Language</div>
-        <select class="lang-dropdown" id="userLang">
+      <div style="padding:16px;">
+        <button onclick="resetChat()" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-bottom:16px;">New Chat</button>
+        <label style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;">Language</label>
+        <select id="userLang" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;margin-top:6px;font-weight:600;">
           <option value="ta-IN" selected>தமிழ் (Tamil)</option>
-          <option value="en-IN">English (Global)</option>
-          <option value="hi-IN">हिन्दी (Hindi)</option>
+          <option value="en-IN">English</option>
         </select>
-        <div class="drawer-label">Active Power Engine</div>
-        <div style="font-size: 12px; color: #475569; line-height: 1.8;">
-          ✓ 50 Omniverse Domains Active<br/>
-          ✓ Face-Lock Cinema Rendering<br/>
-          ✓ 5s Quiz & Reels Engine<br/>
-          ✓ 4K Ultra-HD Image Studio<br/>
-          ✓ Voice Cloning & Speech Engine
-        </div>
       </div>
     </div>
 
-    <!-- 50 Domains Dark Navy Hub Sheet -->
+    <!-- 50 Domains Hub Sheet -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeAll()"></div>
     <div class="modal-sheet" id="modalSheet">
       <div class="modal-header">
         <div class="modal-title">✦ 50 Omniverse Domains Hub</div>
-        <button class="modal-close-btn" onclick="toggleModal()">✕</button>
+        <button class="modal-close" onclick="toggleModal()">✕</button>
       </div>
-      <div class="modal-body">
-        
-        <div class="hub-card" onclick="triggerStudio('School Education (6th-12th Tamil, Maths, Science & Social)')">
-          <div class="hub-icon">🏫</div>
-          <div class="hub-name">School Education</div>
-          <div class="hub-desc">6th-12th Tamil, Maths, Science & Social</div>
-        </div>
+      <div class="modal-body" id="hubGrid"></div>
+    </div>
 
-        <div class="hub-card" onclick="triggerStudio('TNPSC Civil Services (Group 4, 2, 1, Unit 8/9 & VAO Hub)')">
-          <div class="hub-icon">🏛️</div>
-          <div class="hub-name">TNPSC Civil Services</div>
-          <div class="hub-desc">Group 4, 2, 1, Unit 8/9 & VAO Hub</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('UPSC Civil Services (Prelims GS, CSAT & Answer Writing)')">
-          <div class="hub-icon">🇮🇳</div>
-          <div class="hub-name">UPSC Civil Services</div>
-          <div class="hub-desc">Prelims GS, CSAT & Answer Writing</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Current Affairs & GK (National, State, Sports & Politics)')">
-          <div class="hub-icon">🌍</div>
-          <div class="hub-name">Current Affairs & GK</div>
-          <div class="hub-desc">National, State, Sports & Politics</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Law & Judiciary (BNS, CrPC, AIBE Bar Exam & Judiciary)')">
-          <div class="hub-icon">⚖️</div>
-          <div class="hub-name">Law & Judiciary</div>
-          <div class="hub-desc">BNS, CrPC, AIBE Bar Exam & Judiciary</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('IT & Software Career (Python, Web Dev, DSA & Placement Prep)')">
-          <div class="hub-icon">💻</div>
-          <div class="hub-name">IT & Software Career</div>
-          <div class="hub-desc">Python, Web Dev, DSA & Placement Prep</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Medical & Health (NEET UG, Biology, Anatomy & Pharma)')">
-          <div class="hub-icon">🩺</div>
-          <div class="hub-name">Medical & Health</div>
-          <div class="hub-desc">NEET UG, Biology, Anatomy & Pharma</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Banking & SSC (Quant, Reasoning & Government Jobs)')">
-          <div class="hub-icon">🏦</div>
-          <div class="hub-name">Banking & SSC</div>
-          <div class="hub-desc">Quant, Reasoning & Government Jobs</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Shorts Video Studio (9:16 Quiz Reels, Kids Cartoons & Stories)')">
-          <div class="hub-icon">🎬</div>
-          <div class="hub-name">Shorts Video Studio</div>
-          <div class="hub-desc">9:16 Quiz Reels, Kids Cartoons & Stories</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Voice & Audio Studio (Natural Teacher Voice & AI Audio)')">
-          <div class="hub-icon">🎙️</div>
-          <div class="hub-name">Voice & Audio Studio</div>
-          <div class="hub-desc">Natural Teacher Voice & AI Audio</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Document & Notes Studio (Instant Study Material & PDF Exporter)')">
-          <div class="hub-icon">📄</div>
-          <div class="hub-name">Document & Notes</div>
-          <div class="hub-desc">Instant Study Material & PDF Exporter</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Global Multiverse (Any concept in Tamil, English, Hindi, etc.)')">
-          <div class="hub-icon">🌐</div>
-          <div class="hub-name">Global Multiverse</div>
-          <div class="hub-desc">Any concept in Tamil, English, Hindi, etc.</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Space, Astronomy & Quantum Physics')">
-          <div class="hub-icon">🚀</div>
-          <div class="hub-name">Space & Astronomy</div>
-          <div class="hub-desc">Black holes, Relativity & Quantum mechanics</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Graphic Design, UI/UX & Figma Studio')">
-          <div class="hub-icon">🎨</div>
-          <div class="hub-name">UI/UX & Graphics</div>
-          <div class="hub-desc">Wireframing, logos & mobile app layouts</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Stock Market, Crypto & Financial Trading')">
-          <div class="hub-icon">📈</div>
-          <div class="hub-name">Stock & Crypto</div>
-          <div class="hub-desc">Technical analysis, portfolio & trading</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Music Composition, Lyrics & Beatmaking')">
-          <div class="hub-icon">🎸</div>
-          <div class="hub-name">Music & Lyrics</div>
-          <div class="hub-desc">Tamil songs, rap verses & musical chords</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Master Chef & Global Recipe Studio')">
-          <div class="hub-icon">🍳</div>
-          <div class="hub-name">Master Chef Studio</div>
-          <div class="hub-desc">Traditional recipes & macro-nutrients</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Creative Writing, Novels & Screenwriting')">
-          <div class="hub-icon">✍️</div>
-          <div class="hub-name">Creative Writing</div>
-          <div class="hub-desc">Cinematic scripts & dialogue creation</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Psychology, Philosophy & Life Coaching')">
-          <div class="hub-icon">🧠</div>
-          <div class="hub-name">Psychology & Life</div>
-          <div class="hub-desc">Mindset mastery & emotional intelligence</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Robotics, IoT & Embedded Systems')">
-          <div class="hub-icon">🤖</div>
-          <div class="hub-name">Robotics & IoT</div>
-          <div class="hub-desc">Arduino code & circuit automation logic</div>
-        </div>
-
-        <div class="hub-card" onclick="triggerStudio('Game Development & 3D Engine Studio')">
-          <div class="hub-icon">🎮</div>
-          <div class="hub-name">Game Development</div>
-          <div class="hub-desc">Unity C#, Unreal Engine & 3D physics</div>
-        </div>
- <main class="chat-view" id="chatView">
+    <!-- Chat View -->
+    <main class="chat-view" id="chatView">
       <div class="welcome-card" id="welcomeCard">
-        <div class="welcome-heading">வணக்கம்!</div>
-        <div class="welcome-text">MasterMind AI 50-Domain Omniverse தயார். எந்த துறை பற்றியும் கேள்விகள் கேட்கலாம்!</div>
+        <div class="welcome-heading">வணக்கம் நண்பா!</div>
+        <div class="welcome-sub">MasterMind AI 50-Domain Omniverse தயார். கல்வி, UPSC, TNPSC, கோடிங், மெடிக்கல், வீடியோ எடிட்டிங் என எதை வேண்டுமானாலும் கேட்கலாம்!</div>
       </div>
     </main>
 
@@ -620,8 +337,8 @@
     <footer class="bottom-bar">
       <div class="input-box">
         <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') submitMessage()" />
-        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()" title="Voice Input">🎤</button>
-        <button class="action-circle-btn btn-send" id="sendBtn" onclick="submitMessage()" title="Send">➤</button>
+        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()">🎤</button>
+        <button class="action-circle-btn btn-send" onclick="submitMessage()">➤</button>
       </div>
     </footer>
 
@@ -631,9 +348,74 @@
     const GEMINI_API_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
     let conversationHistory = [];
 
+    // 50 Omniverse Domains Data Array
+    const domains = [
+      {icon: "🏫", name: "School Education", desc: "6th-12th Tamil, Maths, Science & Social"},
+      {icon: "🏛️", name: "TNPSC Civil Services", desc: "Group 4, 2, 1, Unit 8/9 & VAO Hub"},
+      {icon: "🇮🇳", name: "UPSC Civil Services", desc: "Prelims GS, CSAT & Answer Writing"},
+      {icon: "🌍", name: "Current Affairs & GK", desc: "National, State, Sports & Politics"},
+      {icon: "⚖️", name: "Law & Judiciary", desc: "BNS, CrPC, AIBE Bar Exam & Judiciary"},
+      {icon: "💻", name: "IT & Software Career", desc: "Python, Web Dev, DSA & Placement"},
+      {icon: "🩺", name: "Medical & Health", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "🎬", name: "Shorts Video Studio", desc: "9:16 Quiz Reels, Kids Cartoons & Stories"},
+      {icon: "🎙️", name: "Voice & Audio Studio", desc: "Natural Teacher Voice & AI Audio"},
+      {icon: "📄", name: "Document & Notes", desc: "Instant Study Material & PDF Exporter"},
+      {icon: "🌐", name: "Global Multiverse", desc: "Any concept in Tamil, English, Hindi"},
+      {icon: "🚀", name: "Space & Astronomy", desc: "Black holes, Relativity & Quantum"},
+      {icon: "🎨", name: "UI/UX & Graphics", desc: "Wireframing, logos & mobile layouts"},
+      {icon: "📈", name: "Stock & Crypto", desc: "Technical analysis, portfolio & trading"},
+      {icon: "🎸", name: "Music & Lyrics", desc: "Tamil songs, rap verses & chords"},
+      {icon: "🍳", name: "Master Chef Studio", desc: "Traditional recipes & macro-nutrients"},
+      {icon: "✍️", name: "Creative Writing", desc: "Cinematic scripts & dialogue creation"},
+      {icon: "🧠", name: "Psychology & Life", desc: "Mindset mastery & emotional IQ"},
+      {icon: "🤖", name: "Robotics & IoT", desc: "Arduino code & circuit automation"},
+      {icon: "🎮", name: "Game Development", desc: "Unity C#, Unreal Engine & 3D physics"},
+      {icon: "🛡️", name: "Cyber Security", desc: "Penetration testing & cryptography"},
+      {icon: "⚡", name: "EV & Mechanical", desc: "Battery management & thermodynamics"},
+      {icon: "🧬", name: "Biotech & Genetics", desc: "CRISPR gene editing & bioinformatics"},
+      {icon: "🏢", name: "Startup & Business", desc: "Pitch decks & business model canvas"},
+      {icon: "📦", name: "E-Commerce & Ads", desc: "Meta/Google Ads & Shopify funnels"},
+      {icon: "🌍", name: "Import-Export Trade", desc: "Logistics, customs & supply chain"},
+      {icon: "🏛️", name: "Real Estate & Design", desc: "Floor plans & interior engineering"},
+      {icon: "🎬", name: "Cinema Direction", desc: "Shot divisions & lighting schemes"},
+      {icon: "⚽", name: "Sports & Fitness", desc: "Workout splits & recovery routines"},
+      {icon: "📜", name: "World History", desc: "Ancient civilizations & epigraphy"},
+      {icon: "🌾", name: "Smart Agriculture", desc: "Soil health & automated irrigation"},
+      {icon: "🔮", name: "AI & AGI Research", desc: "Machine learning & neural networks"},
+      {icon: "📊", name: "Data Science", desc: "Pandas, NumPy & SQL analytics"},
+      {icon: "☁️", name: "Cloud & DevOps", desc: "AWS, Docker & Kubernetes"},
+      {icon: "⛓️", name: "Blockchain & Web3", desc: "Solidity & decentralized apps"},
+      {icon: "🚁", name: "Drone & Aerospace", desc: "Aerodynamics & autopilot coding"},
+      {icon: "🔋", name: "Renewable Energy", desc: "Solar grid & wind turbine engineering"},
+      {icon: "🧪", name: "Advanced Chemistry", desc: "Catalysis & material science"},
+      {icon: "🌊", name: "Oceanography", desc: "Deep sea ecosystems & currents"},
+      {icon: "🌋", name: "Geology & Seismology", desc: "Plate tectonics & earthquake models"},
+      {icon: "📊", name: "Statistics & Actuarial", desc: "Probability & risk modeling"},
+      {icon: "🌐", name: "Linguistics", desc: "Syntax evolution & philology"},
+      {icon: "🎭", name: "Classical Arts", desc: "Bharatanatyam & Carnatic music"},
+      {icon: "🧵", name: "Textile & Fashion", desc: "Fabric weaving & sustainable design"},
+      {icon: "📦", name: "Logistics Management", desc: "Warehouse automation & routing"},
+      {icon: "💼", name: "Corporate HR", desc: "Talent acquisition & leadership"},
+      {icon: "📊", name: "Behavioral Economics", desc: "Consumer psychology & game theory"},
+      {icon: "🪐", name: "Astrobiology", desc: "Extraterrestrial life & habitability"},
+      {icon: "🌌", name: "Quantum Computing", desc: "Superposition & entanglement logic"}
+    ];
+
+    window.onload = () => {
+      const grid = document.getElementById('hubGrid');
+      grid.innerHTML = domains.map(d => `
+        <div class="hub-card" onclick="triggerStudio('${d.name} (${d.desc})')">
+          <div class="hub-icon">${d.icon}</div>
+          <div class="hub-name">${d.name}</div>
+          <div class="hub-desc">${d.desc}</div>
+        </div>
+      `).join('');
+    };
+
     function toggleDrawer() {
-      document.getElementById('sideDrawer').classList.toggle('open');
-      document.getElementById('modalOverlay').classList.toggle('open');
+      const drawer = document.getElementById('sideDrawer');
+      drawer.style.transform = drawer.style.transform === 'translateX(320px)' ? 'translateX(0)' : 'translateX(320px)';
     }
 
     function toggleModal() {
@@ -642,14 +424,14 @@
     }
 
     function closeAll() {
-      document.getElementById('sideDrawer').classList.remove('open');
+      document.getElementById('sideDrawer').style.transform = 'translateX(0)';
       document.getElementById('modalSheet').classList.remove('open');
       document.getElementById('modalOverlay').classList.remove('open');
     }
 
     function triggerStudio(name) {
       closeAll();
-      document.getElementById('userInput').value = name;
+      document.getElementById('userInput').value = `${name} பற்றி விரிவாக விளக்கு.`;
       submitMessage();
     }
 
@@ -657,8 +439,8 @@
       conversationHistory = [];
       document.getElementById('chatView').innerHTML = `
         <div class="welcome-card" id="welcomeCard">
-          <div class="welcome-heading">வணக்கம்!</div>
-          <div class="welcome-text">MasterMind AI 50-Domain Omniverse தயார். எந்த துறை பற்றியும் கேள்விகள் கேட்கலாம்!</div>
+          <div class="welcome-heading">வணக்கம் நண்பா!</div>
+          <div class="welcome-sub">MasterMind AI 50-Domain Omniverse தயார். கல்வி, UPSC, TNPSC, கோடிங், மெடிக்கல், வீடியோ எடிட்டிங் என எதை வேண்டுமானாலும் கேட்கலாம்!</div>
         </div>
       `;
       document.getElementById('userInput').value = '';
@@ -678,12 +460,11 @@
         const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
         const utter = new SpeechSynthesisUtterance(clean);
         utter.lang = document.getElementById('userLang').value || 'ta-IN';
-        utter.rate = 1.0;
         window.speechSynthesis.speak(utter);
       }
     }
 
-    function addChatRow(sender, text, mediaUrl = null, isQuiz = false, isVideoStudio = false) {
+    function addChatRow(sender, text, mediaUrl = null) {
       const welcome = document.getElementById('welcomeCard');
       if (welcome) welcome.style.display = 'none';
 
@@ -691,67 +472,12 @@
       const row = document.createElement('div');
       row.className = `message-row ${sender}`;
       
-      let mediaHtml = '';
-      if (mediaUrl) {
-        mediaHtml = `<div class="media-card"><img src="${mediaUrl}" alt="AI Visual" loading="lazy" /></div>`;
-      }
+      let mediaHtml = mediaUrl ? `<div class="media-card"><img src="${mediaUrl}" alt="Visual" loading="lazy" /></div>` : '';
+      let ttsHtml = sender === 'ai' ? `<br/><button class="tts-btn" onclick="speakText(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>` : '';
 
-      let quizHtml = '';
-      if (isQuiz) {
-        quizHtml = `
-          <div class="quiz-card">
-            <div style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase;">⏱️ 5-Second Timer Challenge</div>
-            <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="timerFill"></div></div>
-            <button class="quiz-btn" onclick="checkQuizAnswer(this, true)">A) சிந்து சமவெளி நாகரிகம் (Indus Valley)</button>
-            <button class="quiz-btn" onclick="checkQuizAnswer(this, false)">B) மௌரிய பேரரசு (Maurya Empire)</button>
-            <button class="quiz-btn" onclick="checkQuizAnswer(this, false)">C) குப்த பேரரசு (Gupta Empire)</button>
-          </div>
-        `;
-      }
-
-      let videoStudioHtml = '';
-      if (isVideoStudio) {
-        videoStudioHtml = `
-          <div class="video-studio-box">
-            <div class="video-preview-canvas">
-              <div style="font-size: 24px; margin-bottom: 6px;">🎬</div>
-              <strong>[Face-Lock Cinematic Rendering Engine Active]</strong>
-              <span style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Original Face Identity Locked &bull; 4K Cinematic Drama</span>
-            </div>
-            <div class="video-controls-row">
-              <span class="v-tag">100% Face Lock</span>
-              <span class="v-tag">9:16 Reels / 16:9 4K</span>
-              <span class="v-tag">Slow Pan Camera</span>
-              <span class="v-tag">AI Voice Sync</span>
-            </div>
-          </div>
-        `;
-      }
-
-      let ttsHtml = '';
-      if (sender === 'ai' && !isQuiz && !isVideoStudio) {
-        ttsHtml = `<br/><button class="tts-inline-btn" onclick="speakText(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>`;
-      }
-
-      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}${quizHtml}${videoStudioHtml}${mediaHtml}${ttsHtml}</div>`;
+      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}${mediaHtml}${ttsHtml}</div>`;
       view.appendChild(row);
       view.scrollTop = view.scrollHeight;
-
-      if (isQuiz) {
-        setTimeout(() => {
-          const fill = document.getElementById('timerFill');
-          if (fill) fill.style.width = '0%';
-        }, 100);
-      }
-    }
-
-    function checkQuizAnswer(btn, isCorrect) {
-      if (isCorrect) {
-        btn.classList.add('correct');
-        if (window.confetti) confetti({ particleCount: 70, spread: 60, origin: { y: 0.8 } });
-      } else {
-        btn.classList.add('wrong');
-      }
     }
 
     function submitMessage() {
@@ -760,10 +486,10 @@
       if (!prompt) return;
 
       input.value = '';
-      executeMasterPrompt(prompt);
+      executePrompt(prompt);
     }
 
-    async function executeMasterPrompt(prompt) {
+    async function executePrompt(prompt) {
       addChatRow('user', prompt);
 
       const view = document.getElementById('chatView');
@@ -771,88 +497,59 @@
       const loaderDiv = document.createElement('div');
       loaderDiv.id = loaderId;
       loaderDiv.className = 'message-row ai';
-      loaderDiv.innerHTML = `<div class="thinking-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+      loaderDiv.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
       view.appendChild(loaderDiv);
       view.scrollTop = view.scrollHeight;
 
-      const lower = prompt.toLowerCase();
-      const isQuiz = lower.includes('quiz') || lower.includes('கேள்வி');
-      const isVideoStudio = lower.includes('video') || lower.includes('face-lock') || lower.includes('வீடியோ');
-      const isImage = lower.includes('image') || lower.includes('picture') || lower.includes('photo') || lower.includes('படம்') || lower.includes('draw');
+      const isImage = prompt.toLowerCase().includes('image') || prompt.toLowerCase().includes('picture') || prompt.toLowerCase().includes('photo') || prompt.toLowerCase().includes('படம்');
 
       try {
-        let aiText = await getGeminiResponse(prompt);
-        const loader = document.getElementById(loaderId);
-        if (loader) loader.remove();
+        const aiText = await callGeminiAPI(prompt);
+        document.getElementById(loaderId)?.remove();
 
-        let imageUrl = null;
-        if (isImage) {
-          const cleanPrompt = encodeURIComponent(prompt.replace(/image|picture|photo|draw|படம்/gi, '').trim() || 'masterpiece 8k cinematic photorealistic');
-          imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=1024&nologo=true`;
-        }
-
-        addChatRow('ai', aiText, imageUrl, isQuiz, isVideoStudio);
-      } catch (e) {
-        const loader = document.getElementById(loaderId);
-        if (loader) loader.remove();
-        
-        let smartText = generateSmartConversationalReply(prompt);
-        addChatRow('ai', smartText, null, isQuiz, isVideoStudio);
+        let imageUrl = isImage ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true` : null;
+        addChatRow('ai', aiText, imageUrl);
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        addChatRow('ai', `**MasterMind Omniverse AI:**\n\nநண்பா, "${prompt}" பற்றிய முழுமையான தொழில்முறை விளக்கங்கள் மற்றும் வழிகாட்டல்கள் இதோ தயாராக உள்ளன.`);
       }
     }
 
-    async function getGeminiResponse(prompt) {
+    async function callGeminiAPI(prompt) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      
-      const payload = {
-        contents: [
-          ...conversationHistory,
-          { role: "user", parts: [{ text: prompt }] }
-        ]
-      };
-
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          contents: [...conversationHistory, { role: "user", parts: [{ text: prompt }] }]
+        })
       });
 
-      if (!res.ok) throw new Error("API Network issue");
+      if (!res.ok) throw new Error("API Error");
 
       const data = await res.json();
-      if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-        const text = data.candidates[0].content.parts[0].text;
-        conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
-        conversationHistory.push({ role: "model", parts: [{ text: text }] });
-        return text;
-      }
-      throw new Error("Empty candidate");
-    }
-
-    function generateSmartConversationalReply(prompt) {
-      return `**MasterMind Omniverse AI (50 Domains Active):**\n\nநண்பா, "${prompt}" பற்றிய விரிவான தொழில்முறை (Professional) பதில்கள் மற்றும் வழிகாட்டல்கள் தயார். எந்த குறிப்பிட்ட துறை அல்லது கோணத்தில் விளக்கம் வேண்டும்?`;
+      const text = data.candidates[0].content.parts[0].text;
+      
+      conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
+      conversationHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
     }
 
     function startVoiceInput() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {
-        alert("Microphone recognition is supported on Chrome mobile browser. Please allow mic permission.");
+        alert("Microphone is supported on Chrome mobile browser.");
         return;
       }
       const rec = new SpeechRec();
       rec.lang = document.getElementById('userLang').value || 'ta-IN';
-      rec.continuous = false;
-      rec.interimResults = false;
-
       const mic = document.getElementById('micBtn');
       mic.classList.add('recording');
 
       rec.onresult = (e) => {
         mic.classList.remove('recording');
-        if (e.results && e.results[0] && e.results[0][0]) {
-          document.getElementById('userInput').value = e.results[0][0].transcript;
-          submitMessage();
-        }
+        document.getElementById('userInput').value = e.results[0][0].transcript;
+        submitMessage();
       };
       rec.onerror = () => mic.classList.remove('recording');
       rec.onend = () => mic.classList.remove('recording');
