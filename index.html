@@ -16,8 +16,8 @@
       --primary-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --bubble-user: #f1f5f9;
-      --bubble-user-text: #0f172a;
+      --bubble-user: #eff6ff;
+      --bubble-user-text: #1e3a8a;
     }
 
     * {
@@ -48,7 +48,7 @@
       background: #ffffff;
     }
 
-    /* Header */
+    /* Top Header */
     .header {
       height: 56px;
       padding: 0 16px;
@@ -95,9 +95,9 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(3, 7, 18, 0.8);
-      backdrop-filter: blur(8px);
-      z-index: 50;
+      background: rgba(3, 7, 18, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
       display: none;
     }
     .modal-overlay.open { display: block; }
@@ -109,25 +109,26 @@
       transform: translateX(-50%) translateY(100%);
       width: 100%;
       max-width: 800px;
-      max-height: 88vh;
+      max-height: 85vh;
       background: #0b1329;
-      border-top-left-radius: 28px;
-      border-top-right-radius: 28px;
-      z-index: 60;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 110;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -15px 50px rgba(0,0,0,0.7);
+      box-shadow: 0 -15px 50px rgba(0,0,0,0.6);
       transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
       border-top: 1px solid #1e293b;
     }
     .modal-sheet.open { transform: translateX(-50%) translateY(0); }
 
     .modal-header {
-      padding: 18px 20px;
+      padding: 16px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
     }
     .modal-title { font-size: 16px; font-weight: 800; color: #ffffff; }
     .modal-close {
@@ -169,6 +170,22 @@
     .hub-icon { font-size: 24px; }
     .hub-name { font-size: 13px; font-weight: 700; color: #ffffff; }
     .hub-desc { font-size: 10.5px; color: #94a3b8; line-height: 1.3; }
+
+    /* Side Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 280px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 120;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer.open { transform: translateX(300px); }
 
     /* Chat Area */
     .chat-view {
@@ -246,12 +263,13 @@
     .dot:nth-child(2) { animation-delay: -0.16s; }
     @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
-    /* Bottom Input */
+    /* Bottom Input Capsule */
     .bottom-bar {
       padding: 10px 16px 16px;
       background: #ffffff;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
+      z-index: 20;
     }
 
     .input-box {
@@ -288,6 +306,7 @@
 
   <div class="app-container">
 
+    <!-- Header -->
     <header class="header">
       <div class="nav-left">
         <button class="btn-icon" onclick="toggleDrawer()">☰</button>
@@ -300,7 +319,7 @@
     </header>
 
     <!-- Side Settings Drawer -->
-    <div class="drawer" id="sideDrawer" style="position:fixed;top:0;left:-320px;width:280px;height:100%;background:#fff;z-index:70;box-shadow:10px 0 30px rgba(0,0,0,0.15);transition:transform 0.3s ease;display:flex;flex-direction:column;">
+    <div class="drawer" id="sideDrawer">
       <div style="padding:16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:800;color:#2563eb;">
         <span>✦ Settings</span>
         <button onclick="toggleDrawer()" style="background:none;border:none;font-size:16px;cursor:pointer;">✕</button>
@@ -315,7 +334,7 @@
       </div>
     </div>
 
-    <!-- 50 Domains Hub Sheet -->
+    <!-- Dark Navy 50-Domain Hub Sheet -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeAll()"></div>
     <div class="modal-sheet" id="modalSheet">
       <div class="modal-header">
@@ -333,7 +352,7 @@
       </div>
     </main>
 
-    <!-- Bottom Input -->
+    <!-- Bottom Input Capsule (Fixed Outside Modal) -->
     <footer class="bottom-bar">
       <div class="input-box">
         <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') submitMessage()" />
@@ -348,7 +367,6 @@
     const GEMINI_API_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
     let conversationHistory = [];
 
-    // 50 Omniverse Domains Data Array
     const domains = [
       {icon: "🏫", name: "School Education", desc: "6th-12th Tamil, Maths, Science & Social"},
       {icon: "🏛️", name: "TNPSC Civil Services", desc: "Group 4, 2, 1, Unit 8/9 & VAO Hub"},
@@ -414,8 +432,7 @@
     };
 
     function toggleDrawer() {
-      const drawer = document.getElementById('sideDrawer');
-      drawer.style.transform = drawer.style.transform === 'translateX(320px)' ? 'translateX(0)' : 'translateX(320px)';
+      document.getElementById('sideDrawer').classList.toggle('open');
     }
 
     function toggleModal() {
@@ -424,7 +441,7 @@
     }
 
     function closeAll() {
-      document.getElementById('sideDrawer').style.transform = 'translateX(0)';
+      document.getElementById('sideDrawer').classList.remove('open');
       document.getElementById('modalSheet').classList.remove('open');
       document.getElementById('modalOverlay').classList.remove('open');
     }
