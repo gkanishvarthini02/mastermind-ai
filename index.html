@@ -290,4 +290,273 @@
     }
 
     /* Input Capsule */
+    .bottom-bar {
+      padding: 10px 16px 16px;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-box {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 28px;
+      padding: 6px 8px 6px 16px;
+      gap: 8px;
+      border: 1.5px solid transparent;
+    }
+    .input-box:focus-within {
+      background: #ffffff;
+      border-color: #94a3b8;
+    }
+
+    .input-field {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: var(--text-main);
+      outline: none;
+      padding: 8px 0;
+    }
+
+    .action-circle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .btn-voice { background: transparent; color: #475569; }
+    .btn-voice.recording { background: #fee2e2; color: #dc2626; }
+    .btn-send { background: var(--primary); color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <header class="header">
+      <div class="nav-left">
+        <button class="btn-icon" onclick="toggleDrawer()">☰</button>
+        <div class="app-title" onclick="resetChat()">✦ MasterMind AI</div>
+      </div>
+      <div class="nav-right">
+        <button class="btn-icon" onclick="toggleModal()" style="font-size: 22px;">🗂️</button>
+        <button class="btn-icon" onclick="resetChat()" style="font-size: 22px; font-weight: 800;">＋</button>
+      </div>
+    </header>
+
+    <div class="drawer" id="sideDrawer">
+      <div class="drawer-header">
+        <div>✦ MasterMind Controls</div>
+        <button class="btn-icon" onclick="toggleDrawer()">✕</button>
+      </div>
+      <div class="drawer-content">
+        <button class="btn-new-convo" onclick="resetChat()">＋ Start Fresh Conversation</button>
+        <div class="drawer-label">Preferred Language</div>
+        <select class="lang-dropdown" id="userLang">
+          <option value="ta-IN" selected>தமிழ் (Tamil)</option>
+          <option value="en-IN">English</option>
+          <option value="hi-IN">हिन्दी</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeAll()"></div>
+    <div class="modal-sheet" id="modalSheet">
+      <div class="modal-header">
+        <div class="modal-title">✦ MasterMind Studios</div>
+        <button class="btn-icon" onclick="toggleModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="studio-card" onclick="triggerStudio('Face-Lock Video Engine')">
+          <div class="studio-icon">🎭</div>
+          <div class="studio-name">Face-Lock Video</div>
+          <div class="studio-desc">Original face preservation drama</div>
+        </div>
+        <div class="studio-card" onclick="triggerStudio('4K Ultra-HD Picture Studio')">
+          <div class="studio-icon">🎨</div>
+          <div class="studio-name">HD Picture Studio</div>
+          <div class="studio-desc">Ultra-realistic canvas generator</div>
+        </div>
+        <div class="studio-card" onclick="triggerStudio('5s Interactive Quiz & Shorts')">
+          <div class="studio-icon">⏱️</div>
+          <div class="studio-name">Quiz & Shorts</div>
+          <div class="studio-desc">Countdown timer & reels</div>
+        </div>
+        <div class="studio-card" onclick="triggerStudio('Instant PPT & PDF Book Studio')">
+          <div class="studio-icon">📚</div>
+          <div class="studio-name">PDF & Book Studio</div>
+          <div class="studio-desc">Generate study notes & slides</div>
+        </div>
+      </div>
+    </div>
+
+    <main class="chat-view" id="chatView">
+      <div class="welcome-card" id="welcomeCard">
+        <div class="welcome-heading">வணக்கம்!</div>
+        <div class="welcome-text">MasterMind AI Multiverse-க்கு நல்வரவு. எந்த பாடம், 5s Quiz, HD Picture, அல்லது Cinematic Video செய்ய வேண்டும்?</div>
+      </div>
+    </main>
+
+    <footer class="bottom-bar">
+      <div class="input-box">
+        <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') submitMessage()" />
+        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()">🎤</button>
+        <button class="action-circle-btn btn-send" id="sendBtn" onclick="submitMessage()">➤</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const GEMINI_API_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let conversationHistory = [];
+
+    function toggleDrawer() {
+      document.getElementById('sideDrawer').classList.toggle('open');
+      document.getElementById('modalOverlay').classList.toggle('open');
+    }
+
+    function toggleModal() {
+      document.getElementById('modalSheet').classList.toggle('open');
+      document.getElementById('modalOverlay').classList.toggle('open');
+    }
+
+    function closeAll() {
+      document.getElementById('sideDrawer').classList.remove('open');
+      document.getElementById('modalSheet').classList.remove('open');
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    function triggerStudio(name) {
+      closeAll();
+      document.getElementById('userInput').value = name;
+      submitMessage();
+    }
+
+    function resetChat() {
+      conversationHistory = [];
+      document.getElementById('chatView').innerHTML = `
+        <div class="welcome-card" id="welcomeCard">
+          <div class="welcome-heading">வணக்கம்!</div>
+          <div class="welcome-text">MasterMind AI Multiverse-க்கு நல்வரவு. எந்த பாடம், 5s Quiz, HD Picture, அல்லது Cinematic Video செய்ய வேண்டும்?</div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+      closeAll();
+    }
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function addChatRow(sender, text) {
+      const welcome = document.getElementById('welcomeCard');
+      if (welcome) welcome.style.display = 'none';
+
+      const view = document.getElementById('chatView');
+      const row = document.createElement('div');
+      row.className = `message-row ${sender}`;
+      row.innerHTML = `<div class="bubble ${sender}">${formatMarkdown(text)}</div>`;
+      view.appendChild(row);
+      view.scrollTop = view.scrollHeight;
+    }
+
+    function submitMessage() {
+      const input = document.getElementById('userInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      input.value = '';
+      executePrompt(prompt);
+    }
+
+    async function executePrompt(prompt) {
+      addChatRow('user', prompt);
+
+      const view = document.getElementById('chatView');
+      const loaderId = 'loader_' + Date.now();
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = loaderId;
+      loaderDiv.className = 'message-row ai';
+      loaderDiv.innerHTML = `<div class="thinking-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+      view.appendChild(loaderDiv);
+      view.scrollTop = view.scrollHeight;
+
+      try {
+        const aiResponse = await callGeminiAI(prompt);
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addChatRow('ai', aiResponse);
+      } catch (err) {
+        console.error("AI Error:", err);
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        addChatRow('ai', 'வணக்கம் நண்பா! இணைப்பில் சிறிய தாமதம், மீண்டும் ஒருமுறை முயற்சி செய்யவும்.');
+      }
+    }
+
+    async function callGeminiAI(prompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const systemInstruction = "You are MasterMind AI, an authentic, supportive, peer-level AI mentor. Respond with natural, friendly peer-like communication in clear Tamil, Tanglish, or English based on the user's language. Never use robotic greeting announcements. Provide direct, helpful insights.";
+
+      const contents = [
+        ...conversationHistory,
+        { role: "user", parts: [{ text: prompt }] }
+      ];
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: contents
+        })
+      });
+
+      const data = await res.json();
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        const text = data.candidates[0].content.parts[0].text;
+        conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
+        conversationHistory.push({ role: "model", parts: [{ text: text }] });
+        return text;
+      }
+      throw new Error("No response from Gemini API");
+    }
+
+    function startVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Voice recognition not supported in your browser.");
+        return;
+      }
+      const rec = new SpeechRec();
+      rec.lang = document.getElementById('userLang').value || 'ta-IN';
+      const mic = document.getElementById('micBtn');
+      mic.classList.add('recording');
+
+      rec.onresult = (e) => {
+        mic.classList.remove('recording');
+        document.getElementById('userInput').value = e.results[0][0].transcript;
+        submitMessage();
+      };
+      rec.onerror = () => mic.classList.remove('recording');
+      rec.onend = () => mic.classList.remove('recording');
+      rec.start();
+    }
+  </script>
+</body>
+</html>
 
