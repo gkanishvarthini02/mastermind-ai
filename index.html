@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>MasterMind AI - Omniverse Super App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bubble-user: #eff6ff;
+      --bubble-user-text: #1e3a8a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background-color: var(--bg);
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      background: #ffffff;
+    }
+
+    /* Top Header */
+    .header {
+      height: 56px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: #ffffff;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #334155;
+      cursor: pointer;
+    }
+    .btn-icon:active { background: #f1f5f9; }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+
+    /* Dark Navy 50-Domain Hub Sheet */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+    }
+    .modal-overlay.open { display: block; }
+
+    .modal-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      background: #0b1329;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      z-index: 110;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -15px 50px rgba(0,0,0,0.8);
+      transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+      border-top: 1px solid #1e293b;
+    }
+    .modal-sheet.open { transform: translateX(-50%) translateY(0); }
+
+    .modal-header {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    .modal-title { font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; }
+    .modal-close {
+      background: #1e293b;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hub-card {
+      background: #131d38;
+      border: 1px solid #1e2d52;
+      border-radius: 18px;
+      padding: 16px 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.1s, background 0.1s;
+    }
+    .hub-card:active { background: #1e2c56; transform: scale(0.97); }
+    .hub-icon { font-size: 26px; }
+    .hub-name { font-size: 14px; font-weight: 700; color: #ffffff; line-height: 1.3; }
+    .hub-desc { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+
+    /* Side Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 280px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 120;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer.open { transform: translateX(300px); }
+
+    /* Chat Area */
+    .chat-view {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .welcome-card { padding: 24px 8px; text-align: center; }
+    .welcome-heading {
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .welcome-sub { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+
+    .message-row { display: flex; width: 100%; }
+    .message-row.user { justify-content: flex-end; }
+    .message-row.ai { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .bubble.user { background: var(--bubble-user); color: var(--bubble-user-text); font-weight: 600; border-bottom-right-radius: 4px; }
+    .bubble.ai { background: #f8fafc; border: 1px solid var(--border); color: var(--text-main); border-bottom-left-radius: 4px; width: 100%; max-width: 92%; }
+
+    .media-card {
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .media-card img { width: 100%; height: auto; display: block; }
+
+    .tts-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+      margin-top: 8px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .thinking {
+      display: inline-flex;
+      gap: 4px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 14px;
+    }
+    .dot {
+      width: 6px; height: 6px; background: var(--primary); border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    /* Bottom Input Capsule */
+    .bottom-bar {
+      padding: 10px 16px 16px;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .input-box {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 28px;
+      padding: 4px 6px 4px 16px;
+      gap: 8px;
+      border: 1.5px solid transparent;
+    }
+    .input-box:focus-within { background: #ffffff; border-color: #94a3b8; }
+
+    .input-field {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14.5px;
+      color: var(--text-main);
+      outline: none;
+      padding: 8px 0;
+    }
+
+    .action-circle-btn {
+      width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+    .btn-voice { background: transparent; color: #475569; }
+    .btn-voice.recording { background: #fee2e2; color: #dc2626; }
+    .btn-send { background: var(--primary); color: #ffffff; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="nav-left">
+        <button class="btn-icon" onclick="toggleDrawer()">☰</button>
+        <div class="app-title" onclick="resetChat()">✦ MasterMind AI</div>
+      </div>
+      <div class="nav-right">
+        <button class="btn-icon" onclick="toggleModal()" title="Multiverse Hub">🗂️</button>
+        <button class="btn-icon" onclick="resetChat()" title="New Chat" style="font-weight: 800;">＋</button>
+      </div>
+    </header>
+
+    <!-- Side Settings Drawer -->
+    <div class="drawer" id="sideDrawer">
+      <div style="padding:16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:800;color:#2563eb;">
+        <span>✦ Settings</span>
+        <button onclick="toggleDrawer()" style="background:none;border:none;font-size:16px;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:16px;">
+        <button onclick="resetChat()" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-bottom:16px;">New Chat</button>
+        <label style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;">Language</label>
+        <select id="userLang" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;margin-top:6px;font-weight:600;">
+          <option value="ta-IN" selected>தமிழ் (Tamil)</option>
+          <option value="en-IN">English</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Exact Dark Navy 50-Domain Hub Sheet -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeAll()"></div>
+    <div class="modal-sheet" id="modalSheet">
+      <div class="modal-header">
+        <div class="modal-title">✦ MasterMind Multiverse Hub</div>
+        <button class="modal-close" onclick="toggleModal()">✕</button>
+      </div>
+      <div class="modal-body" id="hubGrid"></div>
+    </div>
+
+    <!-- Chat View -->
+    <main class="chat-view" id="chatView">
+      <div class="welcome-card" id="welcomeCard">
+        <div class="welcome-heading">வணக்கம் நண்பா!</div>
+        <div class="welcome-sub">MasterMind AI 50-Domain Omniverse தயார். கல்வி, UPSC, TNPSC, கோடிங், மெடிக்கல், வீடியோ எடிட்டிங் என எதை வேண்டுமானாலும் கேட்கலாம்!</div>
+      </div>
+    </main>
+
+    <!-- Bottom Input Capsule -->
+    <footer class="bottom-bar">
+      <div class="input-box">
+        <input type="text" class="input-field" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') submitMessage()" />
+        <button class="action-circle-btn btn-voice" id="micBtn" onclick="startVoiceInput()" title="Voice Input">🎤</button>
+        <button class="action-circle-btn btn-send" onclick="submitMessage()" title="Send">➤</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const GEMINI_API_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let conversationHistory = [];
+
+    const domains = [
+      {icon: "🏫", name: "School Education", desc: "6th-12th Tamil, Maths, Science & Social"},
+      {icon: "🏛️", name: "TNPSC Civil Services", desc: "Group 4, 2, 1, Unit 8/9 & VAO Hub"},
+      {icon: "🇮🇳", name: "UPSC Civil Services", desc: "Prelims GS, CSAT & Answer Writing"},
+      {icon: "🌍", name: "Current Affairs & GK", desc: "National, State, Sports & Politics"},
+      {icon: "⚖️", name: "Law & Judiciary", desc: "BNS, CrPC, AIBE Bar Exam & Judiciary"},
+      {icon: "💻", name: "IT & Software Career", desc: "Python, Web Dev, DSA & Placement"},
+      {icon: "🩺", name: "Medical & Health", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "🎬", name: "Shorts Video Studio", desc: "9:16 Quiz Reels, Kids Cartoons & Stories"},
+      {icon: "🎙️", name: "Voice & Audio Studio", desc: "Natural Teacher Voice & AI Audio"},
+      {icon: "📄", name: "Document & Notes", desc: "Instant Study Material & PDF Exporter"},
+      {icon: "🌐", name: "Global Multiverse", desc: "Any concept in Tamil, English, Hindi"},
+      {icon: "🚀", name: "Space & Astronomy", desc: "Black holes, Relativity & Quantum"},
+      {icon: "🎨", name: "UI/UX & Graphics", desc: "Wireframing, logos & mobile layouts"},
+      {icon: "📈", name: "Stock & Crypto", desc: "Technical analysis, portfolio & trading"},
+      {icon: "🎸", name: "Music & Lyrics", desc: "Tamil songs, rap verses & chords"},
+      {icon: "🍳", name: "Master Chef Studio", desc: "Traditional recipes & macro-nutrients"},
+      {icon: "✍️", name: "Creative Writing", desc: "Cinematic scripts & dialogue creation"},
+      {icon: "🧠", name: "Psychology & Life", desc: "Mindset mastery & emotional IQ"},
+      {icon: "🤖", name: "Robotics & IoT", desc: "Arduino code & circuit automation"},
+      {icon: "🎮", name: "Game Development", desc: "Unity C#, Unreal Engine & 3D physics"},
+      {icon: "🛡️", name: "Cyber Security", desc: "Penetration testing & cryptography"},
+      {icon: "⚡", name: "EV & Mechanical", desc: "Battery management & thermodynamics"},
+      {icon: "🧬", name: "Biotech & Genetics", desc: "CRISPR gene editing & bioinformatics"},
+      {icon: "🏢", name: "Startup & Business", desc: "Pitch decks & business model canvas"},
+      {icon: "📦", name: "E-Commerce & Ads", desc: "Meta/Google Ads & Shopify funnels"},
+      {icon: "🌍", name: "Import-Export Trade", desc: "Logistics, customs & supply chain"},
+      {icon: "🏛️", name: "Real Estate & Design", desc: "Floor plans & interior engineering"},
+      {icon: "🎬", name: "Cinema Direction", desc: "Shot divisions & lighting schemes"},
+      {icon: "⚽", name: "Sports & Fitness", desc: "Workout splits & recovery routines"},
+      {icon: "📜", name: "World History", desc: "Ancient civilizations & epigraphy"},
+      {icon: "🌾", name: "Smart Agriculture", desc: "Soil health & automated irrigation"},
+      {icon: "🔮", name: "AI & AGI Research", desc: "Machine learning & neural networks"},
+      {icon: "📊", name: "Data Science", desc: "Pandas, NumPy & SQL analytics"},
+      {icon: "☁️", name: "Cloud & DevOps", desc: "AWS, Docker & Kubernetes"},
+      {icon: "⛓️", name: "Blockchain & Web3", desc: "Solidity & decentralized apps"},
+      {icon: "🚁", name: "Drone & Aerospace", desc: "Aerodynamics & autopilot coding"},
+      {icon: "🔋", name: "Renewable Energy", desc: "Solar grid & wind turbine engineering"},
+      {icon: "🧪", name: "Advanced Chemistry", desc: "Catalysis & material science"},
+      {icon: "🌊", name: "Oceanography", desc: "Deep sea ecosystems & currents"},
+      {icon: "🌋", name: "Geology & Seismology", desc: "Plate tectonics & earthquake models"},
+      {icon: "📊", name: "Statistics & Actuarial", desc: "Probability & risk modeling"},
+      {icon: "🌐", name: "Linguistics", desc: "Syntax evolution & philology"},
+      {icon: "🎭", name: "Classical Arts", desc: "Bharatanatyam & Carnatic music"},
+      {icon: "🧵", name: "Textile & Fashion", desc: "Fabric weaving & sustainable design"},
+      {icon: "📦", name: "Logistics Management", desc: "Warehouse automation & routing"},
+      {icon: "💼", name: "Corporate HR", desc: "Talent acquisition & leadership"},
+      {icon: "📊", name: "Behavioral Economics", desc: "Consumer psychology & game theory"},
+      {icon: "🪐", name: "Astrobiology", desc: "Extraterrestrial life & habitability"},
+      {icon: "🌌", name: "Quantum Computing", desc: "Superposition & entanglement logic"}
+    ];
+
+    window.onload = function() {
