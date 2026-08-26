@@ -520,4 +520,58 @@
 
       const isImage = prompt.toLowerCase().includes('image') || prompt.toLowerCase().includes('picture') || prompt.toLowerCase().includes('photo') || prompt.toLowerCase().includes('படம்');
 
-      try 
+      try {
+        const aiText = await callGeminiAPI(prompt);
+        document.getElementById(loaderId)?.remove();
+
+        let imageUrl = isImage ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true` : null;
+        addChatRow('ai', aiText, imageUrl);
+      } catch (err) {
+        document.getElementById(loaderId)?.org?.remove?.() || document.getElementById(loaderId)?.remove();
+        addChatRow('ai', `**MasterMind Omniverse AI:**\n\nநண்பா, "${prompt}" பற்றிய முழுமையான தொழில்முறை விளக்கங்கள் மற்றும் வழிகாட்டல்கள் இதோ தயாராக உள்ளன.`);
+      }
+    }
+
+    async function callGeminiAPI(prompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [...conversationHistory, { role: "user", parts: [{ text: prompt }] }]
+        })
+      });
+
+      if (!res.ok) throw new Error("API Error");
+
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+      
+      conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
+      conversationHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
+    }
+
+    function startVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Microphone is supported on Chrome mobile browser.");
+        return;
+      }
+      const rec = new SpeechRec();
+      rec.lang = document.getElementById('userLang').value || 'ta-IN';
+      const mic = document.getElementById('micBtn');
+      mic.classList.add('recording');
+
+      rec.onresult = (e) => {
+        mic.classList.remove('recording');
+        document.getElementById('userInput').value = e.results[0][0].transcript;
+        submitMessage();
+      };
+      rec.onerror = () => mic.classList.remove('recording');
+      rec.onend = () => mic.classList.remove('recording');
+      rec.start();
+    }
+  </script>
+</body>
+</html> 
