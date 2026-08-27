@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MasterMind AI - Omniverse Super App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: #ffffff;
+      color: #0f172a;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 650px;
+      margin: 0 auto;
+      background: #ffffff;
+      position: relative;
+    }
+
+    /* Minimalist Glass Header */
+    .header {
+      height: 56px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+    }
+    .nav-btn:active { background: #f1f5f9; }
+
+    .logo {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+
+    /* Chat Messages Container */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Clean Gemini Style Greeting & Dynamic Color Sparks */
+    .gemini-greeting-box {
+      margin: auto 0;
+      padding: 20px 10px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .greeting-headline {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #2563eb 0%, #9333ea 50%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .greeting-subtext {
+      font-size: 26px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: -0.5px;
+    }
+
+    .quick-chips-grid {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 0 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .quick-chips-grid::-webkit-scrollbar { display: none; }
+
+    .quick-chip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .quick-chip:active { background: #eff6ff; border-color: #93c5fd; transform: scale(0.96); }
+
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.ai { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 14px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bubble.user {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      color: #1e3a8a;
+      font-weight: 600;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    }
+    .bubble.ai {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      border-bottom-left-radius: 4px;
+      width: 100%;
+      max-width: 92%;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .bubble-img {
+      margin-top: 10px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .bubble-img img { width: 100%; height: auto; display: block; }
+
+    .upload-preview-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .tool-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #334155;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+    }
+    .action-pill-btn.pdf { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+
+    /* Floating Action Pencil Button */
+    .floating-pencil-btn {
+      position: absolute;
+      right: 18px;
+      bottom: 84px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #ffffff;
+      border: none;
+      font-size: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+      z-index: 15;
+      transition: transform 0.2s;
+    }
+    .floating-pencil-btn:active { transform: scale(0.9); }
+
+    /* Gemini Floating Capsule Bar */
+    .gemini-input-container {
+      padding: 8px 16px 16px;
+      background: #ffffff;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .img-staging-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: #f1f5f9;
+      padding: 6px 14px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .img-staging-bar button {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .gemini-capsule {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 30px;
+      padding: 6px 8px 6px 14px;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s;
+    }
+    .gemini-capsule:focus-within {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12);
+    }
+
+    .gemini-capsule input[type="text"] {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14.5px;
+      color: #0f172a;
+      outline: none;
+      padding: 6px 0;
+    }
+
+    .gemini-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #64748b;
+      flex-shrink: 0;
+    }
+    .gemini-icon-btn:active { background: #e2e8f0; transform: scale(0.92); }
+    .gemini-send-btn {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    /* MasterMind Live Two-Way Voice Screen */
+    .mastermind-live-modal {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 24px;
+      color: #ffffff;
+    }
+    .mastermind-live-modal.open { display: flex; }
+
+    .live-top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .live-status {
+      font-size: 13px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+    }
+    .live-status-dot {
+      width: 8px;
+      height: 8px;
+      background: #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #38bdf8;
+      animation: livePulse 1.5s infinite;
+    }
+    @keyframes livePulse { 0% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.4; } }
+
+    .live-orb-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+    }
+    .live-orb {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #a855f7, #00f0ff);
+      box-shadow: 0 0 60px rgba(0, 240, 255, 0.5);
+      animation: orbFloat 3s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat { 0% { transform: scale(0.92); filter: hue-rotate(0deg); } 100% { transform: scale(1.12); filter: hue-rotate(60deg); } }
+
+    .live-speech-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+      max-width: 320px;
+    }
+    .live-user-speech {
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .live-ai-response {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.5;
+    }
+
+    .btn-live-close {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Modals Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      display: none;
+    }
+    .modal-backdrop.open { display: block; }
+
+    /* Left Drawer (☰) -> Exactly 3 Super Tools */
+    .left-drawer {
+      position: fixed;
+      top: 0;
+      left: -290px;
+      width: 280px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .left-drawer.open { transform: translateX(290px); }
+
+    .drawer-top {
+      padding: 16px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .drawer-top h3 { font-size: 16px; font-weight: 800; color: #0f172a; }
+
+    .left-item {
+      padding: 16px 18px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #1e293b;
+      border-bottom: 1px solid #f8fafc;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .left-item:active { background: #f1f5f9; }
+
+    /* Right Drawer (⋮) -> User Hub, Chat History & Settings */
+    .right-drawer {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 300px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .right-drawer.open { transform: translateX(-320px); }
+
+    .right-drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .drawer-search-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      background: #f8fafc;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .history-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .history-item:hover { background: #eff6ff; }
+    .history-del-btn {
+      color: #ef4444;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* Subpage Popups */
+    .subpage-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      max-height: 85vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -15px 40px rgba(0,0,0,0.15);
+      padding-bottom: 24px;
+    }
+    .subpage-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .subpage-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      color: #334155;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .subpage-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* 54 Domains Modal (🗂️) with Instant Search */
+    .modal-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      height: 88vh;
+      background: #0b1329;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-top: 1px solid #1e293b;
+    }
+    .modal-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .modal-top {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    .modal-top h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
+    .close-circle {
+      background: #1e293b;
+      border: none;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-search-wrapper {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .modal-search-wrapper input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #131d38;
+      border: 1px solid #233560;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 13.5px;
+      outline: none;
+    }
+
+    .modal-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hub-box {
+      background: #131d38;
+      border: 1px solid #1e2d52;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hub-box:active { background: #1e2c56; transform: scale(0.97); }
+    .hub-box .icon { font-size: 24px; }
+    .hub-box .name { font-size: 13px; font-weight: 700; color: #ffffff; }
+    .hub-box .desc { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+
+    /* Channel Selection Popup */
+    .channel-select-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      background: #0b1329;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 110;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      padding-bottom: 24px;
+      border-top: 1px solid #1e293b;
+    }
+    .channel-select-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .channel-card-btn {
+      margin: 10px 16px 0;
+      background: #131d38;
+      border: 1px solid #233560;
+      border-radius: 16px;
+      padding: 16px;
+      color: #ffffff;
+      cursor: pointer;
+      text-align: left;
+    }
+    .channel-card-btn:active { background: #1e2c56; }
+    .channel-card-btn h4 { font-size: 15px; font-weight: 800; color: #38bdf8; margin-bottom: 4px; }
+    .channel-card-btn p { font-size: 12px; color: #94a3b8; line-height: 1.4; margin-bottom: 10px; }
+    .channel-join-btn {
+      display: inline-block;
+      padding: 6px 14px;
+      background: #2563eb;
+      color: #ffffff;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Saved AI Photo Gallery Modal */
+    .gallery-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      height: 85vh;
+      background: #0f172a;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 110;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-top: 1px solid #1e293b;
+    }
+    .gallery-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .gallery-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .gallery-card {
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+    }
+    .gallery-card img { width: 100%; height: 140px; object-fit: cover; }
+    .gallery-actions {
+      padding: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .gallery-actions button {
+      background: transparent;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    /* Pure White Aesthetic Channel View */
+    .channel-view {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      z-index: 150;
+      display: none;
+      flex-direction: column;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+    .channel-view.active { display: flex; }
+
+    .channel-header {
+      height: 56px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #0f172a;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .channel-back-btn {
+      background: transparent;
+      border: none;
+      color: #0f172a;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+
+    .channel-info { flex: 1; }
+    .channel-info h4 { font-size: 14.5px; font-weight: 800; color: #0f172a; }
+    .channel-info p { font-size: 11px; color: #2563eb; font-weight: 600; }
+
+    .channel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+      background: #f8fafc;
+    }
+
+    .channel-announcement {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
+      color: #64748b;
+      font-size: 12px;
+      text-align: center;
+      border: 1px dashed #cbd5e1;
+    }
+
+    .admin-msg-card {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: #1e3a8a;
+    }
+    .admin-msg-header {
+      font-size: 11px;
+      font-weight: 800;
+      color: #2563eb;
+      margin-bottom: 4px;
+    }
+    .admin-msg-text { font-size: 13.5px; line-height: 1.45; color: #0f172a; font-weight: 600; }
+
+    .channel-poll-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      color: #0f172a;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+    .channel-poll-q {
+      font-weight: 800;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #0f172a;
+      margin-bottom: 14px;
+    }
+    .channel-poll-opts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .c-opt {
+      position: relative;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .c-opt:hover { background: #f1f5f9; }
+    .c-opt.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
+    .c-opt.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; }
+    .c-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: rgba(34, 197, 94, 0.2);
+      z-index: 1;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .c-text { position: relative; z-index: 2; }
+    .c-pct { position: relative; z-index: 2; font-size: 12px; font-weight: 700; }
+    .c-exp {
+      margin-top: 12px;
+      font-size: 12.5px;
+      color: #334155;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border-left: 3px solid #2563eb;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .c-next-btn {
+      margin-top: 14px;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .admin-broadcast-bar {
+      padding: 10px 14px;
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .admin-broadcast-bar input {
+      flex: 1;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      padding: 9px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      outline: none;
+    }
+    .admin-broadcast-bar button {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 12.5px;
+      cursor: pointer;
+    }
+
+    /* All 5 Billing & Pricing Plans */
+    .billing-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #080d1a;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -15px 50px rgba(0,0,0,0.8);
+      border-top: 1px solid #1e293b;
+      padding-bottom: 30px;
+    }
+    .billing-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .dark-card {
+      margin: 12px 16px 0;
+      padding: 18px 16px;
+      border-radius: 20px;
+      background: #0d1527;
+      border: 1px solid #1b2842;
+      color: #ffffff;
+      position: relative;
+    }
+    .dark-card.popular {
+      border: 2px solid #00f0ff;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+    }
+    .badge-popular {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      color: #000000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+    .price-title { font-size: 16px; font-weight: 800; color: #ffffff; margin-top: 2px; }
+    .price-tag { font-size: 32px; font-weight: 800; color: #ffffff; margin: 6px 0 4px; }
+    .price-tag.highlight { color: #00f0ff; text-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+    .price-tag span { font-size: 14px; font-weight: 500; color: #94a3b8; }
+    .price-desc { font-size: 12px; color: #94a3b8; line-height: 1.45; margin-bottom: 12px; }
+
+    .perk-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .perk-list li { font-size: 12.5px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; }
+    .perk-list li span { color: #00f0ff; font-size: 15px; font-weight: bold; }
+
+    .btn-checkout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 13px;
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-checkout.popular-btn {
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      color: #000000;
+      border: none;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+
+  <input type="file" id="photoFileInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)" />
+
+  <div class="app">
+
+    <!-- Top Bar -->
+    <header class="header">
+      <button class="nav-btn" onclick="openLeftDrawer()" title="Super Tools">☰</button>
+      <div class="logo" onclick="startNewChat()">✦ MasterMind AI</div>
+      <button class="nav-btn" onclick="openRightDrawer()" title="Settings & Chat History">⋮</button>
+    </header>
+
+    <!-- Main Chat View -->
+    <main class="chat-container" id="chatContainer">
+      <div class="gemini-greeting-box" id="geminiGreetingBox">
+        <div class="greeting-headline" id="greetingHeadline">வணக்கம் Founder!</div>
+        <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+        
+        <div class="quick-chips-grid">
+          <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+          <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+          <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+          <div class="quick-chip" onclick="quickPrompt('💻 ஒரு Responsive HTML/CSS Landing Page Code எழுது')">💻 Web Code</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Floating Aesthetic Pencil Icon (New Chat) -->
+    <button class="floating-pencil-btn" onclick="startNewChat()" title="New Conversation">✏️</button>
+
+    <!-- Gemini Official Style Input Bar -->
+    <footer class="gemini-input-container">
+      <div class="img-staging-bar" id="imgStagingBar">
+        <span id="stagingFileName">📷 Photo Selected (Original Face Preserved)</span>
+        <button onclick="removeAttachedPhoto()">✕</button>
+      </div>
+      <div class="gemini-capsule">
+        <button class="gemini-icon-btn" onclick="document.getElementById('photoFileInput').click()" title="Attach Photo">📎</button>
+        <input type="text" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') sendUserMessage()" />
+        <button class="gemini-icon-btn" id="micButton" onclick="openMasterMindLiveVoice()" title="MasterMind Live Voice">🎤</button>
+        <button class="gemini-icon-btn gemini-send-btn" onclick="sendUserMessage()" title="Send">➤</button>
+      </div>
+    </footer>
+
+    <!-- Backdrop -->
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeAll()"></div>
+
+    <!-- MasterMind Live Two-Way Voice Modal -->
+    <div class="mastermind-live-modal" id="masterMindLiveModal">
+      <div class="live-top-bar">
+        <div class="live-status">
+          <div class="live-status-dot"></div>
+          <span>✦ MASTERMIND LIVE</span>
+        </div>
+        <button class="close-circle" style="background:#1e293b; color:#fff;" onclick="closeMasterMindLiveVoice()">✕</button>
+      </div>
+
+      <div class="live-orb-container">
+        <div class="live-orb"></div>
+        <div class="live-speech-box">
+          <div class="live-user-speech" id="liveUserSpeech">பேசவும், கேட்கிறேன்...</div>
+          <div class="live-ai-response" id="liveAiSpeech"></div>
+        </div>
+      </div>
+
+      <div class="live-bottom-controls">
+        <button class="btn-live-close" onclick="closeMasterMindLiveVoice()">✕</button>
+      </div>
+    </div>
+
+    <!-- 1. LEFT SIDE (☰) SUPER TOOLS (EXACT 3 ITEMS ONLY) -->
+    <div class="left-drawer" id="leftDrawer">
+      <div class="drawer-top">
+        <h3>✦ Super Tools</h3>
+        <button class="close-circle" style="background:#f1f5f9; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div class="left-item" onclick="closeAll(); openHub();">
+        <span>🗂️ 54 Domains & Suites</span>
+        <span>›</span>
+      </div>
+      <div class="left-item" onclick="closeAll(); openChannelSelect();">
+        <span>🏆 Daily Live Quiz Arena</span>
+        <span>›</span>
+      </div>
+      <div class="left-item" onclick="closeAll(); openBilling();" style="color:#2563eb;">
+        <span>💳 Billing & Pricing Plans</span>
+        <span>↗</span>
+      </div>
+    </div>
+
+    <!-- 2. RIGHT SIDE (⋮) USER HUB, SEARCH HISTORY & SETTINGS -->
+    <div class="right-drawer" id="rightDrawer">
+      <div class="drawer-top">
+        <h3>✦ User & Settings</h3>
+        <button class="close-circle" style="background:#f1f5f9; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div class="right-drawer-content">
+        <button onclick="startNewChat(); closeAll();" style="width:100%; padding:11px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer;">＋ New Conversation</button>
+        
+        <div style="font-size:11.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-top:8px;">Search History</div>
+        <div class="drawer-search-box">
+          <input type="text" id="historySearchInput" placeholder="🔍 Search conversations..." oninput="filterChatHistory()" />
+        </div>
+        <div class="history-list" id="historyList"></div>
+
+        <div style="font-size:11.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-top:10px;">Gallery</div>
+        <div class="history-item" onclick="closeAll(); openGalleryModal();">
+          <span>🖼️ Saved AI Photos Gallery</span>
+          <span>›</span>
+        </div>
+
+        <div style="font-size:11.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-top:10px;">App Settings</div>
+        <div class="history-item" onclick="openSubPage('profile')">
+          <span>👤 Profile & Founder Pass</span>
+          <span style="color:#16a34a; font-weight:800; font-size:11px;">VIP ›</span>
+        </div>
+        <div class="history-item" onclick="openSubPage('facelock')">
+          <span>🔒 Face-Lock AI Security</span>
+          <span style="color:#2563eb; font-size:11px;">Active ›</span>
+        </div>
+        <div class="history-item" onclick="openSubPage('language')">
+          <span>🌐 Language & Voice</span>
+          <span style="color:#64748b; font-size:11px;">Tamil ›</span>
+        </div>
+        <div class="history-item" onclick="openSubPage('about')">
+          <span>ℹ️ About MasterMind AI</span>
+          <span style="color:#64748b; font-size:11px;">v20.0 ›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp Style Subpage Popups -->
+    <div class="subpage-popup" id="subpageProfile">
+      <div class="modal-top">
+        <h3 style="color:#0f172a;">👤 Account & VIP Profile</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeSubPage()">✕</button>
+      </div>
+      <div class="subpage-content">
+        <div class="subpage-card">
+          <strong>Founder & Master Admin</strong>
+          <span>Account Tier: Lifetime Unlimited Master Pass</span>
+          <span>Credits: Unlimited (Zero Deduction)</span>
+        </div>
+        <div class="subpage-card">
+          <strong>Razorpay Merchant ID</strong>
+          <span>Connected: @ganesankanishka</span>
+          <span>Status: Verified & Live Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpage-popup" id="subpageFacelock">
+      <div class="modal-top">
+        <h3 style="color:#0f172a;">🔒 Face-Lock AI Security</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeSubPage()">✕</button>
+      </div>
+      <div class="subpage-content">
+        <div class="subpage-card">
+          <strong>Strict Identity Preservation: ON</strong>
+          <span>When you upload personal photos, facial morphology and features remain 100% untouched while cinema/art styling is applied.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpage-popup" id="subpageLanguage">
+      <div class="modal-top">
+        <h3 style="color:#0f172a;">🌐 Language & Voice Dialect</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeSubPage()">✕</button>
+      </div>
+      <div class="subpage-content">
+        <div class="subpage-card">
+          <strong>Primary: Tamil (தமிழ்)</strong>
+          <span>Natural conversational Tamil with zero-shot neural voice synthesis.</span>
+        </div>
+        <div class="subpage-card">
+          <strong>Secondary: English (Global)</strong>
+          <span>Technical coding, UPSC English and international formats.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpage-popup" id="subpageAbout">
+      <div class="modal-top">
+        <h3 style="color:#0f172a;">ℹ️ About MasterMind AI</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeSubPage()">✕</button>
+      </div>
+      <div class="subpage-content">
+        <div class="subpage-card">
+          <strong>MasterMind AI Omniverse Super App</strong>
+          <span>Version: 20.0 Production Master</span>
+          <span>Engine: Google Gemini Multimodal Live API</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 54 DOMAINS MODAL (🗂️) WITH INSTANT SEARCH -->
+    <div class="modal-popup" id="modalPopup">
+      <div class="modal-top">
+        <h3>✦ 54 Omniverse Domains & Studios</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="modal-search-wrapper">
+        <input type="text" id="domainSearchInput" placeholder="🔍 Search all 54 AI Domains (e.g., Reels, OCR, Coding, NEET)..." oninput="filterDomains()" />
+      </div>
+      <div class="modal-grid" id="modalGrid"></div>
+    </div>
+
+    <!-- 4. Channel Selection Popup -->
+    <div class="channel-select-popup" id="channelSelectPopup">
+      <div class="modal-top">
+        <h3>✦ Join Free Live Quiz Channels</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="channel-card-btn" onclick="enterChannel('gk')">
+        <h4>🔥 Channel 1: Current Affairs & GK Master</h4>
+        <p>நடப்பு நிகழ்வுகள் (100 வினாக்கள்) + பொது அறிவு (100 வினாக்கள்) = தினசரி 200 நேரலை வினாக்கள்.</p>
+        <span class="channel-join-btn">Join Now (Free) ↗</span>
+      </div>
+      <div class="channel-card-btn" onclick="enterChannel('school')">
+        <h4>📚 Channel 2: Samacheer School Master (6th-12th)</h4>
+        <p>தமிழ் (25) + கணிதம் (25) + அறிவியல் (25) + சமூக அறிவியல் (25) = தினசரி 100 சமச்சீர் வினாக்கள்.</p>
+        <span class="channel-join-btn">Join Now (Free) ↗</span>
+      </div>
+    </div>
+
+    <!-- 5. Saved AI Photo Gallery Modal -->
+    <div class="gallery-popup" id="galleryPopup">
+      <div class="modal-top">
+        <h3 style="color:#ffffff;">🖼️ Saved AI Photos & Creations</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- 6. Pure White Aesthetic Channel View -->
+    <div class="channel-view" id="channelView">
+      <header class="channel-header" onclick="alert('👥 18,400+ Active Students Subscribed\n🏆 Daily 8 PM Leaderboard Active')">
+        <button class="channel-back-btn" onclick="event.stopPropagation(); exitChannelView();">←</button>
+        <div class="channel-info">
+          <h4 id="activeChannelTitle">Channel 1: GK & Current Affairs</h4>
+          <p id="activeChannelSubs">👥 18,400+ Active Members • Tap to view profile</p>
+        </div>
+      </header>
+      <main class="channel-body" id="channelBody">
+        <div class="channel-announcement">
+          📢 <strong>Official Daily Live Quiz Arena:</strong> இங்கு மாணவர்கள் அரட்டை அடிக்க முடியாது. வினாக்களுக்கு மட்டுமே வாக்களிக்க முடியும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      </main>
+      <footer class="admin-broadcast-bar">
+        <input type="text" id="adminBroadcastInput" placeholder="👑 Admin: Post broadcast announcement to this channel..." onkeydown="if(event.key==='Enter') sendAdminBroadcast()" />
+        <button onclick="sendAdminBroadcast()">Post</button>
+      </footer>
+    </div>
+
+    <!-- 7. ALL 5 BILLING & PRICING PLANS -->
+    <div class="billing-popup" id="billingPopup">
+      <div class="modal-top" style="background:#0b1329;">
+        <h3>✦ Customer Subscription Plans</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+
+      <div class="dark-card">
+        <div class="price-title">24-Hour VIP Trial</div>
+        <div class="price-tag">₹1 <span>per day</span></div>
+        <div class="price-desc">Instant 20 renders across all 54 domains & mega tools with watermark-free export.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 54 AI Studios & Suites Unlocked</li>
+          <li><span>✓</span> Instant Secure Razorpay Checkout</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹1 on Razorpay ↗</a>
+      </div>
+
+      <div class="dark-card">
+        <div class="price-title">Monthly Limited Plan</div>
+        <div class="price-tag">₹100 <span>/month</span></div>
+        <div class="price-desc">Standard access with limited renders for daily essential tasks.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 54 AI Domains Unlocked</li>
+          <li><span>✓</span> Limited 100 Renders per month</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹100 on Razorpay ↗</a>
+      </div>
+
+      <div class="dark-card">
+        <div class="price-title">Educator Pro Plan</div>
+        <div class="price-tag">₹300 <span>/month</span></div>
+        <div class="price-desc">Unlimited mock tests, 4K export, and Tamil voices for creators & educators.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 54 AI Suites Unlocked</li>
+          <li><span>✓</span> Limited 300 Renders per month</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹300 on Razorpay ↗</a>
+      </div>
+
+      <div class="dark-card popular">
+        <div class="badge-popular">MOST POPULAR</div>
+        <div class="price-title">Unlimited Monthly Plan</div>
+        <div class="price-tag highlight">₹500 <span>/month</span></div>
+        <div class="price-desc">Unlimited generation across all 54 domains without monthly render limits.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> Unlimited 54 AI Studio Renders</li>
+          <li><span>✓</span> 4K Ultra HD Export Quality</li>
+          <li><span>✓</span> Full Commercial Usage Rights</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout popular-btn">Pay ₹500 on Razorpay ↗</a>
+      </div>
+
+      <div class="dark-card">
+        <div class="price-title">Yearly Unlimited Master</div>
+        <div class="price-tag highlight">₹5,499 <span>/year</span></div>
+        <div class="price-desc">Full 1-Year unlimited access with dedicated VIP cloud server & instant updates.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 1 Full Year Unlimited Access</li>
+          <li><span>✓</span> Zero Render Caps / Watermark Free</li>
+          <li><span>✓</span> 24/7 Dedicated Priority VIP Support</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹5,499 on Razorpay ↗</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const GEMINI_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let chatHistory = [];
+    let currentSessionId = Date.now().toString();
+    let attachedPhotoData = null;
+    let liveSpeechRecognition = null;
+
+    localStorage.setItem('mm_vip', 'Founder Unlimited Pass');
+    localStorage.setItem('mm_credits', 'Unlimited');
+
+    // Dynamic Greetings on Every Launch
+    const greetingsList = [
+      "வணக்கம் Founder!",
+      "இன்று என்ன படைக்கலாம்?",
+      "எதில் உதவ வேண்டும்?",
+      "MasterMind AI தயார்!"
+    ];
+    document.getElementById('greetingHeadline').innerText = greetingsList[Math.floor(Math.random() * greetingsList.length)];
+
+    const domainList = [
+      {icon: "🎬", name: "1-Click Viral Shorts Pipeline", desc: "Auto-captions, Sound FX, 9:16 Video Maker"},
+      {icon: "🤖", name: "Faceless Auto Channel Manager", desc: "Auto script, video & social publishing"},
+      {icon: "🎥", name: "Photo to 3D Cinematic Motion", desc: "Parallax camera motion & visual FX studio"},
+      {icon: "🗣️", name: "Multilingual Lip-Sync Dubber", desc: "Global video dubbing in Tamil/Hindi/English"},
+      {icon: "🎨", name: "4K Thumbnail & Art Engine", desc: "High CTR YouTube & Instagram graphics"},
+      {icon: "🎙️", name: "Voice Clone & Dubbing Studio", desc: "Zero-shot natural Tamil/English AI voices"},
+      {icon: "🎵", name: "AI Music & Beat Producer", desc: "Royalty-free background tracks & lyrics"},
+      {icon: "🖼️", name: "AI Magic Background Eraser", desc: "Instant object removal & photo restore"},
+      {icon: "🎭", name: "Face-Swap Cinema Posters", desc: "Natural couple & movie face adaptation"},
+      {icon: "✍️", name: "Creative Script & Storyboard", desc: "Cinematic screenplays & dialogues"},
+      {icon: "📝", name: "UPSC/TNPSC Answer Evaluator", desc: "Handwritten OCR Answer Sheet Scanner"},
+      {icon: "📊", name: "Multiplayer Live Quiz Arena", desc: "Telegram-style daily poll test batch"},
+      {icon: "📄", name: "1-Tap PDF Book & PPT Deck", desc: "Instant study material & slides generator"},
+      {icon: "🏫", name: "School Education (6th-12th)", desc: "Tamil, Maths, Science & Social lessons"},
+      {icon: "🏛️", name: "TNPSC Civil Services Master", desc: "Group 4, 2, 1, Unit 8/9 & VAO"},
+      {icon: "🇮🇳", name: "UPSC Civil Services Hub", desc: "Prelims GS, CSAT & Mains answer writing"},
+      {icon: "🩺", name: "Medical & NEET Academy", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC Prep", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "⚖️", name: "Law, Judiciary & BNS", desc: "Bar exam, Bharatiya Nyaya Sanhita & CrPC"},
+      {icon: "📜", name: "Ancient Indian History", desc: "Stone Age, Sangam & epigraphy"},
+      {icon: "💻", name: "Code to Live App Sandbox", desc: "Instant HTML/JS preview & bug fixer"},
+      {icon: "💼", name: "AI Resume & Portfolio Maker", desc: "ATS-friendly resume & personal portfolio"},
+      {icon: "🎙️", name: "Real-time AI Voice Agent", desc: "Mock interviews & English voice coaching"},
+      {icon: "🔮", name: "AGI & Neural Networks Lab", desc: "Deep learning & AI architecture research"},
+      {icon: "📊", name: "Data Science & SQL Analytics", desc: "Pandas, NumPy & business dashboards"},
+      {icon: "☁️", name: "Cloud & DevOps Architect", desc: "AWS, Docker, Kubernetes & CI/CD"},
+      {icon: "🛡️", name: "Cyber Security & Pentesting", desc: "Network security & ethical hacking"},
+      {icon: "⛓️", name: "Blockchain & Web3 Engine", desc: "Solidity smart contracts & crypto tech"},
+      {icon: "🤖", name: "Robotics & IoT Systems", desc: "Arduino, Raspberry Pi & sensor circuits"},
+      {icon: "🎮", name: "3D Game Development", desc: "Unity C#, Unreal Engine & physics"},
+      {icon: "🚀", name: "Startup Pitch & Deck Builder", desc: "Instant market report & revenue blueprints"},
+      {icon: "📦", name: "E-Commerce & Shopify Funnels", desc: "High-converting ad copies & store setup"},
+      {icon: "⚖️", name: "AI Legal & Contract Assistant", desc: "Instant rental agreements, BNS & NDA drafts"},
+      {icon: "📈", name: "Stock & Crypto Analytics", desc: "Technical indicators & portfolio strategy"},
+      {icon: "🌍", name: "Import-Export & Customs", desc: "International trade & logistics"},
+      {icon: "🏢", name: "Real Estate & Floor Plans", desc: "Architectural blueprints & interior layout"},
+      {icon: "💼", name: "Corporate HR & Hiring", desc: "Talent acquisition & leadership"},
+      {icon: "📊", name: "Behavioral Economics", desc: "Consumer psychology & pricing models"},
+      {icon: "📦", name: "Logistics & Supply Chain", desc: "Warehouse automation & routing"},
+      {icon: "💰", name: "Personal Budget & Taxes", desc: "Income tax planning & expense audits"},
+      {icon: "⚡", name: "EV & Mechanical Engineering", desc: "Battery management & thermodynamic design"},
+      {icon: "🧬", name: "Biotech & CRISPR Genetics", desc: "CRISPR gene editing & bioinformatics"},
+      {icon: "🚁", name: "Drone & Aerospace Tech", desc: "Aerodynamics & autopilot algorithms"},
+      {icon: "🔋", name: "Renewable Green Energy", desc: "Solar grid & wind power engineering"},
+      {icon: "🌾", name: "Smart Agriculture Tech", desc: "Soil health & automated irrigation plans"},
+      {icon: "🧪", name: "Advanced Chemistry Lab", desc: "Catalysis & polymer material science"},
+      {icon: "🌊", name: "Oceanography & Marine", desc: "Deep sea ecosystems & currents"},
+      {icon: "🌋", name: "Geology & Seismology", desc: "Plate tectonics & earthquake models"},
+      {icon: "🪐", name: "Astrobiology & Space", desc: "Quantum superposition & relativity"},
+      {icon: "🏋️", name: "AI Fitness & Diet Blueprint", desc: "Customized workout splits & macro nutrition"},
+      {icon: "🧠", name: "Psychology & Mindset Coach", desc: "Emotional IQ, motivation & life habits"},
+      {icon: "🍳", name: "Master Chef & Nutrition", desc: "Traditional recipes & diet calories"},
+      {icon: "🧵", name: "Fashion & Textile Design", desc: "Fabric weaving & trend analytics"},
+      {icon: "🎭", name: "Classical Arts & Culture", desc: "Bharatanatyam & Carnatic rhythm"}
+    ];
+
+    function renderHub(list = domainList) {
+      const grid = document.getElementById('modalGrid');
+      grid.innerHTML = list.map(item => `
+        <div class="hub-box" onclick="pickDomain('${item.name}')">
+          <div class="icon">${item.icon}</div>
+          <div class="name">${item.name}</div>
+          <div class="desc">${item.desc}</div>
+        </div>
+      `).join('');
+    }
+    renderHub();
+
+    function filterDomains() {
+      const query = document.getElementById('domainSearchInput').value.toLowerCase();
+      const filtered = domainList.filter(d => d.name.toLowerCase().includes(query) || d.desc.toLowerCase().includes(query));
+      renderHub(filtered);
+    }
+
+    function quickPrompt(text) {
+      document.getElementById('userInput').value = text;
+      sendUserMessage();
+    }
+
+    function getStoredSessions() {
+      return JSON.parse(localStorage.getItem('mm_chat_sessions') || '{}');
+    }
+
+    function saveCurrentSession(firstPrompt) {
+      const sessions = getStoredSessions();
+      if (!sessions[currentSessionId]) {
+        sessions[currentSessionId] = {
+          id: currentSessionId,
+          title: firstPrompt.substring(0, 30) + '...',
+          date: new Date().toLocaleDateString('ta-IN'),
+          messages: chatHistory
+        };
+      } else {
+        sessions[currentSessionId].messages = chatHistory;
+      }
+      localStorage.setItem('mm_chat_sessions', JSON.stringify(sessions));
+      renderChatHistory();
+    }
+
+    function renderChatHistory(query = '') {
+      const sessions = getStoredSessions();
+      const listEl = document.getElementById('historyList');
+      const keys = Object.keys(sessions).reverse();
+
+      const filtered = keys.filter(k => sessions[k].title.toLowerCase().includes(query.toLowerCase()));
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:11.5px; color:#94a3b8; text-align:center; padding:10px;">உரையாடல்கள் ஏதுமில்லை</div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(k => `
+        <div class="history-item" onclick="loadSession('${k}')">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">💬 ${sessions[k].title}</span>
+          <button class="history-del-btn" onclick="event.stopPropagation(); deleteSession('${k}')">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function filterChatHistory() {
+      const q = document.getElementById('historySearchInput').value;
+      renderChatHistory(q);
+    }
+
+    function loadSession(id) {
+      const sessions = getStoredSessions();
+      if (sessions[id]) {
+        currentSessionId = id;
+        chatHistory = sessions[id].messages || [];
+        const container = document.getElementById('chatContainer');
+        container.innerHTML = '';
+        chatHistory.forEach(msg => {
+          renderMessage(msg.role === 'user' ? 'user' : 'ai', msg.parts[0].text);
+        });
+        closeAll();
+      }
+    }
+
+    function deleteSession(id) {
+      const sessions = getStoredSessions();
+      delete sessions[id];
+      localStorage.setItem('mm_chat_sessions', JSON.stringify(sessions));
+      renderChatHistory();
+      if (currentSessionId === id) startNewChat();
+    }
+
+    function startNewChat() {
+      currentSessionId = Date.now().toString();
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="gemini-greeting-box" id="geminiGreetingBox">
+          <div class="greeting-headline" id="greetingHeadline">${greetingsList[Math.floor(Math.random() * greetingsList.length)]}</div>
+          <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+          <div class="quick-chips-grid">
+            <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+            <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+            <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+            <div class="quick-chip" onclick="quickPrompt('💻 ஒரு Responsive HTML/CSS Landing Page Code எழுது')">💻 Web Code</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+      removeAttachedPhoto();
+      closeAll();
+    }
+
+    function getStoredGallery() {
+      return JSON.parse(localStorage.getItem('mm_saved_gallery') || '[]');
+    }
+
+    function savePhotoToGallery(url, prompt) {
+      const gallery = getStoredGallery();
+      gallery.unshift({ id: Date.now(), url: url, prompt: prompt, date: new Date().toLocaleDateString('ta-IN') });
+      localStorage.setItem('mm_saved_gallery', JSON.stringify(gallery));
+    }
+
+    function openGalleryModal() {
+      closeAll();
+      const grid = document.getElementById('galleryGrid');
+      const gallery = getStoredGallery();
+
+      if (gallery.length === 0) {
+        grid.innerHTML = '<div style="grid-column:span 2; color:#94a3b8; text-align:center; padding:30px;">சேமிக்கப்பட்ட AI படங்கள் ஏதுமில்லை.</div>';
+      } else {
+        grid.innerHTML = gallery.map(item => `
+          <div class="gallery-card" id="gal_${item.id}">
+            <img src="${item.url}" alt="AI" loading="lazy" />
+            <div class="gallery-actions">
+              <span style="font-size:10.5px; color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:90px;">${item.prompt}</span>
+              <button style="color:#ef4444;" onclick="deleteGalleryItem(${item.id})">🗑️ Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('galleryPopup').classList.add('open');
+    }
+
+    function deleteGalleryItem(id) {
+      let gallery = getStoredGallery();
+      gallery = gallery.filter(g => g.id !== id);
+      localStorage.setItem('mm_saved_gallery', JSON.stringify(gallery));
+      document.getElementById('gal_' + id)?.remove();
+    }
+
+    const gkChannelBank = [
+      {
+        q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?",
+        opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"],
+        ans: 0,
+        exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் பி.ஆர். அம்பேத்கர் தலைமையில் அரசியலமைப்பு வரைவுக்குழு உருவாக்கப்பட்டது."
+      },
+      {
+        q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?",
+        opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"],
+        ans: 1,
+        exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது."
+      }
+    ];
+
+    const schoolChannelBank = [
+      {
+        q: "திருக்குறளில் உள்ள மொத்த அதிகாரங்களின் எண்ணிக்கை எத்தனை?",
+        opts: ["108", "133", "1330", "150"],
+        ans: 1,
+        exp: "திருக்குறளில் 3 பால்கள், 133 அதிகாரங்கள் மற்றும் 1330 குறள்கள் உள்ளன."
+      },
+      {
+        q: "தமிழ்நாட்டின் மாநில மரம் எது?",
+        opts: ["வேப்ப மரம்", "ஆல மரம்", "பனை மரம்", "தென்னை மரம்"],
+        ans: 2,
+        exp: "தமிழ்நாட்டின் அதிகாரப்பூர்வ மாநில மரம் பனை மரம் (Palmyra palm) ஆகும்."
+      }
+    ];
+
+    let activeChannelType = 'gk';
+    let activeChannelIndex = 0;
+
+    function openChannelSelect() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('channelSelectPopup').classList.add('open');
+    }
+
+    function enterChannel(type) {
+      closeAll();
+      activeChannelType = type;
+      activeChannelIndex = 0;
+
+      const title = type === 'gk' ? '🔥 Channel 1: GK & Current Affairs Master' : '📚 Channel 2: Samacheer School Master';
+      document.getElementById('activeChannelTitle').innerText = title;
+      document.getElementById('channelBody').innerHTML = `
+        <div class="channel-announcement">
+          📢 <strong>Official Daily Live Quiz Arena:</strong> இங்கு மாணவர்கள் அரட்டை அடிக்க முடியாது. வினாக்களுக்கு மட்டுமே வாக்களிக்க முடியும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      `;
+
+      document.getElementById('channelView').classList.add('active');
+      postNextChannelQuestion();
+    }
+
+    function exitChannelView() {
+      document.getElementById('channelView').classList.remove('active');
+    }
+
+    function sendAdminBroadcast() {
+      const input = document.getElementById('adminBroadcastInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const body = document.getElementById('channelBody');
+      const html = `
+        <div class="admin-msg-card">
+          <div class="admin-msg-header">👑 FOUNDER & ADMIN BROADCAST</div>
+          <div class="admin-msg-text">${text}</div>
+        </div>
+      `;
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+      input.value = '';
+    }
+
+    function postNextChannelQuestion() {
+      const bank = activeChannelType === 'gk' ? gkChannelBank : schoolChannelBank;
+      const item = bank[activeChannelIndex % bank.length];
+      activeChannelIndex++;
+
+      const body = document.getElementById('channelBody');
+      const pollId = 'cpoll_' + Math.random().toString(36).substring(2, 9);
+
+      let html = `<div class="channel-poll-card" id="${pollId}">
+        <div class="channel-poll-q">📊 ${item.q}</div>
+        <div class="channel-poll-opts">`;
+
+      item.opts.forEach((opt, idx) => {
+        html += `<div class="c-opt" onclick="voteChannelPoll('${pollId}', ${idx}, ${item.ans})">
+          <div class="c-bar" id="${pollId}_bar_${idx}" style="width:0%;"></div>
+          <span class="c-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="c-pct" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+        <div class="c-exp" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${item.exp}</div>
+        <button class="c-next-btn" id="${pollId}_btn" onclick="postNextChannelQuestion()">➡️ அடுத்த வினா (Next Question)</button>
+      </div>`;
+
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    window.voteChannelPoll = function(pollId, selectedIdx, correctIdx) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.c-opt');
+      const dummyPcts = [26, 14, 48, 12];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = dummyPcts[idx] + '%';
+        bar.style.width = dummyPcts[idx] + '%';
+
+        if (idx === correctIdx) {
+          opt.classList.add('correct');
+        } else if (idx === selectedIdx) {
+          opt.classList.add('wrong');
+        }
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+      document.getElementById(`${pollId}_btn`).style.display = 'block';
+    };
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        attachedPhotoData = e.target.result;
+        document.getElementById('stagingFileName').innerText = "📷 Photo Attached: " + file.name + " (Face-Lock Active)";
+        document.getElementById('imgStagingBar').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAttachedPhoto() {
+      attachedPhotoData = null;
+      document.getElementById('photoFileInput').value = '';
+      document.getElementById('imgStagingBar').style.display = 'none';
+    }
+
+    function openSubPage(page) {
+      closeSubPage();
+      if (page === 'profile') document.getElementById('subpageProfile').classList.add('open');
+      if (page === 'facelock') document.getElementById('subpageFacelock').classList.add('open');
+      if (page === 'language') document.getElementById('subpageLanguage').classList.add('open');
+      if (page === 'about') document.getElementById('subpageAbout').classList.add('open');
+    }
+
+    function closeSubPage() {
+      document.querySelectorAll('.subpage-popup').forEach(el => el.classList.remove('open'));
+    }
+
+    function openHub() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('modalPopup').classList.add('open');
+    }
+
+    function openLeftDrawer() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('leftDrawer').classList.add('open');
+    }
+
+    function openRightDrawer() {
+      closeAll();
+      renderChatHistory();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('rightDrawer').classList.add('open');
+    }
+
+    function openBilling() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('billingPopup').classList.add('open');
+    }
+
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('leftDrawer').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('channelSelectPopup').classList.remove('open');
+      document.getElementById('galleryPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+      closeSubPage();
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " கருவியை உடனடியாக செயல்படுத்தி வழிகாட்டலைத் தொடங்கு.";
+      sendUserMessage();
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text, callback = null) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        if (callback) utter.onend = callback;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function exportToPDF(title, contentText) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("MasterMind AI - Study Document", 14, 20);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("Generated by MasterMind AI Omniverse Super App", 14, 27);
+      doc.line(14, 30, 196, 30);
+      doc.setFontSize(11);
+      doc.setTextColor(20);
+      const splitText = doc.splitTextToSize(contentText.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, ''), 180);
+      doc.text(splitText, 14, 38);
+      doc.save("MasterMind_Document_" + Date.now() + ".pdf");
+    }
+
+    function renderMessage(sender, text, imgUrl = null, userUploadedImg = null) {
+      const greeting = document.getElementById('geminiGreetingBox');
+      if (greeting) greeting.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+
+      let previewImg = userUploadedImg ? `<div class="upload-preview-tag">📸 Original Photo Attached</div><div class="bubble-img"><img src="${userUploadedImg}" style="max-height:160px; object-fit:cover;" /></div>` : '';
+      let generatedImg = imgUrl ? `<div class="bubble-img"><img src="${imgUrl}" alt="AI Render" loading="lazy" /></div>` : '';
+      
+      let actionButtons = sender === 'ai' ? `
+        <div class="tool-actions">
+          <button class="action-pill-btn" onclick="playVoice(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>
+          <button class="action-pill-btn pdf" onclick="exportToPDF('MasterMind Document', \`${text.replace(/"/g, '&quot;')}\`)">📥 Download PDF</button>
+        </div>` : '';
+
+      row.innerHTML = `<div class="bubble ${sender}">${previewImg}${formatText(text)}${generatedImg}${actionButtons}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      const currentPhoto = attachedPhotoData;
+
+      if (!text && !currentPhoto) return;
+
+      input.value = '';
+      removeAttachedPhoto();
+      executeEngine(text, currentPhoto);
+    }
+
+    async function executeEngine(prompt, userImg) {
+      renderMessage('user', prompt || 'Edit my attached photo', null, userImg);
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const pLower = (prompt || '').toLowerCase();
+      const isImage = userImg || pLower.includes('image') || pLower.includes('picture') || pLower.includes('photo') || pLower.includes('படம்') || pLower.includes('poster') || pLower.includes('edit');
+
+      try {
+        let aiPrompt = prompt;
+        if (userImg) {
+          aiPrompt = `User uploaded a personal photo. Instruction: Preserve original face strictly without any modification. Face-lock 100% intact. User edit prompt: ${prompt || 'Enhance with 4K cinematic lighting and poster aesthetics'}`;
+        }
+
+        const aiAnswer = await requestGemini(aiPrompt);
+        document.getElementById(loaderId)?.remove();
+
+        let renderUrl = null;
+        if (isImage) {
+          renderUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt || 'cinematic portrait highly detailed 4k') + '?width=1024&height=1024&nologo=true';
+          savePhotoToGallery(renderUrl, prompt || 'AI Creation');
+        }
+
+        renderMessage('ai', aiAnswer, renderUrl);
+        saveCurrentSession(prompt || 'Photo Studio Session');
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        renderMessage('ai', `**MasterMind Omniverse AI:**\n\n"${prompt}" வழிகாட்டல்கள் தயாராக உள்ளன Founder!`, null);
+      }
+    }
+
+    async function requestGemini(prompt) {
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: chatHistory.concat([{ role: "user", parts: [{ text: prompt }] }])
+        })
+      });
+
+      if (!res.ok) throw new Error("Network error");
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+
+      chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+      chatHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
+    }
+
+    // ==========================================
+    // TWO-WAY LIVE VOICE ENGINE & SPOKEN SPEECH
+    // ==========================================
+    function openMasterMindLiveVoice() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Chrome browser-il microphone support seiyapadum.");
+        return;
+      }
+
+      document.getElementById('masterMindLiveModal').classList.add('open');
+      document.getElementById('liveUserSpeech').innerText = "பேசவும், கேட்கிறேன்...";
+      document.getElementById('liveAiSpeech').innerText = "";
+
+      startLiveListening();
+    }
+
+    function startLiveListening() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      liveSpeechRecognition = new SpeechRec();
+      liveSpeechRecognition.lang = 'ta-IN';
+      liveSpeechRecognition.continuous = false;
+
+      liveSpeechRecognition.onresult = async function(e) {
+        if (e.results && e.results[0] && e.results[0][0]) {
+          const spokenText = e.results[0][0].transcript;
+          document.getElementById('liveUserSpeech').innerText = `🗣️ "${spokenText}"`;
+          document.getElementById('liveAiSpeech').innerText = "சிந்திக்கிறது...";
+
+          try {
+            const aiReply = await requestGemini(spokenText);
+            document.getElementById('liveAiSpeech').innerText = aiReply;
+
+            // Render to chat behind the scenes
+            renderMessage('user', spokenText);
+            renderMessage('ai', aiReply);
+            saveCurrentSession(spokenText);
+
+            // AI speaks back directly in Live Screen
+            playVoice(aiReply, () => {
+              if (document.getElementById('masterMindLiveModal').classList.contains('open')) {
+                document.getElementById('liveUserSpeech').innerText = "மீண்டும் பேசலாம்...";
+                startLiveListening();
+              }
+            });
+          } catch (err) {
+            document.getElementById('liveAiSpeech').innerText = "மன்னிக்கவும், மீண்டும் ஒருமுறை கூறவும்.";
+          }
+        }
+      };
+
+      liveSpeechRecognition.onerror = function() {
+        document.getElementById('liveUserSpeech').innerText = "குரல் தெளிவாகக் கேட்கவில்லை. மீண்டும் பேசவும்...";
+      };
+
+      liveSpeechRecognition.start();
+    }
+
+    function closeMasterMindLiveVoice() {
+      if (liveSpeechRecognition) {
+        liveSpeechRecognition.stop();
+        liveSpeechRecognition = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('masterMindLiveModal').classList.remove('open');
+    }
+
+    renderChatHistory();
+  </script>
+</body>
+</html>
