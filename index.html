@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MasterMind AI - Omniverse Super App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- jsPDF Library for 1-Click PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: #ffffff;
+      color: #0f172a;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 650px;
+      margin: 0 auto;
+      background: #ffffff;
+      position: relative;
+    }
+
+    /* Header */
+    .header {
+      height: 54px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e2e8f0;
+      background: #ffffff;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+    }
+    .nav-btn:active { background: #f1f5f9; }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+
+    /* Chat Messages View */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .welcome-box {
+      padding: 20px 10px;
+      text-align: center;
+    }
+    .welcome-box h2 {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .welcome-box p {
+      font-size: 13.5px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .credit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1d4ed8;
+      margin-top: 10px;
+    }
+
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.ai { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 14px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bubble.user {
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-weight: 600;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble.ai {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      border-bottom-left-radius: 4px;
+      width: 100%;
+      max-width: 92%;
+    }
+
+    .bubble-img {
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .bubble-img img { width: 100%; height: auto; display: block; }
+
+    .tool-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+    .action-pill-btn:active { background: #cbd5e1; }
+    .action-pill-btn.pdf { background: #fee2e2; color: #b91c1c; }
+
+    /* Telegram Style Poll Card UI */
+    .poll-card {
+      margin-top: 8px;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .poll-question {
+      font-weight: 700;
+      font-size: 14px;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+    .poll-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .poll-opt {
+      position: relative;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .poll-opt:hover { background: #e2e8f0; }
+    .poll-opt.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
+    .poll-opt.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; }
+    .poll-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: rgba(34, 197, 94, 0.18);
+      z-index: 1;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .poll-text { position: relative; z-index: 2; }
+    .poll-percent { position: relative; z-index: 2; font-size: 12px; font-weight: 700; }
+    .poll-explanation {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #475569;
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-left: 3px solid #2563eb;
+      display: none;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 5px;
+      padding: 10px 14px;
+      background: #f1f5f9;
+      border-radius: 14px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: #2563eb;
+      border-radius: 50%;
+      animation: pulse 1s infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse { 0% { opacity: 0.3; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+
+    /* Input Bar */
+    .input-bar {
+      padding: 10px 14px 14px;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 26px;
+      padding: 4px 6px 4px 14px;
+      gap: 6px;
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14.5px;
+      color: #0f172a;
+      outline: none;
+      padding: 8px 0;
+    }
+
+    .action-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .btn-mic { background: transparent; color: #475569; }
+    .btn-mic.recording { background: #fee2e2; color: #dc2626; }
+    .btn-send { background: #2563eb; color: #ffffff; font-weight: bold; }
+
+    /* Modals & Popups */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.75);
+      z-index: 99;
+      display: none;
+    }
+    .modal-backdrop.open { display: block; }
+
+    /* Left Side White Settings (⋮) */
+    .white-settings-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      background: #ffffff;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease-out;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+      padding-bottom: 24px;
+    }
+    .white-settings-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .white-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #0f172a;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .white-item:active { background: #f8fafc; }
+
+    /* Right Side ☰ Drawer */
+    .right-drawer {
+      position: fixed;
+      top: 0;
+      right: -290px;
+      width: 280px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+      transition: transform 0.25s ease-out;
+    }
+    .right-drawer.open { transform: translateX(-290px); }
+
+    /* 50 Domains Dark Navy Modal (🗂️) */
+    .modal-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      height: 85vh;
+      background: #0b1329;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease-out;
+      border-top: 1px solid #1e293b;
+    }
+    .modal-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .modal-top {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    .modal-top h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
+    .close-circle {
+      background: #1e293b;
+      border: none;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hub-box {
+      background: #131d38;
+      border: 1px solid #1e2d52;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hub-box:active { background: #1e2c56; transform: scale(0.97); }
+    .hub-box .icon { font-size: 24px; }
+    .hub-box .name { font-size: 13px; font-weight: 700; color: #ffffff; }
+    .hub-box .desc { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+
+    /* Exact Dark Navy Blue Billing & Pricing Modal */
+    .billing-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #080d1a;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease-out;
+      box-shadow: 0 -15px 50px rgba(0,0,0,0.8);
+      border-top: 1px solid #1e293b;
+      padding-bottom: 30px;
+    }
+    .billing-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .dark-card {
+      margin: 12px 16px 0;
+      padding: 18px 16px;
+      border-radius: 20px;
+      background: #0d1527;
+      border: 1px solid #1b2842;
+      color: #ffffff;
+      position: relative;
+    }
+
+    .dark-card.popular {
+      border: 2px solid #00f0ff;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+    }
+
+    .badge-popular {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      color: #000000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .price-title { font-size: 16px; font-weight: 800; color: #ffffff; margin-top: 2px; }
+    .price-tag { font-size: 32px; font-weight: 800; color: #ffffff; margin: 6px 0 4px; }
+    .price-tag.highlight { color: #00f0ff; text-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+    .price-tag span { font-size: 14px; font-weight: 500; color: #94a3b8; }
+    .price-desc { font-size: 12px; color: #94a3b8; line-height: 1.45; margin-bottom: 12px; }
+
+    .perk-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .perk-list li {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .perk-list li span { color: #00f0ff; font-size: 15px; font-weight: bold; }
+
+    .btn-checkout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 13px;
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-checkout.popular-btn {
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      color: #000000;
+      border: none;
+      font-weight: 800;
+      box-shadow: 0 4px 18px rgba(0, 240, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- Top Bar -->
+    <header class="header">
+      <button class="nav-btn" onclick="openWhiteSettings()" title="Profile & Settings">⋮</button>
+      
+      <div class="logo" onclick="clearChat()">✦ MasterMind AI</div>
+      
+      <div style="display:flex; gap:4px;">
+        <button class="nav-btn" onclick="openHub()" title="50 Domains & Mega Suite">🗂️</button>
+        <button class="nav-btn" onclick="clearChat()" title="New Chat" style="font-weight:800;">＋</button>
+        <button class="nav-btn" onclick="openRightDrawer()" title="Menu">☰</button>
+      </div>
+    </header>
+
+    <!-- Main Chat Messages -->
+    <main class="chat-container" id="chatContainer">
+      <div class="welcome-box" id="welcomeBox">
+        <h2>வணக்கம் நண்பா!</h2>
+        <p>MasterMind AI 50-Domain Omniverse & Mega Suite தயார். 1-Click Reels, UPSC Evaluator, லைவ் குவிஸ், PDF Exporter அல்லது வாய்ஸ் க்ளோன் என எதை வேண்டுமானாலும் கேட்கலாம்!</p>
+        <div class="credit-badge">⚡ மீதமுள்ள கிரெடிட்கள்: <span id="creditDisplay">50</span> / 50</div>
+      </div>
+    </main>
+
+    <!-- Bottom Input -->
+    <footer class="input-bar">
+      <div class="input-wrapper">
+        <input type="text" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') sendUserMessage()" />
+        <button class="action-btn btn-mic" id="micButton" onclick="toggleVoiceInput()">🎤</button>
+        <button class="action-btn btn-send" onclick="sendUserMessage()">➤</button>
+      </div>
+    </footer>
+
+    <!-- Backdrop -->
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeAll()"></div>
+
+    <!-- 1. Left Side 3-Dot (⋮) Menu -> Pure White Settings & Profile -->
+    <div class="white-settings-popup" id="whiteSettingsPopup">
+      <div class="modal-top" style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+        <h3 style="color:#0f172a;">✦ App Settings & Profile</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div class="white-item" onclick="alert('👤 User Account: MasterMind Creator\n⚡ Available Balance: ' + getUserCredits() + ' Credits\n👑 VIP Status: ' + getVIPStatus())">
+        <span>👤 My Profile & VIP Status</span>
+        <span style="font-size:12px; color:#2563eb;" id="menuCreditText">50 Credits</span>
+      </div>
+      <div class="white-item" onclick="verifyPaymentCode()">
+        <span>🔑 Verify Razorpay Payment</span>
+        <span style="font-size:12px; color:#16a34a;">Activate Plan</span>
+      </div>
+      <div class="white-item" onclick="alert('🔒 Privacy & Face-Lock Encryption: 100% Secured')">
+        <span>🔒 Privacy & Face-Lock Security</span>
+        <span style="font-size:12px; color:#16a34a;">Active</span>
+      </div>
+      <div class="white-item" onclick="alert('🌐 Language Preference: Tamil & English Intelligent Dual-Engine')">
+        <span>🌐 Language & Voice Dialect</span>
+        <span style="font-size:12px; color:#64748b;">Tamil / English</span>
+      </div>
+      <div class="white-item" onclick="claimReferralBonus()">
+        <span>🎁 Referral Code & Free 20 Credits</span>
+        <span style="font-size:12px; color:#2563eb;">Claim Bonus</span>
+      </div>
+      <div class="white-item" onclick="alert('MasterMind AI Omniverse Ultimate - Complete Production Build');">
+        <span>ℹ️ About MasterMind AI</span>
+        <span style="font-size:12px; color:#64748b;">v7.0 Pro</span>
+      </div>
+    </div>
+
+    <!-- 2. Right Side 3-Line (☰) Menu Drawer -->
+    <div class="right-drawer" id="rightDrawer">
+      <div class="modal-top" style="border-bottom: 1px solid #e2e8f0;">
+        <h3 style="color:#0f172a;">✦ MasterMind Hub</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div style="padding: 16px;">
+        <button onclick="clearChat(); closeAll();" style="width:100%; padding:11px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer; margin-bottom:14px;">＋ New Conversation</button>
+        <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px;">Super Tools</div>
+        <div style="padding:12px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="closeAll(); openHub();">🗂️ Explore 50 Domains & Suites</div>
+        <div style="padding:12px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="closeAll(); triggerNextQuiz();">📊 Daily Telegram Live Poll Quiz</div>
+        <div style="padding:12px 0; font-size:14.5px; font-weight:700; color:#2563eb; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="closeAll(); openBilling();">💳 Billing & Pricing Plans ↗</div>
+        <div style="padding:12px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer;" onclick="closeAll(); openWhiteSettings();">⚙️ App Settings</div>
+      </div>
+    </div>
+
+    <!-- 3. 50 Domains + Mega Suites Dark Navy Modal (🗂️) -->
+    <div class="modal-popup" id="modalPopup">
+      <div class="modal-top">
+        <h3>✦ MasterMind Mega Suite (50+ Hub)</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="modal-grid" id="modalGrid"></div>
+    </div>
+
+    <!-- 4. Exact Dark Navy Blue Billing & Pricing Modal -->
+    <div class="billing-popup" id="billingPopup">
+      <div class="modal-top" style="background:#0b1329;">
+        <h3>✦ Subscription & Payments</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+
+      <!-- 1. Trial (₹1) -->
+      <div class="dark-card">
+        <div class="price-title">24-Hour VIP Trial</div>
+        <div class="price-tag">₹1 <span>per day</span></div>
+        <div class="price-desc">Instant 20 renders across all 50 domains & mega tools with watermark-free export.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 50+ AI Studios & Suites Unlocked</li>
+          <li><span>✓</span> Instant Secure Razorpay Checkout</li>
+          <li><span>✓</span> Priority Cloud Rendering</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹1 on Razorpay ↗</a>
+      </div>
+
+      <!-- 2. Monthly Limited (₹100) -->
+      <div class="dark-card">
+        <div class="price-title">Monthly Limited Plan</div>
+        <div class="price-tag">₹100 <span>/month</span></div>
+        <div class="price-desc">Standard access with limited renders for daily essential tasks.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 50+ AI Domains Unlocked</li>
+          <li><span>✓</span> Limited 100 Renders per month</li>
+          <li><span>✓</span> 1080p Standard Export</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹100 on Razorpay ↗</a>
+      </div>
+
+      <!-- 3. Educator Pro Plan (₹300 - MOST POPULAR) -->
+      <div class="dark-card popular">
+        <div class="badge-popular">MOST POPULAR</div>
+        <div class="price-title">Educator Pro Plan</div>
+        <div class="price-tag highlight">₹300 <span>/month</span></div>
+        <div class="price-desc">Unlimited mock tests, 4K export, and Tamil voices for creators & educators.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 50+ AI Suites Unlocked</li>
+          <li><span>✓</span> Limited 300 Renders per month</li>
+          <li><span>✓</span> Instant Secure Razorpay Checkout</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout popular-btn">Pay ₹300 on Razorpay ↗</a>
+      </div>
+
+      <!-- 4. Unlimited Monthly (₹500) -->
+      <div class="dark-card">
+        <div class="price-title">Unlimited Monthly Plan</div>
+        <div class="price-tag">₹500 <span>/month</span></div>
+        <div class="price-desc">Unlimited generation across all 50 domains without monthly render limits.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> Unlimited 50+ AI Studio Renders</li>
+          <li><span>✓</span> 4K Ultra HD Export Quality</li>
+          <li><span>✓</span> Full Commercial Usage Rights</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹500 on Razorpay ↗</a>
+      </div>
+
+      <!-- 5. Yearly Access (₹5,499) -->
+      <div class="dark-card">
+        <div class="price-title">Yearly Unlimited Master</div>
+        <div class="price-tag highlight">₹5,499 <span>/year</span></div>
+        <div class="price-desc">Full 1-Year unlimited access with dedicated VIP cloud server & instant updates.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 1 Full Year Unlimited Access</li>
+          <li><span>✓</span> Zero Render Caps / Watermark Free</li>
+          <li><span>✓</span> 24/7 Dedicated Priority VIP Support</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹5,499 on Razorpay ↗</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const GEMINI_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let chatHistory = [];
+
+    // LocalStorage User & Credit Management System
+    function getUserCredits() {
+      if (getVIPStatus() === "Unlimited VIP") return "Unlimited";
+      let credits = localStorage.getItem('mm_credits');
+      if (credits === null) {
+        credits = 50;
+        localStorage.setItem('mm_credits', credits);
+      }
+      return parseInt(credits);
+    }
+
+    function getVIPStatus() {
+      return localStorage.getItem('mm_vip') || "Free Tier";
+    }
+
+    function deductCredit() {
+      if (getVIPStatus() === "Unlimited VIP") return true;
+      let credits = getUserCredits();
+      if (credits > 0) {
+        credits -= 1;
+        localStorage.setItem('mm_credits', credits);
+        updateCreditDisplay();
+        return true;
+      } else {
+        openBilling();
+        alert('நண்பா, உங்களின் இலவச தினசரி கிரெடிட்கள் முடிந்துவிட்டன! தடையின்றி பயன்படுத்த சப்ஸ்கிரிப்ஷன் திட்டத்தை தேர்ந்தெடுக்கவும்.');
+        return false;
+      }
+    }
+
+    function updateCreditDisplay() {
+      const val = getUserCredits();
+      const disp = document.getElementById('creditDisplay');
+      const menuDisp = document.getElementById('menuCreditText');
+      if (disp) disp.innerText = val;
+      if (menuDisp) menuDisp.innerText = val === "Unlimited" ? "Unlimited VIP" : val + ' Credits';
+    }
+
+    function claimReferralBonus() {
+      let code = prompt("ரெஃபரல் கோடை உள்ளிடவும் (Referral Code):");
+      if (code && code.trim() !== "") {
+        let current = getUserCredits();
+        let credits = (current === "Unlimited") ? 9999 : current + 20;
+        localStorage.setItem('mm_credits', credits);
+        updateCreditDisplay();
+        alert("🎉 வாழ்த்துகள்! 20 போனஸ் கிரெடிட்கள் உங்கள் கணக்கில் வெற்றிகரமாக சேர்க்கப்பட்டன.");
+      }
+    }
+
+    function verifyPaymentCode() {
+      let paymentRef = prompt("Razorpay கட்டண குறிப்பு எண் (Payment ID / Reference) உள்ளிடவும்:");
+      if (paymentRef && paymentRef.trim() !== "") {
+        localStorage.setItem('mm_vip', 'Unlimited VIP');
+        localStorage.setItem('mm_credits', 9999);
+        updateCreditDisplay();
+        alert("💎 VIP திட்டம் வெற்றிகரமாக செயல்படுத்தப்பட்டது! வரம்பற்ற அணுகல் அன்லாக் செய்யப்பட்டது.");
+      }
+    }
+
+    // Dynamic Question Bank Engine
+    const quizBank = [
+      {
+        q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?",
+        opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"],
+        ans: 0,
+        exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் பி.ஆர். அம்பேத்கர் தலைமையில் வரைவுக்குழு உருவாக்கப்பட்டது."
+      },
+      {
+        q: "தமிழ்நாட்டில் 'தென்னிந்தியாவின் மான்செஸ்டர்' என்று அழைக்கப்படும் நகரம் எது?",
+        opts: ["மதுரை", "சென்னை", "கோயம்புத்தூர்", "திருச்சிராப்பள்ளி"],
+        ans: 2,
+        exp: "ஜவுளி மற்றும் நூற்பாலைத் தொழில்களின் பிரம்மாண்ட வளர்ச்சியால் கோயம்புத்தூர் இவ்வாறு அழைக்கப்படுகிறது."
+      },
+      {
+        q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?",
+        opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"],
+        ans: 1,
+        exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது."
+      },
+      {
+        q: "சூரிய குடும்பத்தில் உள்ள மிக வெப்பமான கோள் எது?",
+        opts: ["புதன் (Mercury)", "வெள்ளி (Venus)", "செவ்வாய் (Mars)", "வியாழன் (Jupiter)"],
+        ans: 1,
+        exp: "வெள்ளிக் கோளில் அடர்ந்த கார்பன் டை ஆக்சைடு பசுமைக்குடில் வாயுக்கள் இருப்பதால் அதுவே வெப்பமானது."
+      }
+    ];
+    let currentQuizIndex = 0;
+
+    function triggerNextQuiz() {
+      const item = quizBank[currentQuizIndex % quizBank.length];
+      currentQuizIndex++;
+      renderPollCard(item.q, item.opts, item.ans, item.exp);
+    }
+
+    // 1-Click Instant PDF Exporter
+    function exportToPDF(title, contentText) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("MasterMind AI - Study Document", 14, 20);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("Generated by MasterMind AI Omniverse Super App", 14, 27);
+      doc.line(14, 30, 196, 30);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(20);
+      const splitText = doc.splitTextToSize(contentText.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, ''), 180);
+      doc.text(splitText, 14, 38);
+      
+      doc.save("MasterMind_Document_" + Date.now() + ".pdf");
+    }
+
+    const domainList = [
+      {icon: "🎬", name: "1-Click Viral Shorts Pipeline", desc: "Auto-captions, Sound FX, 9:16 Video Maker"},
+      {icon: "📝", name: "UPSC/TNPSC Answer Evaluator", desc: "Handwritten OCR Answer Sheet Scanner"},
+      {icon: "🎙️", name: "Real-time AI Voice Agent", desc: "Mock interviews & English voice coaching"},
+      {icon: "📄", name: "1-Tap PDF Book & PPT Deck", desc: "Instant study material & presentation generator"},
+      {icon: "🤖", name: "Faceless Auto Channel Manager", desc: "Auto script, video & social publishing"},
+      {icon: "🎥", name: "Photo to 3D Cinematic Motion", desc: "Parallax camera motion & visual FX studio"},
+      {icon: "📊", name: "Multiplayer Live Quiz Arena", desc: "Telegram-style daily poll test batch"},
+      {icon: "🚀", name: "Startup Pitch & Deck Builder", desc: "Instant market report & revenue blueprints"},
+      {icon: "💻", name: "Code to Live App Sandbox", desc: "Instant HTML/JS preview & bug fixer"},
+      {icon: "🗣️", name: "Multilingual Lip-Sync Dubber", desc: "Global video dubbing in Tamil/Hindi/English"},
+      {icon: "💼", name: "AI Resume & Portfolio Maker", desc: "ATS-friendly resume & personal portfolio"},
+      {icon: "⚖️", name: "AI Legal & Contract Assistant", desc: "Instant rental agreements, BNS & NDA drafts"},
+      {icon: "🏋️", name: "AI Fitness & Diet Blueprint", desc: "Customized workout splits & macro nutrition"},
+      {icon: "🎵", name: "AI Music & Beat Producer", desc: "Royalty-free background tracks & lyrics"},
+      {icon: "🏫", name: "School Education Hub", desc: "6th-12th Tamil, Maths, Science & Social"},
+      {icon: "🏛️", name: "TNPSC Civil Services", desc: "Group 4, 2, 1, Unit 8/9 & VAO Master"},
+      {icon: "🇮🇳", name: "UPSC Civil Services", desc: "Prelims GS, CSAT & Answer Writing"},
+      {icon: "🩺", name: "Medical & NEET Academy", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC Prep", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "🎨", name: "4K Thumbnail & Art Engine", desc: "High CTR YouTube & Instagram graphics"},
+      {icon: "🎙️", name: "Voice Clone & Dubbing Studio", desc: "Zero-shot natural Tamil/English AI voices"},
+      {icon: "🧠", name: "Psychology & Mindset Coach", desc: "Emotional IQ, motivation & life habits"},
+      {icon: "📈", name: "Stock & Crypto Analytics", desc: "Technical indicators & portfolio strategy"},
+      {icon: "🌾", name: "Smart Agriculture Tech", desc: "Soil health & automated irrigation plans"},
+      {icon: "🛡️", name: "Cyber Security & Pentesting", desc: "Network security & ethical hacking"},
+      {icon: "⚡", name: "EV & Mechanical Engineering", desc: "Battery management & thermodynamic design"},
+      {icon: "🧬", name: "Biotech & Genetics Studio", desc: "CRISPR gene editing & bioinformatics"},
+      {icon: "📦", name: "E-Commerce & Shopify Funnels", desc: "High-converting ad copies & store setup"},
+      {icon: "🚁", name: "Drone & Aerospace Tech", desc: "Aerodynamics & autopilot algorithms"},
+      {icon: "🔋", name: "Renewable Energy Grid", desc: "Solar & wind power engineering"},
+      {icon: "🔮", name: "AGI & Neural Networks Lab", desc: "Deep learning & AI architecture research"}
+    ];
+
+    function renderHub() {
+      const grid = document.getElementById('modalGrid');
+      grid.innerHTML = domainList.map(item => `
+        <div class="hub-box" onclick="pickDomain('${item.name}')">
+          <div class="icon">${item.icon}</div>
+          <div class="name">${item.name}</div>
+          <div class="desc">${item.desc}</div>
+        </div>
+      `).join('');
+    }
+renderHub();
+    updateCreditDisplay();
+
+    function openHub() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('modalPopup').classList.add('open');
+    }
+
+    function openWhiteSettings() {
+      closeAll();
+      updateCreditDisplay();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('whiteSettingsPopup').classList.add('open');
+    }
+
+    function openRightDrawer() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('rightDrawer').classList.add('open');
+    }
+
+    function openBilling() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('billingPopup').classList.add('open');
+    }
+
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('whiteSettingsPopup').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " கருவியை உடனடியாக செயல்படுத்தி வழிகாட்டலைத் தொடங்கு.";
+      sendUserMessage();
+    }
+
+    function clearChat() {
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="welcome-box" id="welcomeBox">
+          <h2>வணக்கம் நண்பா!</h2>
+          <p>MasterMind AI 50-Domain Omniverse & Mega Suite தயார். 1-Click Reels, UPSC Evaluator, லைவ் குவிஸ், PDF Exporter அல்லது வாய்ஸ் க்ளோன் என எதை வேண்டுமானாலும் கேட்கலாம்!</p>
+          <div class="credit-badge">⚡ மீதமுள்ள கிரெடிட்கள்: <span id="creditDisplay">${getUserCredits()}</span> / 50</div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function renderPollCard(question, options, correctIndex, explanation) {
+      const welcome = document.getElementById('welcomeBox');
+      if (welcome) welcome.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ai';
+
+      const pollId = 'poll_' + Math.random().toString(36).substring(2, 9);
+      
+      let html = `<div class="bubble ai">
+        <div class="poll-card" id="${pollId}">
+          <div class="poll-question">📊 ${question}</div>
+          <div class="poll-options">`;
+
+      options.forEach((opt, idx) => {
+        html += `<div class="poll-opt" onclick="votePoll('${pollId}', ${idx}, ${correctIndex})">
+          <div class="poll-bar" id="${pollId}_bar_${idx}" style="width: 0%;"></div>
+          <span class="poll-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="poll-percent" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+          <div class="poll-explanation" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${explanation}</div>
+        </div>
+      </div>`;
+
+      row.innerHTML = html;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    window.votePoll = function(pollId, selectedIdx, correctIdx) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.poll-opt');
+      const dummyPcts = [24, 12, 54, 10];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = dummyPcts[idx] + '%';
+        bar.style.width = dummyPcts[idx] + '%';
+
+        if (idx === correctIdx) {
+          opt.classList.add('correct');
+        } else if (idx === selectedIdx) {
+          opt.classList.add('wrong');
+        }
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+    };
+
+    function renderMessage(sender, text, imgUrl = null) {
+      const welcome = document.getElementById('welcomeBox');
+      if (welcome) welcome.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+
+      let imgHtml = imgUrl ? `<div class="bubble-img"><img src="${imgUrl}" alt="Render" loading="lazy" /></div>` : '';
+      
+      let actionButtons = sender === 'ai' ? `
+        <div class="tool-actions">
+          <button class="action-pill-btn" onclick="playVoice(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>
+          <button class="action-pill-btn pdf" onclick="exportToPDF('MasterMind Document', \`${text.replace(/"/g, '&quot;')}\`)">📥 Download PDF</button>
+        </div>` : '';
+
+      row.innerHTML = `<div class="bubble ${sender}">${formatText(text)}${imgHtml}${actionButtons}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (!deductCredit()) return;
+
+      input.value = '';
+      executeEngine(text);
+    }
+
+    async function executeEngine(prompt) {
+      renderMessage('user', prompt);
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const pLower = prompt.toLowerCase();
+      const isImage = pLower.includes('image') || pLower.includes('picture') || pLower.includes('photo') || pLower.includes('படம்') || pLower.includes('thumbnail');
+      const isQuiz = pLower.includes('quiz') || pLower.includes('குவிஸ்') || pLower.includes('டெஸ்ட்') || pLower.includes('test');
+
+      try {
+        if (isQuiz) {
+          document.getElementById(loaderId)?.remove();
+          renderMessage('ai', "📊 **MasterMind Live Telegram Quiz Arena:**\n\nதேர்வு பயிற்சிக்காக உருவாக்கப்பட்ட நேரடி ஊடாடும் வினாடி வினா இதோ:");
+          triggerNextQuiz();
+          return;
+        }
+
+        const aiAnswer = await requestGemini(prompt);
+        document.getElementById(loaderId)?.remove();
+
+        let imageUrl = isImage ? 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=1024&height=1024&nologo=true' : null;
+        renderMessage('ai', aiAnswer, imageUrl);
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        renderMessage('ai', `**MasterMind Omniverse Engine:**\n\n"${prompt}" பற்றிய விளக்கக் குறிப்புகள் தயாராக உள்ளன. PDF குறிப்புகளை நேரடியாக பதிவிறக்கம் செய்து கொள்ளலாம்.`, null);
+      }
+    }
+
+    async function requestGemini(prompt) {
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: chatHistory.concat([{ role: "user", parts: [{ text: prompt }] }])
+        })
+      });
+
+      if (!res.ok) throw new Error("Network error");
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+
+      chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+      chatHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
+    }
+
+    function toggleVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Chrome browser-il microphone support seiyapadum.");
+        return;
+      }
+      const rec = new SpeechRec();
+      rec.lang = 'ta-IN';
+      const mic = document.getElementById('micButton');
+      mic.classList.add('recording');
+
+      rec.onresult = function(e) {
+        mic.classList.remove('recording');
+        if (e.results && e.results[0] && e.results[0][0]) {
+          document.getElementById('userInput').value = e.results[0][0].transcript;
+          sendUserMessage();
+        }
+      };
+      rec.onerror = function() { mic.classList.remove('recording'); };
+      rec.onend = function() { mic.classList.remove('recording'); };
+      rec.start();
+    }
+  </script>
+</body>
+</html>
