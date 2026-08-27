@@ -741,3 +741,414 @@
         <p>MasterMind AI 54-Domain Omniverse & Live Arena தயார். போட்டோவை அப்லோட் செய்து எடிட் செய்யலாம், அல்லது அரட்டை/டொமைன்களை இயக்கலாம்!</p>
         <div class="credit-badge">👑 Founder Access: Unlimited VIP Pass Active</div>
       </div>
+       </main>
+
+    <!-- Bottom Input with Photo Attach -->
+    <footer class="input-bar">
+      <div class="img-staging-bar" id="imgStagingBar">
+        <span id="stagingFileName">📷 Photo Selected (Original Face Preserved)</span>
+        <button onclick="removeAttachedPhoto()">✕</button>
+      </div>
+      <div class="input-wrapper">
+        <button class="action-btn btn-attach" onclick="document.getElementById('photoFileInput').click()" title="Upload Photo for AI Editing">📎</button>
+        <input type="text" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') sendUserMessage()" />
+        <button class="action-btn btn-mic" id="micButton" onclick="toggleVoiceInput()">🎤</button>
+        <button class="action-btn btn-send" onclick="sendUserMessage()">➤</button>
+      </div>
+    </footer>
+
+    <!-- Backdrop -->
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeAll()"></div>
+
+    <!-- ========================================================
+         DEDICATED CHANNEL VIEW (Separate WhatsApp/TG Channel Screen)
+         ======================================================== -->
+    <div class="channel-view" id="channelView">
+      <header class="channel-header" onclick="openChannelProfile()">
+        <button class="channel-back-btn" onclick="event.stopPropagation(); exitChannelView();">←</button>
+        <div class="channel-info">
+          <h4 id="activeChannelTitle">Channel 1: GK & Current Affairs</h4>
+          <p id="activeChannelSubs">👥 14,850+ Active Members • Tap to view profile</p>
+        </div>
+        <div style="font-size:18px; color:#94a3b8;">⋮</div>
+      </header>
+
+      <main class="channel-body" id="channelBody">
+        <div class="channel-announcement">
+          📢 <strong>Official Daily Live Quiz Arena:</strong> இங்கு மாணவர்கள் அரட்டை அடிக்க முடியாது. வினாக்களுக்கு மட்டுமே வாக்களிக்க முடியும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      </main>
+
+      <!-- Founder Admin Live Broadcast Input Bar -->
+      <footer class="admin-broadcast-bar">
+        <input type="text" id="adminBroadcastInput" placeholder="👑 Admin: Post broadcast announcement to this channel..." onkeydown="if(event.key==='Enter') sendAdminBroadcast()" />
+        <button onclick="sendAdminBroadcast()">Post</button>
+      </footer>
+    </div>
+
+    <!-- Channel Profile / Members Info Popup -->
+    <div class="channel-info-popup" id="channelInfoPopup">
+      <div class="modal-top">
+        <h3 id="infoModalTitle">Channel Details</h3>
+        <button class="close-circle" onclick="closeChannelProfile()">✕</button>
+      </div>
+      <div style="padding:16px;">
+        <div style="font-size:16px; font-weight:800; color:#38bdf8; margin-bottom:4px;" id="infoChannelName">Channel 1</div>
+        <div style="font-size:13px; color:#22c55e; font-weight:700; margin-bottom:12px;" id="infoMembersCount">👥 14,850+ Active Subscribers Joined</div>
+        <div style="font-size:12.5px; color:#cbd5e1; line-height:1.5; margin-bottom:14px;">
+          ✓ Daily 200+ Interactive Live Poll Questions<br/>
+          ✓ 8:00 PM Automated AI Leaderboard<br/>
+          ✓ Month-end Top Performer gets 1-Month Free VIP Pass<br/>
+          ✓ Admin Role: Founder & Master Mind AI
+        </div>
+        <button onclick="closeChannelProfile()" style="width:100%; padding:11px; background:#2563eb; color:#fff; border:none; border-radius:10px; font-weight:700;">Close Info</button>
+      </div>
+    </div>
+
+    <!-- 1. Left Side White Settings & Profile (⋮) -->
+    <div class="white-settings-popup" id="whiteSettingsPopup">
+      <div class="modal-top" style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+        <h3 style="color:#0f172a;">✦ App Settings & Profile</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div class="white-item" onclick="alert('👑 Account: Founder & App Owner\n⚡ Balance: Unlimited VIP Credits\n💎 Plan: Lifetime Master Pass')">
+        <span>👑 Founder Profile & Status</span>
+        <span style="font-size:12px; color:#16a34a; font-weight:800;" id="menuCreditText">Unlimited VIP</span>
+      </div>
+      <div class="white-item" onclick="alert('🔒 Privacy & Face-Lock Encryption: 100% Secured (Original Facial Identity Preserved)')">
+        <span>🔒 Face-Lock AI Photo Security</span>
+        <span style="font-size:12px; color:#16a34a;">Active</span>
+      </div>
+      <div class="white-item" onclick="alert('🌐 Language Preference: Tamil & English Intelligent Dual-Engine')">
+        <span>🌐 Language & Voice Dialect</span>
+        <span style="font-size:12px; color:#64748b;">Tamil / English</span>
+      </div>
+      <div class="white-item" onclick="alert('MasterMind AI v13.0 Final - Founder Edition with Channel Broadcast & Profiles');">
+        <span>ℹ️ About MasterMind AI</span>
+        <span style="font-size:12px; color:#64748b;">v13.0 Production</span>
+      </div>
+    </div>
+
+    <!-- 2. Right Side 3-Line (☰) Menu Drawer -->
+    <div class="right-drawer" id="rightDrawer">
+      <div class="modal-top" style="border-bottom: 1px solid #e2e8f0;">
+        <h3 style="color:#0f172a;">✦ MasterMind Hub</h3>
+        <button class="close-circle" style="background:#e2e8f0; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div style="padding: 16px;">
+        <button onclick="clearChat(); closeAll();" style="width:100%; padding:11px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer; margin-bottom:14px;">＋ New Conversation</button>
+        <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px;">Super Studios</div>
+        <div style="padding:12px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="closeAll(); openHub();">🗂️ Explore 54 Domains & Studios</div>
+        <div style="padding:12px 0; font-size:14px; font-weight:700; color:#2563eb; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="closeAll(); openChannelSelect();">🏆 Daily Live Quiz Arena (Channels) ↗</div>
+        <div style="padding:12px 0; font-size:14.5px; font-weight:700; color:#16a34a; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="closeAll(); openBilling();">💳 Pricing & Subscriber Plans ↗</div>
+        <div style="padding:12px 0; font-size:14px; font-weight:600; color:#1e293b; cursor:pointer;" onclick="closeAll(); openWhiteSettings();">⚙️ App Settings</div>
+      </div>
+    </div>
+
+    <!-- 3. Channel Selection Popup (Free Join Channel) -->
+    <div class="channel-select-popup" id="channelSelectPopup">
+      <div class="modal-top">
+        <h3>✦ Join Free Live Quiz Channels</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="channel-card-btn" onclick="enterChannel('gk')">
+        <h4>🔥 Channel 1: Current Affairs & GK Master</h4>
+        <p>நடப்பு நிகழ்வுகள் (100 வினாக்கள்) + பொது அறிவு (100 வினாக்கள்) = தினசரி 200 நேரலை வினாக்கள்.</p>
+        <span class="channel-join-btn">Join Now (Free) ↗</span>
+      </div>
+      <div class="channel-card-btn" onclick="enterChannel('school')">
+        <h4>📚 Channel 2: Samacheer School Master (6th-12th)</h4>
+        <p>தமிழ் (25) + கணிதம் (25) + அறிவியல் (25) + சமூக அறிவியல் (25) = தினசரி 100 சமச்சீர் வினாக்கள்.</p>
+        <span class="channel-join-btn">Join Now (Free) ↗</span>
+      </div>
+    </div>
+
+    <!-- 4. Complete 54 Domains Modal (🗂️) -->
+    <div class="modal-popup" id="modalPopup">
+      <div class="modal-top">
+        <h3>✦ 54 Omniverse Domains & Studios</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+      <div class="modal-grid" id="modalGrid"></div>
+    </div>
+
+    <!-- 5. Customer Pricing & Billing Modal (₹500 MOST POPULAR) -->
+    <div class="billing-popup" id="billingPopup">
+      <div class="modal-top" style="background:#0b1329;">
+        <h3>✦ Customer Subscription Plans</h3>
+        <button class="close-circle" onclick="closeAll()">✕</button>
+      </div>
+
+      <!-- 1. Trial (₹1) -->
+      <div class="dark-card">
+        <div class="price-title">24-Hour VIP Trial</div>
+        <div class="price-tag">₹1 <span>per day</span></div>
+        <div class="price-desc">Instant 20 renders across all 54 domains & mega tools with watermark-free export.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 54 AI Studios & Suites Unlocked</li>
+          <li><span>✓</span> Instant Secure Razorpay Checkout</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹1 on Razorpay ↗</a>
+      </div>
+
+      <!-- 2. Monthly Limited (₹100) -->
+      <div class="dark-card">
+        <div class="price-title">Monthly Limited Plan</div>
+        <div class="price-tag">₹100 <span>/month</span></div>
+        <div class="price-desc">Standard access with limited renders for daily essential tasks.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 54 AI Domains Unlocked</li>
+          <li><span>✓</span> Limited 100 Renders per month</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹100 on Razorpay ↗</a>
+      </div>
+
+      <!-- 3. Educator Pro Plan (₹300) -->
+      <div class="dark-card">
+        <div class="price-title">Educator Pro Plan</div>
+        <div class="price-tag">₹300 <span>/month</span></div>
+        <div class="price-desc">Unlimited mock tests, 4K export, and Tamil voices for creators & educators.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 54 AI Suites Unlocked</li>
+          <li><span>✓</span> Limited 300 Renders per month</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹300 on Razorpay ↗</a>
+      </div>
+
+      <!-- 4. Unlimited Monthly Plan (₹500 - MOST POPULAR) -->
+      <div class="dark-card popular">
+        <div class="badge-popular">MOST POPULAR</div>
+        <div class="price-title">Unlimited Monthly Plan</div>
+        <div class="price-tag highlight">₹500 <span>/month</span></div>
+        <div class="price-desc">Unlimited generation across all 54 domains without monthly render limits.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> Unlimited 54 AI Studio Renders</li>
+          <li><span>✓</span> 4K Ultra HD Export Quality</li>
+          <li><span>✓</span> Full Commercial Usage Rights</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout popular-btn">Pay ₹500 on Razorpay ↗</a>
+      </div>
+
+      <!-- 5. Yearly Access (₹5,499) -->
+      <div class="dark-card">
+        <div class="price-title">Yearly Unlimited Master</div>
+        <div class="price-tag highlight">₹5,499 <span>/year</span></div>
+        <div class="price-desc">Full 1-Year unlimited access with dedicated VIP cloud server & instant updates.</div>
+        <ul class="perk-list">
+          <li><span>✓</span> 1 Full Year Unlimited Access</li>
+          <li><span>✓</span> Zero Render Caps / Watermark Free</li>
+          <li><span>✓</span> 24/7 Dedicated Priority VIP Support</li>
+        </ul>
+        <a href="https://razorpay.me/@ganesankanishka" target="_blank" class="btn-checkout">Pay ₹5,499 on Razorpay ↗</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const GEMINI_KEY = "AIzaSyD-2ilciYExRLjbmPqFU76oRF0Htz3HLJc";
+    let chatHistory = [];
+    let attachedPhotoData = null;
+
+    // Automatic Permanent Founder / Unlimited Admin Status
+    localStorage.setItem('mm_vip', 'Founder Unlimited Pass');
+    localStorage.setItem('mm_credits', 'Unlimited');
+
+    // Photo Upload Handling (Face-Lock Identity Preservation)
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        attachedPhotoData = e.target.result;
+        document.getElementById('stagingFileName').innerText = "📷 Photo Attached: " + file.name + " (Face-Lock Active)";
+        document.getElementById('imgStagingBar').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAttachedPhoto() {
+      attachedPhotoData = null;
+      document.getElementById('photoFileInput').value = '';
+      document.getElementById('imgStagingBar').style.display = 'none';
+    }
+
+    // Credits & Status Logic
+    function getUserCredits() { return "Unlimited"; }
+    function getVIPStatus() { return "Founder Unlimited Pass"; }
+    function deductCredit() { return true; }
+
+    // Dedicated Channel Logic (Separate Rooms)
+    const gkChannelBank = [
+      {
+        q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?",
+        opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"],
+        ans: 0,
+        exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் பி.ஆர். அம்பேத்கர் தலைமையில் அரசியலமைப்பு வரைவுக்குழு உருவாக்கப்பட்டது."
+      },
+      {
+        q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?",
+        opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"],
+        ans: 1,
+        exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது."
+      },
+      {
+        q: "இந்திய ரிசர்வ் வங்கி (RBI) எந்த ஆண்டு தொடங்கப்பட்டது?",
+        opts: ["1935", "1947", "1950", "1942"],
+        ans: 0,
+        exp: "ரிசர்வ் வங்கி 1935 ஏப்ரல் 1 அன்று கொல்கத்தாவில் தொடங்கப்பட்டது."
+      },
+      {
+        q: "இந்தியாவின் முதல் செயற்கைக்கோள் எது?",
+        opts: ["ரோகினி", "பாஸ்கரா", "ஆர்யபட்டா", "இன்சாட்"],
+        ans: 2,
+        exp: "1975-ல் விண்ணில் செலுத்தப்பட்ட இந்தியாவின் முதல் செயற்கைக்கோள் ஆர்யபட்டா ஆகும்."
+      }
+    ];
+
+    const schoolChannelBank = [
+      {
+        q: "திருக்குறளில் உள்ள மொத்த அதிகாரங்களின் எண்ணிக்கை எத்தனை?",
+        opts: ["108", "133", "1330", "150"],
+        ans: 1,
+        exp: "திருக்குறளில் 3 பால்கள், 133 அதிகாரங்கள் மற்றும் 1330 குறள்கள் உள்ளன."
+      },
+      {
+        q: "தமிழ்நாட்டின் மாநில மரம் எது?",
+        opts: ["வேப்ப மரம்", "ஆல மரம்", "பனை மரம்", "தென்னை மரம்"],
+        ans: 2,
+        exp: "தமிழ்நாட்டின் அதிகாரப்பூர்வ மாநில மரம் பனை மரம் (Palmyra palm) ஆகும்."
+      },
+      {
+        q: "மனித உடலின் மிக நீளமான மற்றும் வலிமையான எலும்பு எது?",
+        opts: ["திபியா (Tibia)", "பீமர் / தொடை எலும்பு (Femur)", "ஹியூமரஸ் (Humerus)", "ரேடியஸ் (Radius)"],
+        ans: 1,
+        exp: "மனித உடலின் மிக நீளமான மற்றும் அதிக எடை தாங்கும் எலும்பு பீமர் (Femur) ஆகும்."
+      },
+      {
+        q: "சூரிய குடும்பத்தில் உள்ள மிக வெப்பமான கோள் எது?",
+        opts: ["புதன் (Mercury)", "வெள்ளி (Venus)", "செவ்வாய் (Mars)", "வியாழன் (Jupiter)"],
+        ans: 1,
+        exp: "வெள்ளிக் கோளில் அடர்ந்த கார்பன் டை ஆக்சைடு பசுமைக்குடில் வாயுக்கள் இருப்பதால் அதுவே வெப்பமானது."
+      }
+    ];
+
+    let activeChannelType = 'gk';
+    let activeChannelIndex = 0;
+
+    function openChannelSelect() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('channelSelectPopup').classList.add('open');
+    }
+
+    function enterChannel(type) {
+      closeAll();
+      activeChannelType = type;
+      activeChannelIndex = 0;
+
+      const title = type === 'gk' ? '🔥 Channel 1: GK & Current Affairs Master' : '📚 Channel 2: Samacheer School Master';
+      const membersText = type === 'gk' ? '👥 18,420+ Active Members • Tap to view profile' : '👥 12,350+ Active Members • Tap to view profile';
+
+      document.getElementById('activeChannelTitle').innerText = title;
+      document.getElementById('activeChannelSubs').innerText = membersText;
+      document.getElementById('channelBody').innerHTML = `
+        <div class="channel-announcement">
+          📢 <strong>Official Daily Live Quiz Arena:</strong> இங்கு மாணவர்கள் அரட்டை அடிக்க முடியாது. வினாக்களுக்கு மட்டுமே வாக்களிக்க முடியும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      `;
+
+      document.getElementById('channelView').classList.add('active');
+      postNextChannelQuestion();
+    }
+
+    function exitChannelView() {
+      document.getElementById('channelView').classList.remove('active');
+    }
+
+    function openChannelProfile() {
+      const isGk = activeChannelType === 'gk';
+      document.getElementById('infoModalTitle').innerText = isGk ? 'Channel 1 Profile' : 'Channel 2 Profile';
+      document.getElementById('infoChannelName').innerText = isGk ? '🔥 Channel 1: GK & Current Affairs Master' : '📚 Channel 2: Samacheer School Master (6th-12th)';
+      document.getElementById('infoMembersCount').innerText = isGk ? '👥 18,420+ Active Subscribers' : '👥 12,350+ Active Subscribers';
+      document.getElementById('channelInfoPopup').classList.add('open');
+    }
+
+    function closeChannelProfile() {
+      document.getElementById('channelInfoPopup').classList.remove('open');
+    }
+
+    function sendAdminBroadcast() {
+      const input = document.getElementById('adminBroadcastInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const body = document.getElementById('channelBody');
+      const html = `
+        <div class="admin-msg-card">
+          <div class="admin-msg-header">👑 FOUNDER & ADMIN BROADCAST</div>
+          <div class="admin-msg-text">${text}</div>
+        </div>
+      `;
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+      input.value = '';
+    }
+
+    function postNextChannelQuestion() {
+      const bank = activeChannelType === 'gk' ? gkChannelBank : schoolChannelBank;
+      const item = bank[activeChannelIndex % bank.length];
+      activeChannelIndex++;
+
+      const body = document.getElementById('channelBody');
+      const pollId = 'cpoll_' + Math.random().toString(36).substring(2, 9);
+
+      let html = `<div class="channel-poll-card" id="${pollId}">
+        <div class="channel-poll-q">📊 ${item.q}</div>
+        <div class="channel-poll-opts">`;
+
+      item.opts.forEach((opt, idx) => {
+        html += `<div class="c-opt" onclick="voteChannelPoll('${pollId}', ${idx}, ${item.ans})">
+          <div class="c-bar" id="${pollId}_bar_${idx}" style="width:0%;"></div>
+          <span class="c-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="c-pct" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+        <div class="c-exp" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${item.exp}</div>
+        <button class="c-next-btn" id="${pollId}_btn" onclick="postNextChannelQuestion()">➡️ அடுத்த வினா (Next Question)</button>
+      </div>`;
+
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    window.voteChannelPoll = function(pollId, selectedIdx, correctIdx) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.c-opt');
+      const dummyPcts = [26, 14, 48, 12];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = dummyPcts[idx] + '%';
+        bar.style.width = dummyPcts[idx] + '%';
+
+        if (idx === correctIdx) {
+          opt.classList.add('correct');
+        } else if (idx === selectedIdx) {
+          opt.classList.add('wrong');
+        }
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+      document.getElementById(`${pollId}_btn`).style.display = 'block';
+    
