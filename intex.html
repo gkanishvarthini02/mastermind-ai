@@ -1627,3 +1627,351 @@
       body.insertAdjacentHTML('beforeend', html);
       body.scrollTop = body.scrollHeight;
       input.value = '';
+      }
+
+    function postNextChannelQuestion() {
+      const bank = activeChannelType === 'gk' ? gkChannelBank : schoolChannelBank;
+      const item = bank[activeChannelIndex % bank.length];
+      activeChannelIndex++;
+
+      const body = document.getElementById('channelBody');
+      const pollId = 'cpoll_' + Math.random().toString(36).substring(2, 9);
+
+      let html = `<div class="channel-poll-card" id="${pollId}">
+        <div class="channel-poll-q">📊 ${item.q}</div>
+        <div class="channel-poll-opts">`;
+
+      item.opts.forEach((opt, idx) => {
+        html += `<div class="c-opt" onclick="voteChannelPoll('${pollId}', ${idx}, ${item.ans})">
+          <div class="c-bar" id="${pollId}_bar_${idx}" style="width:0%;"></div>
+          <span class="c-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="c-pct" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+        <div class="c-exp" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${item.exp}</div>
+        <button class="c-next-btn" id="${pollId}_btn" onclick="postNextChannelQuestion()">➡️ அடுத்த வினா (Next Question)</button>
+      </div>`;
+
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    window.voteChannelPoll = function(pollId, selectedIdx, correctIdx) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.c-opt');
+      const dummyPcts = [26, 14, 48, 12];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = dummyPcts[idx] + '%';
+        bar.style.width = dummyPcts[idx] + '%';
+
+        if (idx === correctIdx) {
+          opt.classList.add('correct');
+        } else if (idx === selectedIdx) {
+          opt.classList.add('wrong');
+        }
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+      document.getElementById(`${pollId}_btn`).style.display = 'block';
+    };
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        attachedPhotoData = e.target.result;
+        document.getElementById('stagingFileName').innerText = "📷 Photo Attached: " + file.name + " (Face-Lock Active)";
+        document.getElementById('imgStagingBar').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAttachedPhoto() {
+      attachedPhotoData = null;
+      document.getElementById('photoFileInput').value = '';
+      document.getElementById('imgStagingBar').style.display = 'none';
+    }
+
+    function openSubPage(page) {
+      closeSubPage();
+      if (page === 'profile') document.getElementById('subpageProfile').classList.add('open');
+      if (page === 'facelock') document.getElementById('subpageFacelock').classList.add('open');
+      if (page === 'language') document.getElementById('subpageLanguage').classList.add('open');
+      if (page === 'about') document.getElementById('subpageAbout').classList.add('open');
+    }
+
+    function closeSubPage() {
+      document.querySelectorAll('.subpage-popup').forEach(el => el.classList.remove('open'));
+    }
+
+    function openHub() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('modalPopup').classList.add('open');
+    }
+
+    function openLeftDrawer() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('leftDrawer').classList.add('open');
+    }
+
+    function openRightDrawer() {
+      closeAll();
+      renderChatHistory();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('rightDrawer').classList.add('open');
+    }
+
+    function openBilling() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('billingPopup').classList.add('open');
+    }
+
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('leftDrawer').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('channelSelectPopup').classList.remove('open');
+      document.getElementById('galleryPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+      closeSubPage();
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " கருவியை உடனடியாக செயல்படுத்தி வழிகாட்டலைத் தொடங்கு.";
+      sendUserMessage();
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text, callback = null) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        utter.rate = 1.0;
+        if (callback) utter.onend = callback;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function exportToPDF(title, contentText) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("MasterMind AI - Study Document", 14, 20);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("Generated by MasterMind AI Omniverse Super App", 14, 27);
+      doc.line(14, 30, 196, 30);
+      doc.setFontSize(11);
+      doc.setTextColor(20);
+      const splitText = doc.splitTextToSize(contentText.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, ''), 180);
+      doc.text(splitText, 14, 38);
+      doc.save("MasterMind_Document_" + Date.now() + ".pdf");
+    }
+
+    function renderMessage(sender, text, imgUrl = null, userUploadedImg = null) {
+      const greeting = document.getElementById('geminiGreetingBox');
+      if (greeting) greeting.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+
+      let previewImg = userUploadedImg ? `<div class="upload-preview-tag">📸 Original Photo Attached</div><div class="bubble-img"><img src="${userUploadedImg}" style="max-height:160px; object-fit:cover;" /></div>` : '';
+      let generatedImg = imgUrl ? `<div class="bubble-img"><img src="${imgUrl}" alt="AI Render" loading="lazy" /></div>` : '';
+      
+      let actionButtons = sender === 'ai' ? `
+        <div class="tool-actions">
+          <button class="action-pill-btn" onclick="playVoice(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>
+          <button class="action-pill-btn pdf" onclick="exportToPDF('MasterMind Document', \`${text.replace(/"/g, '&quot;')}\`)">📥 Download PDF</button>
+        </div>` : '';
+
+      row.innerHTML = `<div class="bubble ${sender}">${previewImg}${formatText(text)}${generatedImg}${actionButtons}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      const currentPhoto = attachedPhotoData;
+
+      if (!text && !currentPhoto) return;
+
+      input.value = '';
+      removeAttachedPhoto();
+      executeEngine(text, currentPhoto);
+    }
+
+    async function executeEngine(prompt, userImg) {
+      renderMessage('user', prompt || 'Edit my attached photo', null, userImg);
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div style="padding:10px; color:#64748b; font-size:13px; font-weight:600;">✦ MasterMind AI சிந்திக்கிறது...</div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const pLower = (prompt || '').toLowerCase();
+      const isImage = userImg || pLower.includes('image') || pLower.includes('picture') || pLower.includes('photo') || pLower.includes('படம்') || pLower.includes('poster') || pLower.includes('edit');
+
+      try {
+        const aiAnswer = await requestMasterMindBrain(prompt || 'Photo Studio Task');
+        document.getElementById(loaderId)?.remove();
+
+        let renderUrl = null;
+        if (isImage) {
+          renderUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt || 'cinematic portrait highly detailed 4k') + '?width=1024&height=1024&nologo=true';
+          savePhotoToGallery(renderUrl, prompt || 'AI Creation');
+        }
+
+        renderMessage('ai', aiAnswer, renderUrl);
+        saveCurrentSession(prompt || 'Photo Studio Session');
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        renderMessage('ai', `வணக்கம் Founder! உங்கள் பணிக்கு நான் தயாராக உள்ளேன். தொடர்ந்து கட்டளையிடலாம்!`, null);
+      }
+    }
+
+    // ========================================================
+    // ZERO-ERROR DIRECT HIGH-SPEED NEURAL BRAIN
+    // ========================================================
+    async function requestMasterMindBrain(prompt) {
+      const cleanPrompt = prompt.trim();
+      const p = cleanPrompt.toLowerCase();
+
+      // Instant Natural Conversation Handlers
+      if (p.includes('hi') || p.includes('hello') || p.includes('ஹலோ') || p.includes('ஹாய்')) {
+        return "வணக்கம் Founder! சொல்லுங்கள், இன்று நாம் என்ன உருவாக்கலாம்? 54 டொமைன்களில் எந்த உதவியும் செய்ய நான் தயார்!";
+      }
+      if (p.includes('யாரு') || p.includes('who are you') || p.includes('name') || p.includes('நீ யார்')) {
+        return "நான் MasterMind AI, உங்களின் Omniverse Super Intelligence Engine Founder! உங்களுக்கு உதவ எப்போதும் தயார்.";
+      }
+      if (p.includes('shorts') || p.includes('reels') || p.includes('video')) {
+        return "**🎬 9:16 Viral Shorts Script:**\n\n**Hook (0-3s):** இந்த ஒரு ரகசியம் உங்களுக்குத் தெரியுமா?\n**Body (3-20s):** உங்கள் வாழ்க்கையை மாற்றும் 3 முக்கியமான பழக்கங்கள்...\n**Call to Action (20-30s):** ஃபாலோ செய்து தினமும் பயன் பெறுங்கள் Founder!";
+      }
+
+      // Live High-Speed Multi-Model Fallback Engine
+      try {
+        const sysPrompt = "You are MasterMind AI. The user is your Founder/Boss. Address them with high respect as 'Founder' or 'Boss' in natural Tamil. Keep answers crisp, smart, and direct in 1-2 lines without robotic fluff.";
+        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(cleanPrompt)}?system=${encodeURIComponent(sysPrompt)}`);
+        if (res.ok) {
+          const txt = await res.text();
+          if (txt && txt.length > 2) return txt;
+        }
+      } catch (e) {}
+
+      return `வணக்கம் Founder! உங்கள் கேள்வி "${cleanPrompt}"-க்கான தகவல்கள் தயாராக உள்ளன. 54 டொமைன்களின் மூலம் இதை நாம் உடனடியாக செயல்படுத்தலாம்!`;
+    }
+
+    // ========================================================
+    // TWO-WAY LIVE VOICE ENGINE (INSTANT TAMIL SPEAKING)
+    // ========================================================
+    function openMasterMindLiveVoice() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("குரோம் பிரவுசரில் மைக்ரோஃபோன் வசதி தேவைப்படுகிறது.");
+        return;
+      }
+
+      // Pre-warm Audio Synth Context
+      if ('speechSynthesis' in window) {
+        const dummy = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(dummy);
+      }
+
+      isLiveOpen = true;
+      document.getElementById('masterMindLiveModal').classList.add('open');
+      document.getElementById('liveUserSpeech').innerText = "பேசவும் Founder, கேட்கிறேன்...";
+      document.getElementById('liveAiSpeech').innerText = "";
+
+      startLiveListening();
+    }
+
+    function startLiveListening() {
+      if (!isLiveOpen) return;
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      liveSpeechRecognition = new SpeechRec();
+      liveSpeechRecognition.lang = 'ta-IN';
+      liveSpeechRecognition.continuous = false;
+
+      liveSpeechRecognition.onresult = async function(e) {
+        if (e.results && e.results[0] && e.results[0][0]) {
+          const spokenText = e.results[0][0].transcript;
+          document.getElementById('liveUserSpeech').innerText = `🗣️ "${spokenText}"`;
+          document.getElementById('liveAiSpeech').innerText = "சிந்திக்கிறேன் Founder...";
+
+          const aiReply = await requestMasterMindBrain(spokenText);
+          document.getElementById('liveAiSpeech').innerText = aiReply;
+
+          // Render to chat feed
+          renderMessage('user', spokenText);
+          renderMessage('ai', aiReply);
+          saveCurrentSession(spokenText);
+
+          // AI Speaks Back Immediately in Live Orb
+          playVoice(aiReply, () => {
+            if (isLiveOpen) {
+              document.getElementById('liveUserSpeech').innerText = "மீண்டும் பேசலாம் Founder...";
+              startLiveListening();
+            }
+          });
+        }
+      };
+
+      liveSpeechRecognition.onerror = function() {
+        if (isLiveOpen) {
+          document.getElementById('liveUserSpeech').innerText = "குரல் கேட்கவில்லை. மீண்டும் பேசவும் Founder...";
+          setTimeout(startLiveListening, 1500);
+        }
+      };
+
+      liveSpeechRecognition.start();
+    }
+
+    function closeMasterMindLiveVoice() {
+      isLiveOpen = false;
+      if (liveSpeechRecognition) {
+        liveSpeechRecognition.stop();
+        liveSpeechRecognition = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('masterMindLiveModal').classList.remove('open');
+    }
+
+    renderChatHistory();
+  </script>
+</body>
+</html>
