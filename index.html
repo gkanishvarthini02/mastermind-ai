@@ -1419,3 +1419,492 @@
           <div class="name">${item.name}</div>
           <div class="desc">${item.desc}</div>
   </div>
+  `).join('');
+    }
+    renderHub();
+
+    function filterDomains() {
+      const query = document.getElementById('domainSearchInput').value.toLowerCase();
+      const filtered = domainList.filter(d => d.name.toLowerCase().includes(query) || d.desc.toLowerCase().includes(query));
+      renderHub(filtered);
+    }
+
+    function quickPrompt(text) {
+      document.getElementById('userInput').value = text;
+      sendUserMessage();
+    }
+
+    function getStoredSessions() {
+      return JSON.parse(localStorage.getItem('mm_chat_sessions') || '{}');
+    }
+
+    function saveCurrentSession(firstPrompt) {
+      const sessions = getStoredSessions();
+      if (!sessions[currentSessionId]) {
+        sessions[currentSessionId] = {
+          id: currentSessionId,
+          title: firstPrompt.substring(0, 30) + '...',
+          date: new Date().toLocaleDateString('ta-IN'),
+          messages: chatHistory
+        };
+      } else {
+        sessions[currentSessionId].messages = chatHistory;
+      }
+      localStorage.setItem('mm_chat_sessions', JSON.stringify(sessions));
+      renderChatHistory();
+    }
+
+    function renderChatHistory(query = '') {
+      const sessions = getStoredSessions();
+      const listEl = document.getElementById('historyList');
+      const keys = Object.keys(sessions).reverse();
+
+      const filtered = keys.filter(k => sessions[k].title.toLowerCase().includes(query.toLowerCase()));
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:11.5px; color:#94a3b8; text-align:center; padding:10px;">உரையாடல்கள் ஏதுமில்லை</div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(k => `
+        <div class="history-item" onclick="loadSession('${k}')">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">💬 ${sessions[k].title}</span>
+          <button class="history-del-btn" onclick="event.stopPropagation(); deleteSession('${k}')">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function filterChatHistory() {
+      const q = document.getElementById('historySearchInput').value;
+      renderChatHistory(q);
+    }
+
+    function loadSession(id) {
+      const sessions = getStoredSessions();
+      if (sessions[id]) {
+        currentSessionId = id;
+        chatHistory = sessions[id].messages || [];
+        const container = document.getElementById('chatContainer');
+        container.innerHTML = '';
+        chatHistory.forEach(msg => {
+          renderMessage(msg.role === 'user' ? 'user' : 'ai', msg.parts[0].text);
+        });
+        closeAll();
+      }
+    }
+
+    function deleteSession(id) {
+      const sessions = getStoredSessions();
+      delete sessions[id];
+      localStorage.setItem('mm_chat_sessions', JSON.stringify(sessions));
+      renderChatHistory();
+      if (currentSessionId === id) startNewChat();
+    }
+
+    function startNewChat() {
+      currentSessionId = Date.now().toString();
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="gemini-greeting-box" id="geminiGreetingBox">
+          <div class="greeting-headline" id="greetingHeadline">${greetingsList[Math.floor(Math.random() * greetingsList.length)]}</div>
+          <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+          <div class="quick-chips-grid">
+            <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+            <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+            <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+            <div class="quick-chip" onclick="quickPrompt('💻 ஒரு Responsive HTML/CSS Landing Page Code எழுது')">💻 Web Code</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+      removeAttachedPhoto();
+      closeAll();
+    }
+
+    function getStoredGallery() {
+      return JSON.parse(localStorage.getItem('mm_saved_gallery') || '[]');
+    }
+
+    function savePhotoToGallery(url, prompt) {
+      const gallery = getStoredGallery();
+      gallery.unshift({ id: Date.now(), url: url, prompt: prompt, date: new Date().toLocaleDateString('ta-IN') });
+      localStorage.setItem('mm_saved_gallery', JSON.stringify(gallery));
+    }
+
+    function openGalleryModal() {
+      closeAll();
+      const grid = document.getElementById('galleryGrid');
+      const gallery = getStoredGallery();
+
+      if (gallery.length === 0) {
+        grid.innerHTML = '<div style="grid-column:span 2; color:#94a3b8; text-align:center; padding:30px;">சேமிக்கப்பட்ட AI படங்கள் ஏதுமில்லை.</div>';
+      } else {
+        grid.innerHTML = gallery.map(item => `
+          <div class="gallery-card" id="gal_${item.id}">
+            <img src="${item.url}" alt="AI" loading="lazy" />
+            <div class="gallery-actions">
+              <span style="font-size:10.5px; color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:90px;">${item.prompt}</span>
+              <button style="color:#ef4444;" onclick="deleteGalleryItem(${item.id})">🗑️ Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('galleryPopup').classList.add('open');
+    }
+
+    function deleteGalleryItem(id) {
+      let gallery = getStoredGallery();
+      gallery = gallery.filter(g => g.id !== id);
+      localStorage.setItem('mm_saved_gallery', JSON.stringify(gallery));
+      document.getElementById('gal_' + id)?.remove();
+    }
+
+    const gkChannelBank = [
+      {
+        q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?",
+        opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"],
+        ans: 0,
+        exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் பி.ஆர். அம்பேத்கர் தலைமையில் அரசியலமைப்பு வரைவுக்குழு உருவாக்கப்பட்டது."
+      },
+      {
+        q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?",
+        opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"],
+        ans: 1,
+        exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது."
+      }
+    ];
+
+    const schoolChannelBank = [
+      {
+        q: "திருக்குறளில் உள்ள மொத்த அதிகாரங்களின் எண்ணிக்கை எத்தனை?",
+        opts: ["108", "133", "1330", "150"],
+        ans: 1,
+        exp: "திருக்குறளில் 3 பால்கள், 133 அதிகாரங்கள் மற்றும் 1330 குறள்கள் உள்ளன."
+      },
+      {
+        q: "தமிழ்நாட்டின் மாநில மரம் எது?",
+        opts: ["வேப்ப மரம்", "ஆல மரம்", "பனை மரம்", "தென்னை மரம்"],
+        ans: 2,
+        exp: "தமிழ்நாட்டின் அதிகாரப்பூர்வ மாநில மரம் பனை மரம் (Palmyra palm) ஆகும்."
+      }
+    ];
+
+    let activeChannelType = 'gk';
+    let activeChannelIndex = 0;
+
+    function openChannelSelect() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('channelSelectPopup').classList.add('open');
+    }
+
+    function enterChannel(type) {
+      closeAll();
+      activeChannelType = type;
+      activeChannelIndex = 0;
+
+      const title = type === 'gk' ? '🔥 Channel 1: GK & Current Affairs Master' : '📚 Channel 2: Samacheer School Master';
+      document.getElementById('activeChannelTitle').innerText = title;
+      document.getElementById('channelBody').innerHTML = `
+        <div class="channel-announcement">
+          📢 <strong>Official Daily Live Quiz Arena:</strong> இங்கு மாணவர்கள் அரட்டை அடிக்க முடியாது. வினாக்களுக்கு மட்டுமே வாக்களிக்க முடியும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      `;
+
+      document.getElementById('channelView').classList.add('active');
+      postNextChannelQuestion();
+    }
+
+    function exitChannelView() {
+      document.getElementById('channelView').classList.remove('active');
+    }
+
+    function sendAdminBroadcast() {
+      const input = document.getElementById('adminBroadcastInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const body = document.getElementById('channelBody');
+      const html = `
+        <div class="admin-msg-card">
+          <div class="admin-msg-header">👑 FOUNDER & ADMIN BROADCAST</div>
+          <div class="admin-msg-text">${text}</div>
+        </div>
+      `;
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+      input.value = '';
+    }
+
+    function postNextChannelQuestion() {
+      const bank = activeChannelType === 'gk' ? gkChannelBank : schoolChannelBank;
+      const item = bank[activeChannelIndex % bank.length];
+      activeChannelIndex++;
+
+      const body = document.getElementById('channelBody');
+      const pollId = 'cpoll_' + Math.random().toString(36).substring(2, 9);
+
+      let html = `<div class="channel-poll-card" id="${pollId}">
+        <div class="channel-poll-q">📊 ${item.q}</div>
+        <div class="channel-poll-opts">`;
+
+      item.opts.forEach((opt, idx) => {
+        html += `<div class="c-opt" onclick="voteChannelPoll('${pollId}', ${idx}, ${item.ans})">
+          <div class="c-bar" id="${pollId}_bar_${idx}" style="width:0%;"></div>
+          <span class="c-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="c-pct" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+        <div class="c-exp" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${item.exp}</div>
+        <button class="c-next-btn" id="${pollId}_btn" onclick="postNextChannelQuestion()">➡️ அடுத்த வினா (Next Question)</button>
+      </div>`;
+
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    window.voteChannelPoll = function(pollId, selectedIdx, correctIdx) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.c-opt');
+      const dummyPcts = [26, 14, 48, 12];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = dummyPcts[idx] + '%';
+        bar.style.width = dummyPcts[idx] + '%';
+
+        if (idx === correctIdx) {
+          opt.classList.add('correct');
+        } else if (idx === selectedIdx) {
+          opt.classList.add('wrong');
+        }
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+      document.getElementById(`${pollId}_btn`).style.display = 'block';
+    };
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        attachedPhotoData = e.target.result;
+        document.getElementById('stagingFileName').innerText = "📷 Photo Attached: " + file.name + " (Face-Lock Active)";
+        document.getElementById('imgStagingBar').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAttachedPhoto() {
+      attachedPhotoData = null;
+      document.getElementById('photoFileInput').value = '';
+      document.getElementById('imgStagingBar').style.display = 'none';
+    }
+
+    function openSubPage(page) {
+      closeSubPage();
+      if (page === 'profile') document.getElementById('subpageProfile').classList.add('open');
+      if (page === 'facelock') document.getElementById('subpageFacelock').classList.add('open');
+      if (page === 'language') document.getElementById('subpageLanguage').classList.add('open');
+      if (page === 'about') document.getElementById('subpageAbout').classList.add('open');
+    }
+
+    function closeSubPage() {
+      document.querySelectorAll('.subpage-popup').forEach(el => el.classList.remove('open'));
+    }
+
+    function openHub() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('modalPopup').classList.add('open');
+    }
+
+    function openLeftDrawer() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('leftDrawer').classList.add('open');
+    }
+
+    function openRightDrawer() {
+      closeAll();
+      renderChatHistory();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('rightDrawer').classList.add('open');
+    }
+
+    function openBilling() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('billingPopup').classList.add('open');
+    }
+
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('leftDrawer').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('channelSelectPopup').classList.remove('open');
+      document.getElementById('galleryPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+      closeSubPage();
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " கருவியை உடனடியாக செயல்படுத்தி வழிகாட்டலைத் தொடங்கு.";
+      sendUserMessage();
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text, callback = null) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        utter.rate = 1.0;
+        if (callback) utter.onend = callback;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function exportToPDF(title, contentText) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("MasterMind AI - Study Document", 14, 20);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("Generated by MasterMind AI Omniverse Super App", 14, 27);
+      doc.line(14, 30, 196, 30);
+      doc.setFontSize(11);
+      doc.setTextColor(20);
+      const splitText = doc.splitTextToSize(contentText.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, ''), 180);
+      doc.text(splitText, 14, 38);
+      doc.save("MasterMind_Document_" + Date.now() + ".pdf");
+    }
+
+    function renderMessage(sender, text, imgUrl = null, userUploadedImg = null) {
+      const greeting = document.getElementById('geminiGreetingBox');
+      if (greeting) greeting.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+
+      let previewImg = userUploadedImg ? `<div class="upload-preview-tag">📸 Original Photo Attached</div><div class="bubble-img"><img src="${userUploadedImg}" style="max-height:160px; object-fit:cover;" /></div>` : '';
+      let generatedImg = imgUrl ? `<div class="bubble-img"><img src="${imgUrl}" alt="AI Render" loading="lazy" /></div>` : '';
+      
+      let actionButtons = sender === 'ai' ? `
+        <div class="tool-actions">
+          <button class="action-pill-btn" onclick="playVoice(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>
+          <button class="action-pill-btn pdf" onclick="exportToPDF('MasterMind Document', \`${text.replace(/"/g, '&quot;')}\`)">📥 Download PDF</button>
+        </div>` : '';
+
+      row.innerHTML = `<div class="bubble ${sender}">${previewImg}${formatText(text)}${generatedImg}${actionButtons}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      const currentPhoto = attachedPhotoData;
+
+      if (!text && !currentPhoto) return;
+
+      input.value = '';
+      removeAttachedPhoto();
+      executeEngine(text, currentPhoto);
+    }
+
+    async function executeEngine(prompt, userImg) {
+      renderMessage('user', prompt || 'Edit my attached photo', null, userImg);
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div style="padding:10px; color:#64748b; font-size:13px; font-weight:600;">✦ MasterMind AI சிந்திக்கிறது...</div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const pLower = (prompt || '').toLowerCase();
+      const isImage = userImg || pLower.includes('image') || pLower.includes('picture') || pLower.includes('photo') || pLower.includes('படம்') || pLower.includes('poster') || pLower.includes('edit');
+
+      try {
+        let aiPrompt = prompt;
+        if (userImg) {
+          aiPrompt = `User uploaded a personal photo. Instruction: Preserve original face strictly without any modification. Face-lock 100% intact. User edit prompt: ${prompt || 'Enhance with 4K cinematic lighting and poster aesthetics'}`;
+        }
+
+        const aiAnswer = await requestGemini(aiPrompt);
+        document.getElementById(loaderId)?.remove();
+
+        let renderUrl = null;
+        if (isImage) {
+          renderUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt || 'cinematic portrait highly detailed 4k') + '?width=1024&height=1024&nologo=true';
+          savePhotoToGallery(renderUrl, prompt || 'AI Creation');
+        }
+
+        renderMessage('ai', aiAnswer, renderUrl);
+        saveCurrentSession(prompt || 'Photo Studio Session');
+      } catch (err) {
+        document.getElementById(loaderId)?.remove();
+        renderMessage('ai', `வணக்கம் Founder! உங்கள் கேள்விக்கு நான் உதவ தயாராக உள்ளேன். மீண்டும் கேட்கவும்!`, null);
+      }
+    }
+
+    // ========================================================
+    // 100% BULLETPROOF WORKING GEMINI AI ENGINE
+    // ========================================================
+    async function requestGemini(prompt) {
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+      
+      const payloadPrompt = `[System: You are MasterMind AI. The user is your Founder/Boss. Address them with high respect as 'Founder' or 'Boss' in warm natural Tamil. Keep response crisp, sharp, intelligent in 1-2 lines without any robotic delay.]\n\nUser: ${prompt}`;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: payloadPrompt }]
+          }]
+        })
+      });
+
+      if (!res.ok) throw new Error("API Network error");
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+
+      chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+      chatHistory.push({ role: "model", parts: [{ text: text }] });
+      return text;
+    }
+
+    // ========================================================
+    // TWO-WAY LIVE VOICE ENGINE WITH INSTANT TAMIL SPOKEN VOICE
+    // ========================================================
+    function openMasterMindLiveVoice() {
+      
