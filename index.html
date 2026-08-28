@@ -1907,4 +1907,86 @@
     // TWO-WAY LIVE VOICE ENGINE WITH INSTANT TAMIL SPOKEN VOICE
     // ========================================================
     function openMasterMindLiveVoice() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("குரோம் பிரவுசரில் மைக்ரோஃபோன் வசதி தேவைப்படுகிறது.");
+        return;
+      }
+
+      // Pre-warm Audio Synth Context
+      if ('speechSynthesis' in window) {
+        const dummy = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(dummy);
+      }
+
+      isLiveOpen = true;
+      document.getElementById('masterMindLiveModal').classList.add('open');
+      document.getElementById('liveUserSpeech').innerText = "பேசவும் Founder, கேட்கிறேன்...";
+      document.getElementById('liveAiSpeech').innerText = "";
+
+      startLiveListening();
+    }
+
+    function startLiveListening() {
+      if (!isLiveOpen) return;
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      liveSpeechRecognition = new SpeechRec();
+      liveSpeechRecognition.lang = 'ta-IN';
+      liveSpeechRecognition.continuous = false;
+
+      liveSpeechRecognition.onresult = async function(e) {
+        if (e.results && e.results[0] && e.results[0][0]) {
+          const spokenText = e.results[0][0].transcript;
+          document.getElementById('liveUserSpeech').innerText = `🗣️ "${spokenText}"`;
+          document.getElementById('liveAiSpeech').innerText = "சிந்திக்கிறேன் Founder...";
+
+          try {
+            const aiReply = await requestGemini(spokenText);
+            document.getElementById('liveAiSpeech').innerText = aiReply;
+
+            // Render to chat feed
+            renderMessage('user', spokenText);
+            renderMessage('ai', aiReply);
+            saveCurrentSession(spokenText);
+
+            // AI Speaks Back Immediately
+            playVoice(aiReply, () => {
+              if (isLiveOpen) {
+                document.getElementById('liveUserSpeech').innerText = "மீண்டும் பேசலாம் Founder...";
+                startLiveListening();
+              }
+            });
+          } catch (err) {
+            document.getElementById('liveAiSpeech').innerText = "மன்னிக்கவும் Founder, மீண்டும் ஒருமுறை கூறவும்.";
+            if (isLiveOpen) setTimeout(startLiveListening, 2000);
+          }
+        }
+      };
+
+      liveSpeechRecognition.onerror = function() {
+        if (isLiveOpen) {
+          document.getElementById('liveUserSpeech').innerText = "குரல் கேட்கவில்லை. மீண்டும் பேசவும் Founder...";
+          setTimeout(startLiveListening, 1500);
+        }
+      };
+
+      liveSpeechRecognition.start();
+    }
+
+    function closeMasterMindLiveVoice() {
+      isLiveOpen = false;
+      if (liveSpeechRecognition) {
+        liveSpeechRecognition.stop();
+        liveSpeechRecognition = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('masterMindLiveModal').classList.remove('open');
+    }
+
+    renderChatHistory();
+  </script>
+</body>
+</html>
       
