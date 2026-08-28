@@ -1328,3 +1328,302 @@
   </div>
 
   <script>
+    let chatHistory = [];
+    let currentSessionId = Date.now().toString();
+    let attachedPhotoData = null;
+    let liveSpeechRecognition = null;
+    let isLiveOpen = false;
+
+    localStorage.setItem('mm_vip', 'Founder Unlimited Pass');
+    localStorage.setItem('mm_credits', 'Unlimited');
+
+    // Dynamic Greetings
+    const greetingsList = [
+      "வணக்கம் Founder!",
+      "இன்று என்ன படைக்கலாம்?",
+      "எதில் உதவ வேண்டும்?",
+      "MasterMind AI தயார்!"
+    ];
+    document.getElementById('greetingHeadline').innerText = greetingsList[Math.floor(Math.random() * greetingsList.length)];
+
+    const domainList = [
+      {icon: "🎬", name: "1-Click Viral Shorts Pipeline", desc: "Auto-captions, Sound FX, 9:16 Video Maker"},
+      {icon: "🤖", name: "Faceless Auto Channel Manager", desc: "Auto script, video & social publishing"},
+      {icon: "🎥", name: "Photo to 3D Cinematic Motion", desc: "Parallax camera motion & visual FX studio"},
+      {icon: "🗣️", name: "Multilingual Lip-Sync Dubber", desc: "Global video dubbing in Tamil/Hindi/English"},
+      {icon: "🎨", name: "4K Thumbnail & Art Engine", desc: "High CTR YouTube & Instagram graphics"},
+      {icon: "🎙️", name: "Voice Clone & Dubbing Studio", desc: "Zero-shot natural Tamil/English AI voices"},
+      {icon: "🎵", name: "AI Music & Beat Producer", desc: "Royalty-free background tracks & lyrics"},
+      {icon: "🖼️", name: "AI Magic Background Eraser", desc: "Instant object removal & photo restore"},
+      {icon: "🎭", name: "Face-Swap Cinema Posters", desc: "Natural couple & movie face adaptation"},
+      {icon: "✍️", name: "Creative Script & Storyboard", desc: "Cinematic screenplays & dialogues"},
+      {icon: "📝", name: "UPSC/TNPSC Answer Evaluator", desc: "Handwritten OCR Answer Sheet Scanner"},
+      {icon: "📊", name: "Multiplayer Live Quiz Arena", desc: "Telegram-style daily poll test batch"},
+      {icon: "📄", name: "1-Tap PDF Book & PPT Deck", desc: "Instant study material & slides generator"},
+      {icon: "🏫", name: "School Education (6th-12th)", desc: "Tamil, Maths, Science & Social lessons"},
+      {icon: "🏛️", name: "TNPSC Civil Services Master", desc: "Group 4, 2, 1, Unit 8/9 & VAO"},
+      {icon: "🇮🇳", name: "UPSC Civil Services Hub", desc: "Prelims GS, CSAT & Mains answer writing"},
+      {icon: "🩺", name: "Medical & NEET Academy", desc: "NEET UG, Biology, Anatomy & Pharma"},
+      {icon: "🏦", name: "Banking & SSC Prep", desc: "Quant, Reasoning & Government Jobs"},
+      {icon: "⚖️", name: "Law, Judiciary & BNS", desc: "Bar exam, Bharatiya Nyaya Sanhita & CrPC"},
+      {icon: "📜", name: "Ancient Indian History", desc: "Stone Age, Sangam & epigraphy"},
+      {icon: "💻", name: "Code to Live App Sandbox", desc: "Instant HTML/JS preview & bug fixer"},
+      {icon: "💼", name: "AI Resume & Portfolio Maker", desc: "ATS-friendly resume & personal portfolio"},
+      {icon: "🎙️", name: "Real-time AI Voice Agent", desc: "Mock interviews & English voice coaching"},
+      {icon: "🔮", name: "AGI & Neural Networks Lab", desc: "Deep learning & AI architecture research"},
+      {icon: "📊", name: "Data Science & SQL Analytics", desc: "Pandas, NumPy & business dashboards"},
+      {icon: "☁️", name: "Cloud & DevOps Architect", desc: "AWS, Docker, Kubernetes & CI/CD"},
+      {icon: "🛡️", name: "Cyber Security & Pentesting", desc: "Network security & ethical hacking"},
+      {icon: "⛓️", name: "Blockchain & Web3 Engine", desc: "Solidity smart contracts & crypto tech"},
+      {icon: "🤖", name: "Robotics & IoT Systems", desc: "Arduino, Raspberry Pi & sensor circuits"},
+      {icon: "🎮", name: "3D Game Development", desc: "Unity C#, Unreal Engine & physics"},
+      {icon: "🚀", name: "Startup Pitch & Deck Builder", desc: "Instant market report & revenue blueprints"},
+      {icon: "📦", name: "E-Commerce & Shopify Funnels", desc: "High-converting ad copies & store setup"},
+      {icon: "⚖️", name: "AI Legal & Contract Assistant", desc: "Instant rental agreements, BNS & NDA drafts"},
+      {icon: "📈", name: "Stock & Crypto Analytics", desc: "Technical indicators & portfolio strategy"},
+      {icon: "🌍", name: "Import-Export & Customs", desc: "International trade & logistics"},
+      {icon: "🏢", name: "Real Estate & Floor Plans", desc: "Architectural blueprints & interior layout"},
+      {icon: "💼", name: "Corporate HR & Hiring", desc: "Talent acquisition & leadership"},
+      {icon: "📊", name: "Behavioral Economics", desc: "Consumer psychology & pricing models"},
+      {icon: "📦", name: "Logistics & Supply Chain", desc: "Warehouse automation & routing"},
+      {icon: "💰", name: "Personal Budget & Taxes", desc: "Income tax planning & expense audits"},
+      {icon: "⚡", name: "EV & Mechanical Engineering", desc: "Battery management & thermodynamic design"},
+      {icon: "🧬", name: "Biotech & CRISPR Genetics", desc: "CRISPR gene editing & bioinformatics"},
+      {icon: "🚁", name: "Drone & Aerospace Tech", desc: "Aerodynamics & autopilot algorithms"},
+      {icon: "🔋", name: "Renewable Green Energy", desc: "Solar grid & wind power engineering"},
+      {icon: "🌾", name: "Smart Agriculture Tech", desc: "Soil health & automated irrigation plans"},
+      {icon: "🧪", name: "Advanced Chemistry Lab", desc: "Catalysis & polymer material science"},
+      {icon: "🌊", name: "Oceanography & Marine", desc: "Deep sea ecosystems & currents"},
+      {icon: "🌋", name: "Geology & Seismology", desc: "Plate tectonics & earthquake models"},
+      {icon: "🪐", name: "Astrobiology & Space", desc: "Quantum superposition & relativity"},
+      {icon: "🏋️", name: "AI Fitness & Diet Blueprint", desc: "Customized workout splits & macro nutrition"},
+      {icon: "🧠", name: "Psychology & Mindset Coach", desc: "Emotional IQ, motivation & life habits"},
+      {icon: "🍳", name: "Master Chef & Nutrition", desc: "Traditional recipes & diet calories"},
+      {icon: "🧵", name: "Fashion & Textile Design", desc: "Fabric weaving & trend analytics"},
+      {icon: "🎭", name: "Classical Arts & Culture", desc: "Bharatanatyam & Carnatic rhythm"}
+    ];
+
+    function renderHub(list = domainList) {
+      const grid = document.getElementById('modalGrid');
+      grid.innerHTML = list.map(item => `
+        <div class="hub-box" onclick="pickDomain('${item.name}')">
+          <div class="icon">${item.icon}</div>
+          <div class="name">${item.name}</div>
+          <div class="desc">${item.desc}</div>
+        </div>
+      `).join('');
+    }
+    renderHub();
+
+    function filterDomains() {
+      const query = document.getElementById('domainSearchInput').value.toLowerCase();
+      const filtered = domainList.filter(d => d.name.toLowerCase().includes(query) || d.desc.toLowerCase().includes(query));
+      renderHub(filtered);
+    }
+
+    function quickPrompt(text) {
+      document.getElementById('userInput').value = text;
+      sendUserMessage();
+    }
+
+    function getStoredSessions() {
+      return JSON.parse(localStorage.getItem('mm_chat_sessions') || '{}');
+    }
+
+    function saveCurrentSession(firstPrompt) {
+      const sessions = getStoredSessions();
+      if (!sessions[currentSessionId]) {
+        sessions[currentSessionId] = {
+          id: currentSessionId,
+          title: firstPrompt.substring(0, 30) + '...',
+          date: new Date().toLocaleDateString('ta-IN'),
+          messages: chatHistory
+        };
+      } else {
+        sessions[currentSessionId].messages = chatHistory;
+      }
+      localStorage.setItem('mm_chat_sessions', JSON.stringify(sessions));
+      renderChatHistory();
+    }
+
+    function renderChatHistory(query = '') {
+      const sessions = getStoredSessions();
+      const listEl = document.getElementById('historyList');
+      const keys = Object.keys(sessions).reverse();
+
+      const filtered = keys.filter(k => sessions[k].title.toLowerCase().includes(query.toLowerCase()));
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:11.5px; color:#94a3b8; text-align:center; padding:10px;">உரையாடல்கள் ஏதுமில்லை</div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(k => `
+        <div class="history-item" onclick="loadSession('${k}')">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">💬 ${sessions[k].title}</span>
+          <button class="history-del-btn" onclick="event.stopPropagation(); deleteSession('${k}')">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function filterChatHistory() {
+      const q = document.getElementById('historySearchInput').value;
+      renderChatHistory(q);
+    }
+
+    function loadSession(id) {
+      const sessions = getStoredSessions();
+      if (sessions[id]) {
+        currentSessionId = id;
+        chatHistory = sessions[id].messages || [];
+        const container = document.getElementById('chatContainer');
+        container.innerHTML = '';
+        chatHistory.forEach(msg => {
+          renderMessage(msg.role === 'user' ? 'user' : 'ai', msg.parts[0].text);
+        });
+        closeAll();
+      }
+    }
+
+    function deleteSession(id) {
+      const sessions = getStoredSessions();
+      delete sessions[id];
+      localStorage.setItem('mm_chat_sessions', JSON.stringify(sessions));
+      renderChatHistory();
+      if (currentSessionId === id) startNewChat();
+    }
+
+    function startNewChat() {
+      currentSessionId = Date.now().toString();
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="gemini-greeting-box" id="geminiGreetingBox">
+          <div class="greeting-headline" id="greetingHeadline">${greetingsList[Math.floor(Math.random() * greetingsList.length)]}</div>
+          <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+          <div class="quick-chips-grid">
+            <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+            <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+            <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+            <div class="quick-chip" onclick="quickPrompt('💻 ஒரு Responsive HTML/CSS Landing Page Code எழுது')">💻 Web Code</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('userInput').value = '';
+      removeAttachedPhoto();
+      closeAll();
+    }
+
+    function getStoredGallery() {
+      return JSON.parse(localStorage.getItem('mm_saved_gallery') || '[]');
+    }
+
+    function savePhotoToGallery(url, prompt) {
+      const gallery = getStoredGallery();
+      gallery.unshift({ id: Date.now(), url: url, prompt: prompt, date: new Date().toLocaleDateString('ta-IN') });
+      localStorage.setItem('mm_saved_gallery', JSON.stringify(gallery));
+    }
+
+    function openGalleryModal() {
+      closeAll();
+      const grid = document.getElementById('galleryGrid');
+      const gallery = getStoredGallery();
+
+      if (gallery.length === 0) {
+        grid.innerHTML = '<div style="grid-column:span 2; color:#94a3b8; text-align:center; padding:30px;">சேமிக்கப்பட்ட AI படங்கள் ஏதுமில்லை.</div>';
+      } else {
+        grid.innerHTML = gallery.map(item => `
+          <div class="gallery-card" id="gal_${item.id}">
+            <img src="${item.url}" alt="AI" loading="lazy" />
+            <div class="gallery-actions">
+              <span style="font-size:10.5px; color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:90px;">${item.prompt}</span>
+              <button style="color:#ef4444;" onclick="deleteGalleryItem(${item.id})">🗑️ Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('galleryPopup').classList.add('open');
+    }
+
+    function deleteGalleryItem(id) {
+      let gallery = getStoredGallery();
+      gallery = gallery.filter(g => g.id !== id);
+      localStorage.setItem('mm_saved_gallery', JSON.stringify(gallery));
+      document.getElementById('gal_' + id)?.remove();
+    }
+
+    const gkChannelBank = [
+      {
+        q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?",
+        opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"],
+        ans: 0,
+        exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் பி.ஆர். அம்பேத்கர் தலைமையில் அரசியலமைப்பு வரைவுக்குழு உருவாக்கப்பட்டது."
+      },
+      {
+        q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?",
+        opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"],
+        ans: 1,
+        exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது."
+      }
+    ];
+
+    const schoolChannelBank = [
+      {
+        q: "திருக்குறளில் உள்ள மொத்த அதிகாரங்களின் எண்ணிக்கை எத்தனை?",
+        opts: ["108", "133", "1330", "150"],
+        ans: 1,
+        exp: "திருக்குறளில் 3 பால்கள், 133 அதிகாரங்கள் மற்றும் 1330 குறள்கள் உள்ளன."
+      },
+      {
+        q: "தமிழ்நாட்டின் மாநில மரம் எது?",
+        opts: ["வேப்ப மரம்", "ஆல மரம்", "பனை மரம்", "தென்னை மரம்"],
+        ans: 2,
+        exp: "தமிழ்நாட்டின் அதிகாரப்பூர்வ மாநில மரம் பனை மரம் (Palmyra palm) ஆகும்."
+      }
+    ];
+
+    let activeChannelType = 'gk';
+    let activeChannelIndex = 0;
+
+    function openChannelSelect() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('channelSelectPopup').classList.add('open');
+    }
+
+    function enterChannel(type) {
+      closeAll();
+      activeChannelType = type;
+      activeChannelIndex = 0;
+
+      const title = type === 'gk' ? '🔥 Channel 1: GK & Current Affairs Master' : '📚 Channel 2: Samacheer School Master';
+      document.getElementById('activeChannelTitle').innerText = title;
+      document.getElementById('channelBody').innerHTML = `
+        <div class="channel-announcement">
+          📢 <strong>Official Daily Live Quiz Arena:</strong> இங்கு மாணவர்கள் அரட்டை அடிக்க முடியாது. வினாக்களுக்கு மட்டுமே வாக்களிக்க முடியும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      `;
+
+      document.getElementById('channelView').classList.add('active');
+      postNextChannelQuestion();
+    }
+
+    function exitChannelView() {
+      document.getElementById('channelView').classList.remove('active');
+    }
+
+    function sendAdminBroadcast() {
+      const input = document.getElementById('adminBroadcastInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const body = document.getElementById('channelBody');
+      const html = `
+        <div class="admin-msg-card">
+          <div class="admin-msg-header">👑 FOUNDER & ADMIN BROADCAST</div>
+          <div class="admin-msg-text">${text}</div>
+        </div>
+      `;
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+      input.value = '';
