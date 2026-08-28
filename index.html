@@ -1110,8 +1110,22 @@
       history.splice(idx, 1);
       localStorage.setItem('mm_history', JSON.stringify(history));
       renderHistoryList();
-    }
+      }
 
     function openHub() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('modalPopup').classList.add('open'); }
     function openLeftDrawer() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('leftDrawer').classList.add('open'); }
-    function openRightDrawer() { closeAll(); renderHistoryList(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('rightDrawer').classList.add('open'
+    function openRightDrawer() { closeAll(); renderHistoryList(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('rightDrawer').classList.add('open'); }
+    function openBilling() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('billingPopup').classList.add('open'); }
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('leftDrawer').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+    }
+
+    renderHistoryList();
+  </script>
+</body>
+</html>
+    
