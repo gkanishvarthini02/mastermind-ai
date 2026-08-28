@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MasterMind AI - Omniverse Super App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: #f8fafc;
+      color: #0f172a;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 650px;
+      margin: 0 auto;
+      background: #ffffff;
+      position: relative;
+    }
+
+    /* Minimalist Top Bar */
+    .header {
+      height: 54px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      background: #ffffff;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+    }
+    .nav-btn:active { background: #f1f5f9; }
+
+    .logo {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+
+    /* Chat Messages Container */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .gemini-greeting-box {
+      margin: auto 0;
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .greeting-headline {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #2563eb 0%, #9333ea 50%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .greeting-subtext {
+      font-size: 24px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: -0.5px;
+    }
+
+    .quick-chips-grid {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 0 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .quick-chips-grid::-webkit-scrollbar { display: none; }
+
+    .quick-chip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quick-chip:active { background: #eff6ff; border-color: #93c5fd; }
+
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.ai { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 14px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bubble.user {
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-weight: 600;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble.ai {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      border-bottom-left-radius: 4px;
+      width: 100%;
+      max-width: 92%;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .bubble-img {
+      margin-top: 10px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .bubble-img img { width: 100%; height: auto; display: block; }
+
+    .tool-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #334155;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+    }
+    .action-pill-btn.pdf { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+
+    /* Floating Pencil Action Button */
+    .floating-pencil-btn {
+      position: absolute;
+      right: 18px;
+      bottom: 80px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #ffffff;
+      border: none;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+      z-index: 15;
+    }
+
+    /* ========================================================
+       ORIGINAL GEMINI CAPSULE BAR (PERFECT INLINE FIX)
+       ======================================================== */
+    .gemini-input-container {
+      padding: 8px 16px 14px;
+      background: transparent;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .img-staging-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: #f1f5f9;
+      padding: 6px 14px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .img-staging-bar button {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .gemini-capsule {
+      display: flex;
+      align-items: center;
+      background: #f0f4f9;
+      border-radius: 36px;
+      padding: 4px 6px 4px 12px;
+      gap: 6px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    .gemini-capsule:focus-within {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .gemini-capsule input[type="text"] {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14.5px;
+      color: #1e293b;
+      outline: none;
+      padding: 8px 4px;
+      min-width: 0;
+    }
+
+    .gemini-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #475569;
+      flex-shrink: 0;
+    }
+    .gemini-icon-btn:active { background: #e2e8f0; }
+
+    .gemini-send-btn {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      font-size: 15px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    /* MasterMind Live Two-Way Voice Modal */
+    .mastermind-live-modal {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 24px;
+      color: #ffffff;
+    }
+    .mastermind-live-modal.open { display: flex; }
+
+    .live-top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .live-status {
+      font-size: 13px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+    }
+    .live-status-dot {
+      width: 8px;
+      height: 8px;
+      background: #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #38bdf8;
+      animation: livePulse 1.5s infinite;
+    }
+    @keyframes livePulse { 0% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.4; } }
+
+    .live-orb-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+    .live-orb {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #a855f7, #00f0ff);
+      box-shadow: 0 0 60px rgba(0, 240, 255, 0.5);
+      animation: orbFloat 3s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat { 0% { transform: scale(0.92); filter: hue-rotate(0deg); } 100% { transform: scale(1.12); filter: hue-rotate(60deg); } }
+
+    .live-speech-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+      max-width: 320px;
+    }
+    .live-user-speech {
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .live-ai-response {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.5;
+    }
+
+    .btn-live-close {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Modals Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      display: none;
+    }
+    .modal-backdrop.open { display: block; }
+
+    /* Left Drawer (☰) */
+    .left-drawer {
+      position: fixed;
+      top: 0;
+      left: -290px;
+      width: 280px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .left-drawer.open { transform: translateX(290px); }
+
+    .drawer-top {
+      padding: 16px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .drawer-top h3 { font-size: 16px; font-weight: 800; color: #0f172a; }
+
+    .left-item {
+      padding: 16px 18px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #1e293b;
+      border-bottom: 1px solid #f8fafc;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .left-item:active { background: #f1f5f9; }
+
+    /* Right Drawer (⋮) */
+    .right-drawer {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 300px;
+      height: 100%;
+      background: #ffffff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .right-drawer.open { transform: translateX(-320px); }
+
+    .right-drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .drawer-search-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      background: #f8fafc;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .history-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .history-del-btn {
+      color: #ef4444;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* 54 Domains Modal */
+    .modal-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      height: 88vh;
+      background: #0b1329;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-top: 1px solid #1e293b;
+    }
+    .modal-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .modal-top {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    .modal-top h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
+    .close-circle {
+      background: #1e293b;
+      border: none;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-search-wrapper {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .modal-search-wrapper input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #131d38;
+      border: 1px solid #233560;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 13.5px;
+      outline: none;
+    }
+
+    .modal-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hub-box {
+      background: #131d38;
+      border: 1px solid #1e2d52;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hub-box:active { background: #1e2c56; transform: scale(0.97); }
+    .hub-box .icon { font-size: 24px; }
+    .hub-box .name { font-size: 13px; font-weight: 700; color: #ffffff; }
+    .hub-box .desc { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+
+    /* Billing Popup */
+    .billing-popup {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 650px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #080d1a;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-top: 1px solid #1e293b;
+      padding-bottom: 30px;
+    }
+    .billing-popup.open { transform: translateX(-50%) translateY(0); }
+
+    .dark-card {
+      margin: 12px 16px 0;
+      padding: 18px 16px;
+      border-radius: 20px;
+      background: #0d1527;
+      border: 1px solid #1b2842;
+      color: #ffffff;
+    }
+    .dark-card.popular {
+      border: 2px solid #00f0ff;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+    }
+    .price-title { font-size: 16px; font-weight: 800; color: #ffffff; }
+    .price-tag { font-size: 32px; font-weight: 800; color: #ffffff; margin: 6px 0 4px; }
+    .btn-checkout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 13px;
+      background: #1e293b;
+      color: #ffffff;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <input type="file" id="photoFileInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)" />
+
+  <div class="app">
+
+    <header class="header">
+      <button class="nav-btn" onclick="openLeftDrawer()">☰</button>
+      <div class="logo" onclick="startNewChat()">✦ MasterMind AI</div>
+      <button class="nav-btn" onclick="openRightDrawer()">⋮</button>
+    </header>
+
+    <main class="chat-container" id="chatContainer">
+      <div class="gemini-greeting-box" id="geminiGreetingBox">
+        <div class="greeting-headline" id="greetingHeadline">வணக்கம் Founder!</div>
+        <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+        
+        <div class="quick-chips-grid">
+          <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+          <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+          <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+          <div class="quick-chip" onclick="quickPrompt('💻 ஒரு Responsive HTML/CSS Landing Page Code எழுது')">💻 Web Code</div>
+        </div>
+      </div>
+    </main>
+
+    <button class="floating-pencil-btn" onclick="startNewChat()">✏️</button>
+
+    <!-- Original Gemini Inline Capsule Input Bar -->
+    <footer class="gemini-input-container">
+      <div class="img-staging-bar" id="imgStagingBar">
+        <span id="stagingFileName">📷 Photo Selected</span>
+        <button onclick="removeAttachedPhoto()">✕</button>
+      </div>
+      <div class="gemini-capsule">
+        <button class="gemini-icon-btn" onclick="document.getElementById('photoFileInput').click()">📎</button>
+        <input type="text" id="userInput" placeholder="MasterMind AI-யிடம் கேட்கவும்..." onkeydown="if(event.key==='Enter') sendUserMessage()" />
+        <button class="gemini-icon-btn" id="micButton" onclick="openMasterMindLiveVoice()">🎙️</button>
+        <button class="gemini-icon-btn gemini-send-btn" onclick="sendUserMessage()">➤</button>
+      </div>
+    </footer>
+
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeAll()"></div>
+
+    <!-- Live Two-Way Voice Modal -->
+    <div class="mastermind-live-modal" id="masterMindLiveModal">
+      <div class="live-top-bar">
+        <div class="live-status">
+          <div class="live-status-dot"></div>
+          <span>✦ MASTERMIND LIVE</span>
+        </div>
+        <button class="close-circle" onclick="closeMasterMindLiveVoice()">✕</button>
+      </div>
+
+      <div class="live-orb-container">
+        <div class="live-orb"></div>
+        <div class="live-speech-box">
+          <div class="live-user-speech" id="liveUserSpeech">பேசவும் Founder, கேட்கிறேன்...</div>
+          <div class="live-ai-response" id="liveAiSpeech"></div>
+        </div>
+      </div>
+
+      <button class="btn-live-close" onclick="closeMasterMindLiveVoice()">✕</button>
+    </div>
+
+    <!-- 1. Left Side Super Tools Drawer -->
+    <div class="left-drawer" id="leftDrawer">
+      <div class="drawer-top">
+        <h3>✦ Super Tools</h3>
+        <button class="close-circle" style="background:#f1f5f9; color:#0f172a;" onclick="closeAll()">✕</button>
+      </div>
+      <div class="left-item" onclick="openHub()">
+        <span>🗂️ 54 Domains & Suites</span>
+        <span>›</span>
+      </div>
+      <div class="left-item" onclick="alert('🏆 Daily Live Quiz Arena: மாலை 8 மணி வினாடி வினா அரங்கம் தயார் நிலையில் உள்ளது Founder!')">
+        <span>🏆 Daily Live Quiz Arena</span>
+        <span>›</span>
+      </div>
+      <div class="left-item" onclick="openBilling()" style="color:#2563eb;">
+        <span>💳 Billing & Pricing Plans</span>
+        <span>↗</span>
+      </div>
+    </div>
+
+    <!-- 2. Right Side User & Settings Drawer -->
+    <div class="right-drawer" id="rightDrawer">
+      <div class="drawer-top">
+        <h3>✦ User & Settings</
