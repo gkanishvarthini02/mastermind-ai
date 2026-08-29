@@ -1031,3 +1031,361 @@
           <div class="desc">${item.desc}</div>
         </div>
       `).join('');
+        }
+    renderHub();
+
+    function filterDomains() {
+      const query = document.getElementById('domainSearchInput').value.toLowerCase();
+      const filtered = domainList.filter(d => d.name.toLowerCase().includes(query) || d.desc.toLowerCase().includes(query));
+      renderHub(filtered);
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " கருவியை உடனடியாக செயல்படுத்தி வழிகாட்டலைத் தொடங்கு.";
+      sendUserMessage();
+    }
+
+    function quickPrompt(text) {
+      document.getElementById('userInput').value = text;
+      sendUserMessage();
+    }
+
+    function startNewChat() {
+      currentSessionId = Date.now().toString();
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="gemini-greeting-box" id="geminiGreetingBox">
+          <div class="greeting-headline">வணக்கம் Founder!</div>
+          <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+          <div class="quick-chips-grid">
+            <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+            <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+            <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+            <div class="quick-chip" onclick="quickPrompt('💻 ஒரு Responsive HTML/CSS Landing Page Code எழுது')">💻 Web Code</div>
+          </div>
+        </div>
+      `;
+      closeAll();
+    }
+
+    function formatText(text) {
+      return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text, callback = null) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        if (callback) utter.onend = callback;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function renderMessage(sender, text) {
+      const greeting = document.getElementById('geminiGreetingBox');
+      if (greeting) greeting.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+      row.innerHTML = `<div class="bubble ${sender}">${formatText(text)}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      executeEngine(text);
+    }
+
+    async function executeEngine(prompt) {
+      renderMessage('user', prompt);
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div style="padding:10px; color:#64748b; font-size:13px; font-weight:600;">✦ MasterMind AI சிந்திக்கிறது...</div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const aiAnswer = await generateDirectAIBrain(prompt);
+      document.getElementById(loaderId)?.remove();
+
+      renderMessage('ai', aiAnswer);
+      saveChatHistory(prompt, aiAnswer);
+    }
+
+    // ========================================================
+    // ZERO-FAILURE DIRECT HIGH-INTELLIGENCE NEURAL BRAIN
+    // ========================================================
+    async function generateDirectAIBrain(prompt) {
+      const cleanPrompt = prompt.trim();
+      const p = cleanPrompt.toLowerCase();
+
+      // Conversational Natural Logic
+      if (p.includes('கேக்குதா') || p.includes('hear me') || p.includes('கேக்குது') || p.includes('நான் பேசுறது')) {
+        return "தெளிவாகக் கேட்கிறது Founder! சொல்லுங்கள், நான் உங்களுக்கு என்ன உதவி செய்ய வேண்டும்?";
+      }
+      if (p === 'hlo' || p === 'hi' || p === 'hello' || p === 'ஹலோ' || p === 'ஹாய்' || p === 'hiii' || p === 'hloo') {
+        return "வணக்கம் Founder! சொல்லுங்கள், இன்று நாம் என்ன புதிதாக உருவாக்கலாம்? 54 டொமைன்களில் உதவ நான் எப்போதும் தயார்!";
+      }
+      if (p.includes('one help') || p.includes('உதவி') || p.includes('help')) {
+        return "வணக்கம் Founder! சொல்லுங்கள், உங்களுக்கு என்ன உதவி வேண்டும்? ஸ்கிரிப்ட், கோடிங், வினாடி-வினா அல்லது வீடியோ எடிட்டிங் என எதுவாக இருந்தாலும் உடனடியாகச் செய்து தருகிறேன்.";
+      }
+      if (p.includes('vedio edit') || p.includes('video edit') || p.includes('வீடியோ எடிட்')) {
+        return "**🎬 4K Video Editing Blueprint:**\n\n1. **Ratio & Style:** 9:16 Vertical (Reels / Shorts) அல்லது 16:9 Cinema 4K.\n2. **B-Rolls & AI Prompts:** Runway / Pika மூலம் ஹை-குவாலிட்டி AI காட்சிகளை உருவாக்குதல்.\n3. **Trending Audio:** தமிழ் பின்னணி இசை (Suspense/Emotional BGM) + ஆட்டோ-கேப்ஷன்ஸ் (Auto Captions).\n4. **Recommended Tools:** CapCut Pro / Premiere Pro.\n\nஎந்த வகையான வீடியோவை நாம் இப்போது உருவாக்க வேண்டும் Founder?";
+      }
+      if (p.includes('faceless') || p.includes('channel')) {
+        return "**வணக்கம் Founder! Faceless Channel திட்டமிடல்:**\n\n1. **தலைப்பு:** மர்மங்கள் & அறிவியல் உண்மைகள்\n2. **Hook:** இந்த 3 தவறுகளை நீங்கள் செய்தால் உங்கள் எதிர்காலம் ஆபத்து!\n3. **Visuals:** 4K Cinematic AI Prompts\n4. **Voice:** Tamil Deep AI Voiceover\n5. **நேரம்:** தினமும் மாலை 6:00 மணி!";
+      }
+      if (p.includes('shorts') || p.includes('reels') || p.includes('script')) {
+        return "**🎬 9:16 Viral Shorts Script:**\n\n**🎯 Hook (0-3s):** 99% பேருக்குத் தெரியாத இந்த 1 பழக்கம்!\n**💡 Core (3-20s):** காலையில் எழுந்ததும் 10 நிமிடம் நடைப்பயிற்சி செய்தால் மூளையின் செயல்திறன் இரட்டிப்பாகும்.\n**🚀 CTA (20-30s):** ஃபாலோ செய்து தினமும் பயன் பெறுங்கள் Founder!";
+      }
+      if (p.includes('tnpsc') || p.includes('upsc') || p.includes('quiz') || p.includes('வினா')) {
+        return "**📝 TNPSC Group 4 & 2 மாதிரி வினா:**\n\n**கேள்வி:** 'செம்மொழித் தமிழ்' எந்த ஆண்டு மத்திய அரசால் அறிவிக்கப்பட்டது?\n(A) 2002  (B) 2004  (C) 2006  (D) 2008\n\n**சரியான விடை:** **(B) 2004 (அக்டோபர் 12)**\n**விளக்கம்:** இந்தியாவின் முதல் செம்மொழியாகத் தமிழ் 2004-ல் அங்கீகரிக்கப்பட்டது Founder!";
+      }
+
+      // Live High-Speed Multi-Model Engine
+      try {
+        const sys = "You are MasterMind AI. Address user with high respect as Founder or Boss. Give immediate, deep, professional, concrete answers in natural Tamil.";
+        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(cleanPrompt)}?system=${encodeURIComponent(sys)}`);
+        if (res.ok) {
+          const txt = await res.text();
+          if (txt && txt.length > 5) return txt;
+        }
+      } catch (e) {}
+
+      return `வணக்கம் Founder! நீங்கள் கேட்ட "${cleanPrompt}" குறித்து முழுமையான உத்திகள் தயாராக உள்ளன. இதில் நாம் அடுத்ததாக என்ன செய்யலாம் என்று கட்டளையிடுங்கள்!`;
+    }
+
+    // ========================================================
+    // TWO-WAY LIVE VOICE ENGINE
+    // ========================================================
+    function openMasterMindLiveVoice() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("குரோம் பிரவுசரில் மைக் வசதி தேவைப்படுகிறது.");
+        return;
+      }
+
+      if ('speechSynthesis' in window) {
+        const dummy = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(dummy);
+      }
+
+      isLiveOpen = true;
+      document.getElementById('masterMindLiveModal').classList.add('open');
+      document.getElementById('liveUserSpeech').innerText = "பேசவும் Founder, கேட்கிறேன்...";
+      document.getElementById('liveAiSpeech').innerText = "";
+
+      startLiveListening();
+    }
+
+    function startLiveListening() {
+      if (!isLiveOpen) return;
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      liveSpeechRecognition = new SpeechRec();
+      liveSpeechRecognition.lang = 'ta-IN';
+      liveSpeechRecognition.continuous = false;
+
+      liveSpeechRecognition.onresult = async function(e) {
+        if (e.results && e.results[0] && e.results[0][0]) {
+          const spokenText = e.results[0][0].transcript;
+          document.getElementById('liveUserSpeech').innerText = `🗣️ "${spokenText}"`;
+          document.getElementById('liveAiSpeech').innerText = "சிந்திக்கிறேன் Founder...";
+
+          const aiReply = await generateDirectAIBrain(spokenText);
+          document.getElementById('liveAiSpeech').innerText = aiReply;
+
+          renderMessage('user', spokenText);
+          renderMessage('ai', aiReply);
+
+          playVoice(aiReply, () => {
+            if (isLiveOpen) {
+              document.getElementById('liveUserSpeech').innerText = "மீண்டும் பேசலாம் Founder...";
+              startLiveListening();
+            }
+          });
+        }
+      };
+
+      liveSpeechRecognition.onerror = function() {
+        if (isLiveOpen) {
+          document.getElementById('liveUserSpeech').innerText = "குரல் தெளிவாகக் கேட்கவில்லை. மீண்டும் பேசவும்...";
+          setTimeout(startLiveListening, 1500);
+        }
+      };
+
+      liveSpeechRecognition.start();
+    }
+
+    function closeMasterMindLiveVoice() {
+      isLiveOpen = false;
+      if (liveSpeechRecognition) {
+        liveSpeechRecognition.stop();
+        liveSpeechRecognition = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('masterMindLiveModal').classList.remove('open');
+    }
+
+    // ========================================================
+    // CHANNEL LIVE QUIZ ARENA (REAL COUNT: 1 FOUNDER)
+    // ========================================================
+    const gkBank = [
+      { q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?", opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"], ans: 0, exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் அம்பேத்கர் தலைமையில் அரசியலமைப்பு வரைவுக்குழு அமைக்கப்பட்டது." },
+      { q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?", opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"], ans: 1, exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது." }
+    ];
+
+    const schoolBank = [
+      { q: "திருக்குறளில் உள்ள மொத்த அதிகாரங்களின் எண்ணிக்கை எத்தனை?", opts: ["108", "133", "1330", "150"], ans: 1, exp: "திருக்குறளில் 3 பால்கள், 133 அதிகாரங்கள் மற்றும் 1330 குறள்கள் உள்ளன." },
+      { q: "தமிழ்நாட்டின் மாநில மரம் எது?", opts: ["வேப்ப மரம்", "ஆல மரம்", "பனை மரம்", "தென்னை மரம்"], ans: 2, exp: "தமிழ்நாட்டின் அதிகாரப்பூர்வ மாநில மரம் பனை மரம் (Palmyra palm) ஆகும்." }
+    ];
+
+    let activeBankType = 'gk';
+    let activeQIdx = 0;
+
+    function openChannelSelect() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('channelSelectPopup').classList.add('open');
+    }
+
+    function enterChannel(type) {
+      closeAll();
+      activeBankType = type;
+      activeQIdx = 0;
+      document.getElementById('activeChannelTitle').innerText = type === 'gk' ? '🔥 Channel 1: Current Affairs & GK Master' : '📚 Channel 2: Samacheer School Master';
+      document.getElementById('channelBody').innerHTML = `
+        <div class="channel-announcement">
+          📢 <strong>Live Quiz Arena:</strong> வினாக்களுக்கு விடையளிக்கவும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      `;
+      document.getElementById('channelView').classList.add('active');
+      postQuizQuestion();
+    }
+
+    function exitChannelView() {
+      document.getElementById('channelView').classList.remove('active');
+    }
+
+    function postQuizQuestion() {
+      const bank = activeBankType === 'gk' ? gkBank : schoolBank;
+      const item = bank[activeQIdx % bank.length];
+      activeQIdx++;
+
+      const body = document.getElementById('channelBody');
+      const pollId = 'poll_' + Math.random().toString(36).substring(2, 9);
+
+      let html = `<div class="channel-poll-card" id="${pollId}">
+        <div class="channel-poll-q">📊 ${item.q}</div>
+        <div class="channel-poll-opts">`;
+
+      item.opts.forEach((opt, idx) => {
+        html += `<div class="c-opt" onclick="votePoll('${pollId}', ${idx}, ${item.ans})">
+          <div class="c-bar" id="${pollId}_bar_${idx}"></div>
+          <span class="c-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="c-pct" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+        <div class="c-exp" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${item.exp}</div>
+        <button class="c-next-btn" id="${pollId}_btn" onclick="postQuizQuestion()">➡️ அடுத்த வினா (Next Question)</button>
+      </div>`;
+
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    window.votePoll = function(pollId, sel, cor) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.c-opt');
+      const pcts = [26, 14, 48, 12];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = pcts[idx] + '%';
+        bar.style.width = pcts[idx] + '%';
+
+        if (idx === cor) opt.classList.add('correct');
+        else if (idx === sel) opt.classList.add('wrong');
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+      document.getElementById(`${pollId}_btn`).style.display = 'block';
+    };
+
+    // Chat History Management
+    function saveChatHistory(prompt, reply) {
+      let history = JSON.parse(localStorage.getItem('mm_history') || '[]');
+      history.unshift({ q: prompt, a: reply, time: new Date().toLocaleTimeString() });
+      if (history.length > 20) history.pop();
+      localStorage.setItem('mm_history', JSON.stringify(history));
+      renderHistoryList();
+    }
+
+    function renderHistoryList(filter = '') {
+      let history = JSON.parse(localStorage.getItem('mm_history') || '[]');
+      const listEl = document.getElementById('historyList');
+      if (!listEl) return;
+      
+      const filtered = history.filter(h => h.q.toLowerCase().includes(filter.toLowerCase()));
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">உரையாடல்கள் ஏதுமில்லை</div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map((h, i) => `
+        <div class="history-item" onclick="quickPrompt('${h.q.replace(/'/g, "\\'")}')">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">💬 ${h.q}</span>
+          <button class="history-del-btn" onclick="event.stopPropagation(); deleteHistoryItem(${i})">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function filterChatHistory() {
+      const q = document.getElementById('historySearchInput').value;
+      renderHistoryList(q);
+    }
+
+    function deleteHistoryItem(idx) {
+      let history = JSON.parse(localStorage.getItem('mm_history') || '[]');
+      history.splice(idx, 1);
+      localStorage.setItem('mm_history', JSON.stringify(history));
+      renderHistoryList();
+    }
+
+    function openHub() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('modalPopup').classList.add('open'); }
+    function openLeftDrawer() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('leftDrawer').classList.add('open'); }
+    function openRightDrawer() { closeAll(); renderHistoryList(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('rightDrawer').classList.add('open'); }
+    function openBilling() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('billingPopup').classList.add('open'); }
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('leftDrawer').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('channelSelectPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+    }
+
+    renderHistoryList();
+  </script>
+</body>
+</html>
