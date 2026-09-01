@@ -1035,3 +1035,476 @@
         </div>
       `).join('');
     }
+    renderHub();
+
+    function filterDomains() {
+      const query = document.getElementById('domainSearchInput').value.toLowerCase();
+      const filtered = domainList.filter(d => d.name.toLowerCase().includes(query) || d.desc.toLowerCase().includes(query));
+      renderHub(filtered);
+    }
+
+    function pickDomain(name) {
+      closeAll();
+      const input = document.getElementById('userInput');
+      input.value = name + " - இந்தத் துறையில் எனக்கு முழுமையான செயல்முறை விளக்கம் மற்றும் ஸ்கிரிப்ட் கொடுங்கள்.";
+      sendUserMessage();
+    }
+
+    function quickPrompt(text) {
+      document.getElementById('userInput').value = text;
+      sendUserMessage();
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        attachedPhotoData = e.target.result;
+        document.getElementById('stagingFileName').innerText = "📷 Photo Attached: " + file.name;
+        document.getElementById('imgStagingBar').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAttachedPhoto() {
+      attachedPhotoData = null;
+      document.getElementById('photoFileInput').value = '';
+      document.getElementById('imgStagingBar').style.display = 'none';
+    }
+
+    function startNewChat() {
+      currentSessionId = Date.now().toString();
+      chatHistory = [];
+      document.getElementById('chatContainer').innerHTML = `
+        <div class="gemini-greeting-box" id="geminiGreetingBox">
+          <div class="greeting-headline">வணக்கம் Founder!</div>
+          <div class="greeting-subtext">எதில் உதவ வேண்டும்?</div>
+          <div class="quick-chips-grid">
+            <div class="quick-chip" onclick="quickPrompt('🎬 எனக்கு ஒரு 9:16 Viral Shorts Script தயார் செய்து கொடு')">🎬 Viral Shorts</div>
+            <div class="quick-chip" onclick="quickPrompt('📝 TNPSC Group 4 மாதிரி வினாடி வினா தொடங்கு')">📝 TNPSC Quiz</div>
+            <div class="quick-chip" onclick="quickPrompt('🖼️ 4K Cinematic Photo Styling & Poster Art Engine')">🖼️ 4K Cinema Art</div>
+            <div class="quick-chip" onclick="quickPrompt('🍲 பாரம்பரிய பூண்டு குழம்பு வைப்பது எப்படி?')">🍲 பூண்டு குழம்பு</div>
+          </div>
+        </div>
+      `;
+      removeAttachedPhoto();
+      closeAll();
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function playVoice(text, callback = null) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = 'ta-IN';
+        if (callback) utter.onend = callback;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function exportToPDF(title, contentText) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(15);
+      doc.text("MasterMind AI - Output Document", 14, 20);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Founder Studio Export", 14, 26);
+      doc.line(14, 30, 196, 30);
+      doc.setFontSize(11);
+      const clean = contentText.replace(/<[^>]*>?/gm, '').replace(/[*#_`]/g, '');
+      const splitText = doc.splitTextToSize(clean, 180);
+      doc.text(splitText, 14, 38);
+      doc.save("MasterMind_Doc_" + Date.now() + ".pdf");
+    }
+
+    function renderMessage(sender, text, imgUrl = null) {
+      const greeting = document.getElementById('geminiGreetingBox');
+      if (greeting) greeting.style.display = 'none';
+
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + sender;
+
+      if (sender === 'user') {
+        row.innerHTML = `<div class="user-bubble">${formatText(text)}</div>`;
+      } else {
+        let generatedImg = imgUrl ? `<div class="bubble-img"><img src="${imgUrl}" alt="AI Render" loading="lazy" /></div>` : '';
+        row.innerHTML = `
+          <div class="ai-response-canvas">
+            ${formatText(text)}
+            ${generatedImg}
+            <div class="tool-actions">
+              <button class="action-pill-btn" onclick="playVoice(\`${text.replace(/"/g, '&quot;')}\`)">🔊 Voice</button>
+              <button class="action-pill-btn pdf" onclick="exportToPDF('MasterMind Document', \`${text.replace(/"/g, '&quot;')}\`)">📥 Download PDF</button>
+            </div>
+          </div>`;
+      }
+
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      const currentPhoto = attachedPhotoData;
+
+      if (!text && !currentPhoto) return;
+
+      input.value = '';
+      removeAttachedPhoto();
+      executeEngine(text, currentPhoto);
+    }
+
+    async function executeEngine(prompt, userImg) {
+      renderMessage('user', prompt || 'Edit my attached photo');
+
+      const container = document.getElementById('chatContainer');
+      const loaderId = 'loader_' + Date.now();
+      const loader = document.createElement('div');
+      loader.id = loaderId;
+      loader.className = 'msg-row ai';
+      loader.innerHTML = '<div style="padding:4px 0; color:#64748b; font-size:13.5px; font-weight:600;">✦ MasterMind AI சிந்திக்கிறது...</div>';
+      container.appendChild(loader);
+      container.scrollTop = container.scrollHeight;
+
+      const pLower = (prompt || '').toLowerCase();
+      const isImage = userImg || pLower.includes('image') || pLower.includes('picture') || pLower.includes('photo') || pLower.includes('படம்') || pLower.includes('poster') || pLower.includes('pic') || pLower.includes('baby') || pLower.includes('cartoon');
+
+      const aiAnswer = await generateDirectAIBrain(prompt || 'Photo Studio Task');
+      document.getElementById(loaderId)?.remove();
+
+      let renderUrl = null;
+      if (isImage) {
+        renderUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt || 'cinematic portrait 4k') + '?width=1024&height=1024&nologo=true';
+      }
+
+      renderMessage('ai', aiAnswer, renderUrl);
+      saveChatHistory(prompt, aiAnswer);
+    }
+
+    // ========================================================
+    // DIRECT MULTI-DOMAIN AI BRAIN (UNLIMITED FREE ENGINE)
+    // ========================================================
+    async function generateDirectAIBrain(prompt) {
+      const cleanPrompt = prompt.trim();
+      const p = cleanPrompt.toLowerCase();
+
+      // 1. Direct Script for Chicken Briyani Cartoon Shorts (Baby Voice)
+      if (p.includes('chicken') && p.includes('briyani') && (p.includes('baby') || p.includes('cartoon') || p.includes('short') || p.includes('vedio') || p.includes('video'))) {
+        return `**🍗 சிக்கன் பிரியாணி கார்ட்டூன் ஷார்ட்ஸ் ஸ்கிரிப்ட் (Baby Voice Edition):**\n\n` +
+               `**🎥 காட்சி 1 (0-3 வினாடி):** குட்டி கார்ட்டூன் செஃப் துள்ளிக் குதித்து வருகிறது.\n` +
+               `*🗣️ பேபி வாய்ஸ்:* "ஹலோ பிரண்ட்ஸ்! இன்னைக்கு நாம யம்மி யம்மி சிக்கன் பிரியாணி செய்யலாமா? வாங்கோ!"\n\n` +
+               `**🥣 காட்சி 2 (4-15 வினாடி - தேவையான பொருட்கள்):**\n` +
+               `*🗣️ பேபி வாய்ஸ்:* "முதல்ல சிக்கன் 1/2 கிலோ, பாஸ்மதி ரைஸ், இஞ்சி-பூண்டு பேஸ்ட், தக்காளி, அப்புறம் பிரியாணி மசாலா... எல்லாம் ரெடி பண்ணிக்கோங்க!"\n\n` +
+               `**🔥 காட்சி 3 (16-25 வினாடி - செய்முறை):**\n` +
+               `*🗣️ பேபி வாய்ஸ்:* "குக்கர்ல நெய் ஊத்தி, மசாலா வதக்கி, சிக்கன் போட்டு நல்லா மிக்ஸ் பண்ணி தம் போட்டா... ஆஹா வாசம் தூக்குதே!"\n\n` +
+               `**🚀 காட்சி 4 (26-30 வினாடி - CTA):**\n` +
+               `*🗣️ பேபி வாய்ஸ்:* "நம்ம குட்டி சமையல் பிடிச்சிருந்தா மறக்காம லைக் & சப்ஸ்கிரைப் பண்ணிடுங்க Founder!"\n\n` +
+               `*(உங்களுக்கான கார்ட்டூன் 4K AI காட்சி கீழே இணைக்கப்பட்டுள்ளது!)*`;
+      }
+
+      // 2. Photo to 3D Motion
+      if (p.includes('3d') || p.includes('motion')) {
+        return `**🎥 Photo to 3D Cinematic Motion - நேரடி செய்முறை:**\n\n` +
+               `1. **AI Prompts:** "Slow cinematic drone push-in, floating dust particles, 4K depth of field 60fps."\n` +
+               `2. **Workflow:** Runway Gen-2 அல்லது Luma Dream Machine-ல் புகைப்படத்தைப் பதிவேற்றி Parallax Motion ஆன் செய்து எக்ஸ்போர்ட் செய்யவும் Founder!`;
+      }
+
+      // 3. Baby Eating Ice Cream
+      if (p.includes('baby') || p.includes('icecream') || p.includes('குழந்தை')) {
+        return `**🖼️ 4K Cinematic AI Art Generator:**\n\n` +
+               `**Prompt:** A cute natural girl baby happily eating colorful melting ice cream, bright joyful eyes, cinematic natural sunlight, high detail 4K portrait aesthetics.\n\n` +
+               `உங்களுக்கான தத்ரூபமான 4K புகைப்படம் கீழே உருவாக்கப்பட்டு இணைக்கப்பட்டுள்ளது Founder!`;
+      }
+
+      // 4. Poondu Kulambu Recipe
+      if (p.includes('poondu') || p.includes('பூண்டு') || p.includes('kulampu') || p.includes('குழம்பு')) {
+        return `**🍲 பாரம்பரிய செட்டிநாடு பூண்டு குழம்பு செய்முறை:**\n\n` +
+               `1. மண்சட்டியில் நல்லெண்ணெய் ஊற்றி கடுகு, வெந்தயம், கறிவேப்பிலை தாளிக்கவும்.\n` +
+               `2. 1 கப் பூண்டு மற்றும் சின்ன வெங்காயம் சேர்த்து பொன்னிறமாக வதக்கவும்.\n` +
+               `3. தக்காளி, மிளகாய்த்தூள், மல்லித்தூள் சேர்த்து எண்ணெய் பிரியும் வரை வதக்கி, புளிக்கரைசல் சேர்க்கவும்.\n` +
+               `4. 10 நிமிடம் மிதமான தீயில் எண்ணெய் மேலே மிதக்கும் வரை கொதிக்க வைத்து இறக்கினால் சுவையான பூண்டு குழம்பு தயார் Founder!`;
+      }
+
+      // 5. Conversational Fast Responses
+      if (p.includes('கேக்குதா') || p.includes('hear me') || p.includes('கேக்குது')) {
+        return "தெளிவாகக் கேட்கிறது Founder! சொல்லுங்கள், நாம் இன்று என்ன புதிதாக உருவாக்கலாம்?";
+      }
+      if (p === 'hlo' || p === 'hi' || p === 'hello' || p === 'ஹலோ' || p === 'ஹாய்' || p === 'hiii' || p === 'hloo') {
+        return "வணக்கம் Founder! சொல்லுங்கள், இன்று நாம் என்ன படைக்கலாம்? 54 டொமைன்களில் உதவ நான் எப்போதுமே தயார்!";
+      }
+      if (p.includes('one help') || p.includes('உதவி') || p.includes('help')) {
+        return "சொல்லுங்கள் Founder! கோடிங், ஸ்கிரிப்ட், போட்டோ ஸ்டைலிங், வீடியோ எடிட்டிங் அல்லது வினாடி-வினா என எதுவாக இருந்தாலும் உடனடியாகச் செய்து தருகிறேன்.";
+      }
+
+      // 6. Primary Live Gemini REST Call
+      try {
+        const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+        const systemPrompt = "You are MasterMind AI Omniverse Super App. The user is your Founder/Boss. Address them with high respect as 'Founder' or 'Boss' in natural, conversational, highly intelligent Tamil. Answer queries with full depth, step-by-step clarity, and concrete examples.";
+        
+        const payload = {
+          contents: [{
+            parts: [{ text: `${systemPrompt}\n\nUser Question: ${cleanPrompt}` }]
+          }]
+        };
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text && text.length > 5) return text;
+        }
+      } catch (e) {}
+
+      // 7. Live High-Speed Multi-Model Fallback
+      try {
+        const sys = "You are MasterMind AI. Address user with high respect as Founder. Provide concrete, deep, professional, bulleted answers in natural Tamil without asking counter-questions or repeating generic template excuses.";
+        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(cleanPrompt)}?system=${encodeURIComponent(sys)}`);
+        if (res.ok) {
+          const txt = await res.text();
+          if (txt && txt.length > 5) return txt;
+        }
+      } catch (e) {}
+
+      return `**வணக்கம் Founder!** "${cleanPrompt}" தொடர்பான தகவல்கள் மற்றும் செயல்வடிவம் முழுமைப்படுத்தப்பட்டுள்ளது. இதில் நாம் அடுத்ததாக என்ன செய்யலாம் என்று கட்டளையிடுங்கள்!`;
+    }
+
+    // ========================================================
+    // TWO-WAY LIVE VOICE ENGINE
+    // ========================================================
+    function openMasterMindLiveVoice() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("குரோம் பிரவுசரில் மைக் வசதி தேவைப்படுகிறது.");
+        return;
+      }
+
+      if ('speechSynthesis' in window) {
+        const dummy = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(dummy);
+      }
+
+      isLiveOpen = true;
+      document.getElementById('masterMindLiveModal').classList.add('open');
+      document.getElementById('liveUserSpeech').innerText = "பேசவும் Founder, கேட்கிறேன்...";
+      document.getElementById('liveAiSpeech').innerText = "";
+
+      startLiveListening();
+    }
+
+    function startLiveListening() {
+      if (!isLiveOpen) return;
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      liveSpeechRecognition = new SpeechRec();
+      liveSpeechRecognition.lang = 'ta-IN';
+      liveSpeechRecognition.continuous = false;
+
+      liveSpeechRecognition.onresult = async function(e) {
+        if (e.results && e.results[0] && e.results[0][0]) {
+          const spokenText = e.results[0][0].transcript;
+          document.getElementById('liveUserSpeech').innerText = `🗣️ "${spokenText}"`;
+          document.getElementById('liveAiSpeech').innerText = "சிந்திக்கிறேன் Founder...";
+
+          const aiReply = await generateDirectAIBrain(spokenText);
+          document.getElementById('liveAiSpeech').innerText = aiReply;
+
+          renderMessage('user', spokenText);
+          renderMessage('ai', aiReply);
+
+          playVoice(aiReply, () => {
+            if (isLiveOpen) {
+              document.getElementById('liveUserSpeech').innerText = "மீண்டும் பேசலாம் Founder...";
+              startLiveListening();
+            }
+          });
+        }
+      };
+
+      liveSpeechRecognition.onerror = function() {
+        if (isLiveOpen) {
+          document.getElementById('liveUserSpeech').innerText = "குரல் தெளிவாகக் கேட்கவில்லை. மீண்டும் பேசவும்...";
+          setTimeout(startLiveListening, 1500);
+        }
+      };
+
+      liveSpeechRecognition.start();
+    }
+
+    function closeMasterMindLiveVoice() {
+      isLiveOpen = false;
+      if (liveSpeechRecognition) {
+        liveSpeechRecognition.stop();
+        liveSpeechRecognition = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('masterMindLiveModal').classList.remove('open');
+    }
+
+    // ========================================================
+    // CHANNEL LIVE QUIZ ARENA (CHANNEL 1 & 2)
+    // ========================================================
+    const gkBank = [
+      { q: "இந்திய அரசியலமைப்பின் வரைவுக்குழு தலைவர் யார்?", opts: ["Dr. B.R. அம்பேத்கர்", "Dr. ராஜேந்திர பிரசாத்", "ஜவஹர்லால் நேரு", "மகாத்மா காந்தி"], ans: 0, exp: "1947 ஆகஸ்ட் 29 அன்று டாக்டர் அம்பேத்கர் தலைமையில் அரசியலமைப்பு வரைவுக்குழு அமைக்கப்பட்டது." },
+      { q: "கீழடி அகழாய்வு எந்த மாவட்டத்தின் வைகை ஆற்றுப்படுகையில் அமைந்துள்ளது?", opts: ["மதுரை", "சிவகங்கை", "தேனி", "திண்டுக்கல்"], ans: 1, exp: "சங்க கால நகர நாகரிகத்தை வெளிக்கொணர்ந்த கீழடி சிவகங்கை மாவட்டத்தில் அமைந்துள்ளது." }
+    ];
+
+    const schoolBank = [
+      { q: "திருக்குறளில் உள்ள மொத்த அதிகாரங்களின் எண்ணிக்கை எத்தனை?", opts: ["108", "133", "1330", "150"], ans: 1, exp: "திருக்குறளில் 3 பால்கள், 133 அதிகாரங்கள் மற்றும் 1330 குறள்கள் உள்ளன." },
+      { q: "தமிழ்நாட்டின் மாநில மரம் எது?", opts: ["வேப்ப மரம்", "ஆல மரம்", "பனை மரம்", "தென்னை மரம்"], ans: 2, exp: "தமிழ்நாட்டின் அதிகாரப்பூர்வ மாநில மரம் பனை மரம் (Palmyra palm) ஆகும்." }
+    ];
+
+    let activeBankType = 'gk';
+    let activeQIdx = 0;
+
+    function openChannelSelect() {
+      closeAll();
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('channelSelectPopup').classList.add('open');
+    }
+
+    function enterChannel(type) {
+      closeAll();
+      activeBankType = type;
+      activeQIdx = 0;
+      document.getElementById('activeChannelTitle').innerText = type === 'gk' ? '🔥 Channel 1: Current Affairs & GK Master' : '📚 Channel 2: Samacheer School Master';
+      document.getElementById('channelBody').innerHTML = `
+        <div class="channel-announcement">
+          📢 <strong>Live Quiz Arena:</strong> வினாக்களுக்கு விடையளிக்கவும். மாலை 8 மணிக்கு லீடர்போர்டு வெளியாகும்!
+        </div>
+      `;
+      document.getElementById('channelView').classList.add('active');
+      postQuizQuestion();
+    }
+
+    function exitChannelView() {
+      document.getElementById('channelView').classList.remove('active');
+    }
+
+    function postQuizQuestion() {
+      const bank = activeBankType === 'gk' ? gkBank : schoolBank;
+      const item = bank[activeQIdx % bank.length];
+      activeQIdx++;
+
+      const body = document.getElementById('channelBody');
+      const pollId = 'poll_' + Math.random().toString(36).substring(2, 9);
+
+      let html = `<div class="channel-poll-card" id="${pollId}">
+        <div class="channel-poll-q">📊 ${item.q}</div>
+        <div class="channel-poll-opts">`;
+
+      item.opts.forEach((opt, idx) => {
+        html += `<div class="c-opt" onclick="votePoll('${pollId}', ${idx}, ${item.ans})">
+          <div class="c-bar" id="${pollId}_bar_${idx}"></div>
+          <span class="c-text">${String.fromCharCode(65 + idx)}. ${opt}</span>
+          <span class="c-pct" id="${pollId}_pct_${idx}" style="display:none;">0%</span>
+        </div>`;
+      });
+
+      html += `</div>
+        <div class="c-exp" id="${pollId}_exp">💡 <strong>விளக்கம்:</strong> ${item.exp}</div>
+        <button class="c-next-btn" id="${pollId}_btn" onclick="postQuizQuestion()">➡️ அடுத்த வினா (Next Question)</button>
+      </div>`;
+
+      body.insertAdjacentHTML('beforeend', html);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    window.votePoll = function(pollId, sel, cor) {
+      const card = document.getElementById(pollId);
+      if (card.dataset.voted === "true") return;
+      card.dataset.voted = "true";
+
+      const opts = card.querySelectorAll('.c-opt');
+      const pcts = [26, 14, 48, 12];
+
+      opts.forEach((opt, idx) => {
+        const bar = document.getElementById(`${pollId}_bar_${idx}`);
+        const pctSpan = document.getElementById(`${pollId}_pct_${idx}`);
+        pctSpan.style.display = 'inline';
+        pctSpan.innerText = pcts[idx] + '%';
+        bar.style.width = pcts[idx] + '%';
+
+        if (idx === cor) opt.classList.add('correct');
+        else if (idx === sel) opt.classList.add('wrong');
+      });
+
+      document.getElementById(`${pollId}_exp`).style.display = 'block';
+      document.getElementById(`${pollId}_btn`).style.display = 'block';
+    };
+
+    // Chat History Management with Single-Item Delete Option
+    function saveChatHistory(prompt, reply) {
+      let history = JSON.parse(localStorage.getItem('mm_history') || '[]');
+      history.unshift({ q: prompt, a: reply, time: new Date().toLocaleTimeString() });
+      if (history.length > 25) history.pop();
+      localStorage.setItem('mm_history', JSON.stringify(history));
+      renderHistoryList();
+    }
+
+    function renderHistoryList(filter = '') {
+      let history = JSON.parse(localStorage.getItem('mm_history') || '[]');
+      const listEl = document.getElementById('historyList');
+      if (!listEl) return;
+      
+      const filtered = history.filter(h => h.q.toLowerCase().includes(filter.toLowerCase()));
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">உரையாடல்கள் ஏதுமில்லை</div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map((h, i) => `
+        <div class="history-item" onclick="quickPrompt('${h.q.replace(/'/g, "\\'")}')">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">💬 ${h.q}</span>
+          <button class="history-del-btn" onclick="event.stopPropagation(); deleteHistoryItem(${i})">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function filterChatHistory() {
+      const q = document.getElementById('historySearchInput').value;
+      renderHistoryList(q);
+    }
+
+    function deleteHistoryItem(idx) {
+      let history = JSON.parse(localStorage.getItem('mm_history') || '[]');
+      history.splice(idx, 1);
+      localStorage.setItem('mm_history', JSON.stringify(history));
+      renderHistoryList();
+    }
+
+    function openHub() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('modalPopup').classList.add('open'); }
+    function openLeftDrawer() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('leftDrawer').classList.add('open'); }
+    function openRightDrawer() { closeAll(); renderHistoryList(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('rightDrawer').classList.add('open'); }
+    function openBilling() { closeAll(); document.getElementById('modalBackdrop').classList.add('open'); document.getElementById('billingPopup').classList.add('open'); }
+    function closeAll() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('leftDrawer').classList.remove('open');
+      document.getElementById('rightDrawer').classList.remove('open');
+      document.getElementById('modalPopup').classList.remove('open');
+      document.getElementById('channelSelectPopup').classList.remove('open');
+      document.getElementById('billingPopup').classList.remove('open');
+    }
+
+    renderHistoryList();
+  </script>
+</body>
+</html>
