@@ -149,4 +149,31 @@ Do not expose secret keys or backend credentials.
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini
+      console.error("Gemini API error:", data);
+
+      return res.status(response.status).json({
+        error:
+          data?.error?.message ||
+          "Gemini request failed."
+      });
+    }
+
+    const text =
+      data?.candidates?.[0]?.content?.parts
+        ?.filter(part => part.text)
+        ?.map(part => part.text)
+        ?.join("") ||
+      "Sorry, I couldn't generate a response.";
+
+    return res.status(200).json({
+      text
+    });
+
+  } catch (error) {
+    console.error("MasterMind Gemini error:", error);
+
+    return res.status(500).json({
+      error: "Server error while contacting Gemini."
+    });
+  }
+}
