@@ -281,4 +281,4 @@ Use the same language style as the user unless another language is requested.
       error: 'Server error while contacting MasterMind AI.'
     });
   }
-  
+}
