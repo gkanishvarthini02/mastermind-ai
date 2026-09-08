@@ -923,4 +923,103 @@ function openAutoRouter() {
 
                 <div>
 
-                    <div class="specialist-hero-kic
+                    <div class="specialist-hero-kicker">
+                        AUTO ROUTER
+                    </div>
+
+                    <h2>
+                        I Don't Know Where This Belongs
+                    </h2>
+
+                    <p>
+                        Type anything.
+                        MasterMind AI will identify
+                        the right domain and specialist.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="quick-start-grid">
+
+                <button
+                    onclick="
+                        focusMainInput(
+                            'I have a question but I do not know which subject it belongs to.'
+                        )
+                    "
+                >
+                    🔎 Find My Specialist
+                </button>
+
+                <button
+                    onclick="
+                        focusMainInput(
+                            'Analyze my request and route it to the best specialist.'
+                        )
+                    "
+                >
+                    🧠 Smart Routing
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    const input =
+        getElement("userInput");
+
+    if (input) {
+        input.focus();
+    }
+}
+
+
+function focusMainInput(text) {
+
+    const input =
+        getElement("userInput");
+
+    if (!input) return;
+
+    input.value = text;
+    input.focus();
+}
+
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+
+loadChatHistory();
+
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            renderWelcomeScreen();
+
+            if (
+                typeof renderHistoryList ===
+                "function"
+            ) {
+                renderHistoryList();
+            }
+
+        }
+    );
+
+} else {
+
+    renderWelcomeScreen();
+    renderHistoryList();
+
+}
+
+</script>
