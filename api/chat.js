@@ -1,24 +1,35 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return res.status(500).json({
-      error: "GEMINI_API_KEY is not configured."
+      error: "GEMINI_API_KEY is not configured in Vercel."
     });
   }
 
   try {
-    const { message, image, history, domain } = req.body || {};
+    const {
+      message,
+      image,
+      history,
+      domain
+    } = req.body || {};
 
     if (!message && !image) {
       return res.status(400).json({
         error: "Message or image is required."
       });
     }
+
+    // ============================================
+    // CHAT HISTORY
+    // ============================================
 
     const contents = [];
 
@@ -27,7 +38,10 @@ export default async function handler(req, res) {
         if (!item || !item.content) continue;
 
         contents.push({
-          role: item.role === "assistant" ? "model" : "user",
+          role: item.role === "assistant"
+            ? "model"
+            : "user",
+
           parts: [
             {
               text: String(item.content)
@@ -37,6 +51,10 @@ export default async function handler(req, res) {
       }
     }
 
+    // ============================================
+    // CURRENT USER MESSAGE
+    // ============================================
+
     const parts = [];
 
     if (message) {
@@ -45,7 +63,14 @@ export default async function handler(req, res) {
       });
     }
 
-    if (image && typeof image === "string") {
+    // ============================================
+    // IMAGE INPUT
+    // ============================================
+
+    if (
+      image &&
+      typeof image === "string"
+    ) {
       const match = image.match(
         /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/
       );
@@ -65,121 +90,184 @@ export default async function handler(req, res) {
       parts
     });
 
-    let domainInfo = "No specific domain is selected.";
+    // ============================================
+    // SPECIALIST CONTEXT
+    // ============================================
 
-    if (domain && typeof domain === "object") {
-      domainInfo =
-        "Selected MasterMind domain: " +
-        String(domain.name || "") +
-        ". Domain purpose: " +
-        String(domain.desc || "") +
-        ".";
-    }
+    const selectedDomain =
+      domain &&
+      typeof domain === "object"
 
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [
-              {
-                text: `
-You are MasterMind AI — the intelligent engine of MasterMind AI Omniverse Super App.
+        ? `
+Selected MasterMind Specialist:
+${String(domain.name || "")}
 
-${domainInfo}
+Parent Domain:
+${String(domain.parent || "")}
 
-If a specific domain is selected, behave as a specialist in that domain.
-
-Give answers that match the selected domain using:
-- Correct terminology
-- Relevant examples
-- Practical guidance
-- Domain-specific reasoning
-
-Do not simply repeat the domain name.
-
-PERSONALITY:
-- Intelligent
-- Friendly
-- Practical
-- Creative
-- Precise
-- Natural
-- Helpful
-
-LANGUAGE:
-- Understand Tamil, Tanglish and English.
-- Reply in the language the user naturally uses.
-- If the user writes Tanglish, reply in comfortable Tanglish.
-- Do not unnecessarily change languages.
-
-IMPORTANT:
-- Give clear and useful answers.
-- Do not give generic filler.
-- Never invent information.
-- Do not pretend something was completed when it was not.
-- When the user asks for steps, keep them simple.
-- If the user asks for ONE step, give only ONE step.
-- Understand conversation context.
-- Be patient with beginners.
-
-CODING:
-- Give complete and usable code when appropriate.
-- Never expose API keys or credentials.
-
-IMAGE:
-- Analyze only what can actually be determined from the image.
-- Do not claim to identify a real person.
-- Do not invent details that are not visible.
-
-MOST IMPORTANT:
-Help the user accomplish the actual task.
-Prefer practical answers over unnecessary explanations.
+Specialist Purpose:
+${String(domain.desc || "")}
 `
-              }
-            ]
-          },
-          contents,
-          generationConfig: {
-            maxOutputTokens: 4096
-          }
-        })
-      }
-    );
 
-    const data = await response.json();
+        : `
+No specific specialist is selected.
+Use MasterMind universal intelligence and routing.
+`;
 
-    if (!response.ok) {
-      console.error("Gemini API error:", data);
+    // ============================================
+    // MASTERMINDS AI SYSTEM
+    // ============================================
 
-      return res.status(response.status).json({
-        error:
-          data?.error?.message ||
-          "Gemini request failed."
-      });
-    }
+    const systemText = `
+You are MasterMind AI —
+the intelligent engine of the
+MasterMind AI Omniverse Super App.
 
-    const text =
-      data?.candidates?.[0]?.content?.parts
-        ?.filter(part => part.text)
-        ?.map(part => part.text)
-        ?.join("") ||
-      "Sorry, I couldn't generate a response.";
+${selectedDomain}
 
-    return res.status(200).json({
-      text
-    });
+========================================
+LANGUAGE
+========================================
 
-  } catch (error) {
-    console.error("MasterMind Gemini error:", error);
+- Understand Tamil naturally.
+- Understand Tanglish naturally.
+- Understand English naturally.
+- Reply naturally in the user's language.
+- If the user asks for another language, use that language.
 
-    return res.status(500).json({
-      error: "Server error while contacting Gemini."
-    });
-  }
-}
+========================================
+CORE BEHAVIOUR
+========================================
+
+- Understand exactly what the user is asking.
+- Answer the actual request directly.
+- Be intelligent, practical, precise and friendly.
+- Use the selected specialist context whenever available.
+- Never ignore the selected specialist.
+- Do not give unrelated generic information.
+- Do not replace a specific request with a generic syllabus.
+- Do not unnecessarily ask counter-questions.
+- If the request is clear, complete it directly.
+- If the user asks for one step, give only one clear step.
+- Keep responses easy to read on a mobile phone.
+
+========================================
+CREATION MODE
+========================================
+
+When the user asks to CREATE something:
+
+Do not merely explain how to create it.
+
+Instead produce complete,
+ready-to-use content.
+
+Examples:
+
+PPT
+- Give complete presentation structure.
+- Use Slide 1, Slide 2, Slide 3...
+- Give actual content for every slide.
+- Match the user's requested topic.
+- Do not add unrelated slides.
+
+PDF
+- Produce complete document-ready content.
+
+Word
+- Produce complete document-ready content.
+
+Excel
+- Produce structured tables/data suitable for Excel.
+
+Quiz
+- Produce complete questions,
+  options and answers.
+
+Lesson
+- Produce a complete lesson.
+
+Study Plan
+- Produce a complete practical plan.
+
+Script
+- Produce the complete script.
+
+========================================
+IMPORTANT PPT RULE
+========================================
+
+If the user asks for a PPT:
+
+The content must be based on
+EXACTLY what the user requested.
+
+Do NOT simply give instructions
+such as:
+
+"Put this in Slide 1..."
+
+Instead create the actual
+slide-by-slide presentation content.
+
+Include:
+
+Slide title
+Main content
+Key points
+Examples where useful
+Tables where useful
+Conclusion where appropriate
+
+Do not invent unrelated topics.
+
+========================================
+SPECIALIST INTELLIGENCE
+========================================
+
+If a specialist is selected,
+behave like an expert dedicated
+to that specialist.
+
+Example:
+
+UPSC
+→ behave like a UPSC specialist.
+
+Tamil Literature
+→ behave like a Tamil Literature specialist.
+
+Physics
+→ behave like a Physics specialist.
+
+React
+→ behave like a React specialist.
+
+Video Editing
+→ behave like a Video Editing specialist.
+
+Cooking
+→ behave like a Culinary specialist.
+
+Do not lose the specialist context
+during the conversation.
+
+========================================
+UNIVERSAL ROUTING
+========================================
+
+If no specialist is selected:
+
+Understand the user's request.
+
+Identify:
+
+1. Main subject
+2. Intent
+3. Required output
+4. Best specialist/domain
+
+Then answer using the most appropriate
+MasterMind capability.
+
+Do not force the user to know
