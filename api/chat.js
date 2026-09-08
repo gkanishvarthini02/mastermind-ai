@@ -182,4 +182,4 @@ Prefer practical answers over unnecessary explanations.
       error: "Server error while contacting Gemini."
     });
   }
-                
+}
