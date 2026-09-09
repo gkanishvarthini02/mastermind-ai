@@ -174,3 +174,75 @@ SECURITY:
             response.status !== 429 &&
             response.status !== 503
           ) {
+                        return res.status(response.status).json({
+              error: lastError
+            });
+          }
+        }
+
+      } catch (error) {
+        lastError =
+          error?.message ||
+          "Network error while contacting Gemini.";
+      }
+
+      // Wait before retry
+      if (attempt < 2) {
+        await new Promise(resolve =>
+          setTimeout(
+            resolve,
+            900 * Math.pow(2, attempt)
+          )
+        );
+      }
+    }
+
+    // Backup AI engine
+    try {
+      const fallbackPrompt =
+        String(message || "Photo analysis");
+
+      const fallbackSystem =
+        encodeURIComponent(
+          "You are MasterMind AI. Reply directly in natural Tamil, Tanglish or English. Address the user as Founder. Be useful, accurate and concise."
+        );
+
+      const fallbackResponse =
+        await fetch(
+          `https://text.pollinations.ai/${encodeURIComponent(
+            fallbackPrompt
+          )}?system=${fallbackSystem}`
+        );
+
+      if (fallbackResponse.ok) {
+        const fallbackText =
+          (await fallbackResponse.text()).trim();
+
+        if (fallbackText.length > 5) {
+          return res.status(200).json({
+            text: fallbackText
+          });
+        }
+      }
+
+    } catch (_) {
+      // Backup failed
+    }
+
+    return res.status(503).json({
+      error:
+        "Gemini is temporarily unavailable and the backup AI engine could not respond."
+    });
+
+  } catch (error) {
+    console.error(
+      "MasterMind Gemini error:",
+      error
+    );
+
+    return res.status(500).json({
+      error:
+        "Server error while contacting Gemini."
+    });
+  }
+}
