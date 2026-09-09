@@ -757,4 +757,571 @@
         transform:scale(.98);
       }
 
+      .mm-native-icon {
+        font-size:22px;
+        margin-bottom:6px;
+      }
+
+      .mm-native-name {
+        font-size:13px;
+        font-weight:900;
+        color:#111827;
+        line-height:1.35;
+      }
+
+      .mm-native-sub {
+        margin-top:5px;
+        font-size:11px;
+        color:#64748b;
+      }
+
+      .mm-native-modal {
+        position:fixed;
+        inset:0;
+        background:rgba(15,23,42,.5);
+        display:none;
+        align-items:flex-end;
+        justify-content:center;
+        z-index:999999;
+        padding:10px;
+      }
+
+      .mm-native-modal.active {
+        display:flex;
+      }
+
+      .mm-native-sheet {
+        width:min(650px,100%);
+        max-height:92vh;
+        overflow:auto;
+        background:#fff;
+        border-radius:22px;
+        padding:18px;
+      }
+
+      .mm-native-head {
+        display:flex;
+        align-items:flex-start;
+        gap:10px;
+      }
+
+      .mm-native-tool-icon {
+        font-size:28px;
+      }
+
+      .mm-native-tool-name {
+        flex:1;
+        font-size:17px;
+        font-weight:900;
+        color:#111827;
+      }
+
+      .mm-native-domain {
+        font-size:11px;
+        color:#64748b;
+        margin-top:3px;
+      }
+
+      .mm-native-close {
+        border:0;
+        background:#f1f5f9;
+        border-radius:10px;
+        padding:8px 11px;
+        cursor:pointer;
+      }
+
+      .mm-native-input {
+        width:100%;
+        min-height:140px;
+        margin-top:14px;
+        box-sizing:border-box;
+        border:1px solid #cbd5e1;
+        border-radius:14px;
+        padding:12px;
+        resize:vertical;
+        font:inherit;
+      }
+
+      .mm-native-run {
+        width:100%;
+        margin-top:10px;
+        border:0;
+        border-radius:13px;
+        padding:13px;
+        background:#111827;
+        color:#fff;
+        font-weight:900;
+        cursor:pointer;
+      }
+
+      .mm-native-result {
+        display:none;
+        margin-top:14px;
+        padding:13px;
+        border-radius:14px;
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        white-space:pre-wrap;
+        font-size:13px;
+        line-height:1.55;
+      }
+
+      @media(min-width:600px) {
+        .mm-native-grid {
+          grid-template-columns:1fr 1fr;
+        }
+      }
+
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  /* =========================
+     MODAL
+     ========================= */
+
+  function createModal() {
+
+    if (document.getElementById("mmNativeModal")) return;
+
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <div class="mm-native-modal" id="mmNativeModal">
+
+        <div class="mm-native-sheet">
+
+          <div class="mm-native-head">
+
+            <div
+              class="mm-native-tool-icon"
+              id="mmNativeIcon">
+              ⚡
+            </div>
+
+            <div>
+
+              <div
+                class="mm-native-tool-name"
+                id="mmNativeName">
+              </div>
+
+              <div
+                class="mm-native-domain"
+                id="mmNativeDomain">
+              </div>
+
+            </div>
+
+            <button
+              class="mm-native-close"
+              onclick="closeNativeTool()">
+              ✕
+            </button>
+
+          </div>
+
+          <textarea
+            id="mmNativeInput"
+            class="mm-native-input"
+            placeholder="இங்கே details / text / numbers கொடுங்கள்...">
+          </textarea>
+
+          <button
+            class="mm-native-run"
+            id="mmNativeRun"
+            onclick="runNativeTool()">
+            ⚡ Run Tool
+          </button>
+
+          <div
+            id="mmNativeResult"
+            class="mm-native-result">
+          </div>
+
+        </div>
+
+      </div>
+
+      `
+    );
+  }
+
+  /* =========================
+     OPEN TOOL
+     ========================= */
+
+  window.openNativeTool = function (
+    domain,
+    tool,
+    toolIndex
+  ) {
+
+    addNativeToolStyles();
+    createModal();
+
+    document.getElementById(
+      "mmNativeIcon"
+    ).textContent =
+      ["⚡", "🧠", "🛠️"][toolIndex] || "⚡";
+
+    document.getElementById(
+      "mmNativeName"
+    ).textContent = tool;
+
+    document.getElementById(
+      "mmNativeDomain"
+    ).textContent = domain;
+
+    document.getElementById(
+      "mmNativeInput"
+    ).value = "";
+
+    document.getElementById(
+      "mmNativeResult"
+    ).style.display = "none";
+
+    document.getElementById(
+      "mmNativeModal"
+    ).classList.add("active");
+
+  };
+
+  /* =========================
+     CLOSE TOOL
+     ========================= */
+
+  window.closeNativeTool = function () {
+
+    const modal =
+      document.getElementById("mmNativeModal");
+
+    if (modal) {
+      modal.classList.remove("active");
+    }
+
+  };
+
+  /* =========================
+     RUN TOOL
+     ========================= */
+
+  window.runNativeTool = async function () {
+
+    const input =
+      document.getElementById("mmNativeInput");
+
+    const result =
+      document.getElementById("mmNativeResult");
+
+    const button =
+      document.getElementById("mmNativeRun");
+
+    const tool =
+      document.getElementById("mmNativeName").textContent;
+
+    const domain =
+      document.getElementById("mmNativeDomain").textContent;
+
+    const userInput =
+      input.value.trim();
+
+    if (!userInput) {
+
+      result.style.display = "block";
+
+      result.textContent =
+        "முதலில் input/details கொடுங்கள்.";
+
+      return;
+
+    }
+
+    button.disabled = true;
+
+    button.textContent =
+      "⏳ MasterMind Working...";
+
+    result.style.display = "block";
+
+    result.textContent =
+      "MasterMind native engine சிந்திக்கிறது...";
+
+    try {
+
+      let answer = "";
+
+      /*
+       * Existing MasterMind AI engine
+       */
+
+      if (
+        typeof window.generateDirectAIBrain ===
+        "function"
+      ) {
+
+        answer =
+          await window.generateDirectAIBrain(
+
+            `MASTER MIND NATIVE TOOL
+
+DOMAIN:
+${domain}
+
+TOOL:
+${tool}
+
+USER INPUT:
+${userInput}
+
+TASK:
+Act as the selected native tool.
+Give a practical, structured result.
+Use calculations, tables, steps or checklists where useful.
+Do not invent unavailable live information.
+Clearly state assumptions and limitations.
+`
+
+          );
+
+      }
+
+      /*
+       * Direct API fallback
+       */
+
+      else {
+
+        const response =
+          await fetch(
+            "/api/chat",
+            {
+              method:"POST",
+
+              headers:{
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:JSON.stringify({
+
+                message:
+`MASTER MIND NATIVE TOOL
+
+DOMAIN:
+${domain}
+
+TOOL:
+${tool}
+
+USER INPUT:
+${userInput}`
+
+              })
+
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.error ||
+            "AI request failed"
+          );
+
+        }
+
+        answer =
+          data.text ||
+          "No result.";
+
+      }
+
+      result.textContent =
+        answer;
+
+    }
+
+    catch(error) {
+
+      result.textContent =
+        "Tool Error: " +
+        (
+          error?.message ||
+          "Unable to run this tool."
+        );
+
+    }
+
+    finally {
+
+      button.disabled = false;
+
+      button.textContent =
+        "⚡ Run Tool";
+
+    }
+
+  };
+
+  /* =========================
+     ADD TO EXISTING DOMAIN UI
+     ========================= */
+
+  function addToolsToDomain(domain) {
+
+    if (!domain) return;
+
+    const domainData =
+      NATIVE_TOOLS.find(
+        item =>
+          item.domain === domain.name
+      );
+
+    if (!domainData) return;
+
+    const grid =
+      document.getElementById(
+        "subdomainGrid"
+      );
+
+    if (!grid) return;
+
+    /*
+     * Prevent duplicates
+     */
+
+    const old =
+      document.getElementById(
+        "mmNativeToolsSection"
+      );
+
+    if (old) old.remove();
+
+    const section =
+      document.createElement("div");
+
+    section.id =
+      "mmNativeToolsSection";
+
+    section.className =
+      "mm-native-tools";
+
+    section.innerHTML = `
+
+      <div class="mm-native-title">
+        ⚡ Native Tools — 3 Core Facilities
+      </div>
+
+      <div class="mm-native-grid">
+
+        ${domainData.tools.map(
+          (tool,index) => `
+
+            <div
+              class="mm-native-card"
+              onclick='openNativeTool(
+                ${JSON.stringify(domainData.domain)},
+                ${JSON.stringify(tool)},
+                ${index}
+              )'
+            >
+
+              <div class="mm-native-icon">
+                ${["⚡","🧠","🛠️"][index]}
+              </div>
+
+              <div class="mm-native-name">
+                ${escapeHTML(tool)}
+              </div>
+
+              <div class="mm-native-sub">
+                Open Native Tool →
+              </div>
+
+            </div>
+
+          `
+        ).join("")}
+
+      </div>
+
+    `;
+
+    grid.parentNode.insertBefore(
+      section,
+      grid.nextSibling
+    );
+
+  }
+
+  /* =========================
+     CONNECT OLD DESIGN
+     ========================= */
+
+  const oldOpenSubdomains =
+    window.openSubdomains;
+
+  if (
+    typeof oldOpenSubdomains ===
+    "function"
+  ) {
+
+    window.openSubdomains =
+      function(index) {
+
+        oldOpenSubdomains(index);
+
+        setTimeout(
+          function() {
+
+            const domain =
+              window.activeDomain ||
+              (
+                window.domainList &&
+                window.domainList[index]
+              );
+
+            if (domain) {
+              addToolsToDomain(domain);
+            }
+
+          },
+          100
+        );
+
+      };
+
+  }
+
+  /* =========================
+     PUBLIC DATA
+     ========================= */
+
+  window.MasterMindNativeTools =
+    NATIVE_TOOLS;
+
+  window.MasterMindNativeToolCount =
+    NATIVE_TOOLS.reduce(
+      (total,item) =>
+        total + item.tools.length,
+      0
+    );
+
+  addNativeToolStyles();
+
+  console.log(
+    "MasterMind Native Tools loaded:",
+    NATIVE_TOOLS.length,
+    "domains /",
+    window.MasterMindNativeToolCount,
+    "tools"
+  );
+
+})();
      
